@@ -13,7 +13,9 @@ export default function AnalyticsInitializer() {
 
   // Initialize analytics on mount
   useEffect(() => {
-    analytics.init();
+    if (typeof window !== 'undefined') {
+      analytics.init();
+    }
   }, []);
 
   // Track page views
