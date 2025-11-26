@@ -1,0 +1,14 @@
+# Frontend-specific Cursor ignore
+# Allow .env files to be edited
+!.env
+!.env.local
+!.env.*.local
+
+# Ignore build outputs
+.next/
+out/
+dist/
+
+# Ignore dependencies
+node_modules/
+

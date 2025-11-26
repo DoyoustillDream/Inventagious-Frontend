@@ -1,0 +1,985 @@
+{
+  "address": "6gBq2J7rg3x2ic1de6QBSXq5WLfuaLfswGz7tvmKkz6P",
+  "metadata": {
+    "name": "platform_treasury",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "collect_fee",
+      "docs": [
+        "Collect fee from a transaction (called via CPI from campaign/deal programs)"
+      ],
+      "discriminator": [
+        60,
+        173,
+        247,
+        103,
+        4,
+        93,
+        130,
+        48
+      ],
+      "accounts": [
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "treasury"
+              }
+            ]
+          }
+        },
+        {
+          "name": "source_vault",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "source",
+          "type": "pubkey"
+        },
+        {
+          "name": "transaction_type",
+          "type": {
+            "defined": {
+              "name": "TransactionType"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize_treasury",
+      "docs": [
+        "Initialize the treasury with admin, hot wallet, and cold wallet"
+      ],
+      "discriminator": [
+        124,
+        186,
+        211,
+        195,
+        85,
+        165,
+        129,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "treasury"
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "hot_wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "cold_wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "fee_percentage",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "pause",
+      "docs": [
+        "Pause treasury operations"
+      ],
+      "discriminator": [
+        211,
+        22,
+        221,
+        251,
+        74,
+        121,
+        193,
+        47
+      ],
+      "accounts": [
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "reason",
+          "type": {
+            "option": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sweep_to_hot_wallet",
+      "docs": [
+        "Sweep fees from vault to hot wallet"
+      ],
+      "discriminator": [
+        63,
+        25,
+        252,
+        52,
+        81,
+        1,
+        111,
+        100
+      ],
+      "accounts": [
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "treasury"
+              }
+            ]
+          }
+        },
+        {
+          "name": "hot_wallet",
+          "writable": true
+        },
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": {
+            "option": "u64"
+          }
+        }
+      ]
+    },
+    {
+      "name": "unpause",
+      "docs": [
+        "Unpause treasury operations"
+      ],
+      "discriminator": [
+        169,
+        144,
+        4,
+        38,
+        10,
+        141,
+        188,
+        255
+      ],
+      "accounts": [
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_fee_percentage",
+      "docs": [
+        "Update fee percentage (admin only, requires validation)"
+      ],
+      "discriminator": [
+        102,
+        119,
+        197,
+        160,
+        139,
+        102,
+        182,
+        0
+      ],
+      "accounts": [
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84,
+                  84
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_fee_percentage",
+          "type": "u16"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Treasury",
+      "discriminator": [
+        238,
+        239,
+        123,
+        238,
+        89,
+        1,
+        168,
+        253
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "FeePercentageUpdated",
+      "discriminator": [
+        253,
+        238,
+        117,
+        162,
+        125,
+        121,
+        23,
+        197
+      ]
+    },
+    {
+      "name": "FeeReceived",
+      "discriminator": [
+        62,
+        86,
+        28,
+        217,
+        131,
+        5,
+        231,
+        231
+      ]
+    },
+    {
+      "name": "FeesSweptToHotWallet",
+      "discriminator": [
+        71,
+        115,
+        202,
+        95,
+        74,
+        65,
+        41,
+        72
+      ]
+    },
+    {
+      "name": "Paused",
+      "discriminator": [
+        172,
+        248,
+        5,
+        253,
+        49,
+        255,
+        255,
+        232
+      ]
+    },
+    {
+      "name": "TreasuryInitialized",
+      "discriminator": [
+        199,
+        73,
+        174,
+        205,
+        59,
+        145,
+        55,
+        179
+      ]
+    },
+    {
+      "name": "Unpaused",
+      "discriminator": [
+        156,
+        150,
+        47,
+        174,
+        120,
+        216,
+        93,
+        117
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Unauthorized"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidAmount",
+      "msg": "Invalid amount"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidFeePercentage",
+      "msg": "Invalid fee percentage"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidWallet",
+      "msg": "Invalid wallet"
+    },
+    {
+      "code": 6004,
+      "name": "TreasuryPaused",
+      "msg": "Treasury paused"
+    },
+    {
+      "code": 6005,
+      "name": "TreasuryAlreadyPaused",
+      "msg": "Treasury already paused"
+    },
+    {
+      "code": 6006,
+      "name": "TreasuryNotPaused",
+      "msg": "Treasury not paused"
+    },
+    {
+      "code": 6007,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient funds"
+    },
+    {
+      "code": 6008,
+      "name": "MathOverflow",
+      "msg": "Math overflow"
+    }
+  ],
+  "types": [
+    {
+      "name": "FeePercentageUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "old_percentage",
+            "type": "u16"
+          },
+          {
+            "name": "new_percentage",
+            "type": "u16"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeeReceived",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "source",
+            "type": "pubkey"
+          },
+          {
+            "name": "transaction_type",
+            "type": {
+              "defined": {
+                "name": "TransactionType"
+              }
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeesSweptToHotWallet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Paused",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "reason",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TransactionType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Contribution"
+          },
+          {
+            "name": "Deal"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Treasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "hot_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "cold_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_percentage",
+            "type": "u16"
+          },
+          {
+            "name": "fee_increment",
+            "type": "u64"
+          },
+          {
+            "name": "total_fees_collected",
+            "type": "u64"
+          },
+          {
+            "name": "total_fees_swept_to_hot_wallet",
+            "type": "u64"
+          },
+          {
+            "name": "total_fees_swept_to_cold_wallet",
+            "type": "u64"
+          },
+          {
+            "name": "pause_status",
+            "type": "bool"
+          },
+          {
+            "name": "last_sweep_timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "transaction_count",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TreasuryInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "hot_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "cold_wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "fee_percentage",
+            "type": "u16"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Unpaused",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
+}

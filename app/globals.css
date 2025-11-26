@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --yellow-bright: #FFEB3B;
+  --yellow-light: #FFF9C4;
+  --gray-light: #F5F5F5;
 }
 
 @theme inline {
@@ -23,4 +26,556 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom Scrollbar Styles */
+/* Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+  border-left: 2px solid var(--foreground);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--yellow-bright);
+  background-image: radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px);
+  background-size: 12px 12px;
+  border: 3px solid var(--foreground);
+  border-radius: 8px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--yellow-light);
+  background-image: radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--yellow-bright);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--background);
+  border-left: 2px solid var(--foreground);
+  border-top: 2px solid var(--foreground);
+}
+
+/* Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--foreground) var(--yellow-light);
+}
+
+body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--foreground) var(--yellow-light);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-track {
+    border-left-color: var(--foreground);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    border-color: var(--foreground);
+  }
+  
+  ::-webkit-scrollbar-corner {
+    border-left-color: var(--foreground);
+    border-top-color: var(--foreground);
+  }
+}
+
+/* Container centering */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+/* Hand-drawn aesthetic styles */
+.hand-drawn {
+  font-family: 'Comic Sans MS', 'Marker Felt', 'Chalkboard', cursive;
+  font-weight: bold;
+}
+
+.halftone-bg {
+  background-color: var(--yellow-bright);
+  background-image: radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.halftone-gray {
+  background-color: var(--gray-light);
+  background-image: radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.browser-window {
+  border: 4px solid #000;
+  border-radius: 8px;
+  background: white;
+  position: relative;
+  box-shadow: 8px 8px 0 rgba(0,0,0,0.2);
+}
+
+.browser-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 2px solid #000;
+  background: #f0f0f0;
+}
+
+.browser-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.browser-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #000;
+}
+
+.browser-dot.red { background: #ff5f56; }
+.browser-dot.yellow { background: #ffbd2e; }
+.browser-dot.green { background: #27c93f; }
+
+.yellow-highlight {
+  background: var(--yellow-bright);
+  border: 3px solid #000;
+  padding: 8px 16px;
+  display: inline-block;
+  font-weight: bold;
+  color: #000;
+  line-height: 1.2;
+}
+
+.squiggly-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.squiggly-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: url("data:image/svg+xml,%3Csvg width='100' height='4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,2 Q25,0 50,2 T100,2' stroke='%23000' stroke-width='2' fill='none'/%3E%3C/svg%3E") repeat-x;
+  background-size: 100px 4px;
+}
+
+/* Header dropdown animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header-dropdown-enter {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+.star-decoration {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+
+.star-decoration::before {
+  content: '✦';
+  font-size: 20px;
+  color: #000;
+}
+
+.swirl-decoration {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #000;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(45deg);
+}
+
+/* Campaign Page Layout */
+.campaign-page-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.campaign-page-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .campaign-page-layout {
+    grid-template-columns: 1fr 400px;
+  }
+}
+
+.campaign-sidebar {
+  order: 2;
+}
+
+@media (min-width: 1024px) {
+  .campaign-sidebar {
+    order: 2;
+  }
+}
+
+.campaign-main-content {
+  order: 1;
+}
+
+@media (min-width: 1024px) {
+  .campaign-main-content {
+    order: 1;
+  }
+}
+
+/* ============================================
+   Wallet Adapter Modal - Browser Window Style
+   ============================================ */
+
+/* Main Modal Container - Override all default styles */
+.wallet-adapter-modal-wrapper,
+div.wallet-adapter-modal-wrapper,
+[class*="wallet-adapter-modal-wrapper"] {
+  background: white !important;
+  border: 4px solid #000 !important;
+  border-radius: 8px !important;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.2) !important;
+  font-family: 'Comic Sans MS', 'Marker Felt', 'Chalkboard', cursive !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  position: relative !important;
+  max-width: 400px !important;
+  flex: none !important;
+  display: block !important;
+  align-items: stretch !important;
+  flex-direction: column !important;
+  z-index: 1050 !important;
+}
+
+/* Browser Control Dots (Red, Yellow, Green) */
+.wallet-adapter-modal-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  background: #ff5f56;
+  z-index: 10;
+  box-shadow: 20px 0 0 #ffbd2e, 40px 0 0 #27c93f;
+}
+
+/* Header Container */
+.wallet-adapter-modal-wrapper > div:first-child {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  position: relative !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  background: #f0f0f0 !important;
+  border-bottom: 2px solid #000 !important;
+  padding: 0 12px 0 60px !important; /* Space for dots on left, padding on right */
+  overflow: hidden !important; /* Prevent content from spilling out */
+}
+
+/* Modal Title - Centered */
+.wallet-adapter-modal-title {
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  color: #000 !important;
+  font-weight: bold !important;
+  font-family: 'Comic Sans MS', 'Marker Felt', 'Chalkboard', cursive !important;
+  font-size: 14px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 5 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+  line-height: 1.2 !important;
+  max-width: calc(100% - 120px) !important; /* Prevent overlap with buttons */
+}
+
+/* Close Button */
+.wallet-adapter-modal-button-close {
+  position: absolute !important;
+  right: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: white !important;
+  border: 2px solid #000 !important;
+  border-radius: 4px !important;
+  width: 24px !important;
+  height: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 11 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
+}
+
+.wallet-adapter-modal-button-close:hover {
+  background: var(--yellow-bright) !important;
+  transform: translateY(-50%) scale(1.1) !important;
+}
+
+.wallet-adapter-modal-button-close svg {
+  width: 14px !important;
+  height: 14px !important;
+  stroke: #000 !important;
+}
+
+/* Content Area */
+.wallet-adapter-modal-wrapper > ul,
+.wallet-adapter-modal-wrapper > div:last-child {
+  padding: 24px !important;
+  background: white !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Wallet List */
+.wallet-adapter-modal-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.wallet-adapter-modal-list li {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Wallet Buttons */
+.wallet-adapter-button {
+  width: 100% !important;
+  background: white !important;
+  border: 3px solid #000 !important;
+  border-radius: 8px !important;
+  padding: 14px 18px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-family: 'Comic Sans MS', 'Marker Felt', 'Chalkboard', cursive !important;
+  font-weight: bold !important;
+  color: #000 !important;
+  box-sizing: border-box !important;
+}
+
+.wallet-adapter-button:hover {
+  background: var(--yellow-bright) !important;
+  transform: translateX(4px) translateY(-2px) !important;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+.wallet-adapter-button:active {
+  transform: translateX(2px) translateY(0) !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Wallet Icon */
+.wallet-adapter-button-start-icon {
+  width: 32px !important;
+  height: 32px !important;
+  border: 2px solid #000 !important;
+  border-radius: 6px !important;
+  padding: 4px !important;
+  background: white !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.wallet-adapter-button-start-icon img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  border-radius: 4px !important;
+}
+
+/* Wallet Button Text */
+.wallet-adapter-button span:first-of-type {
+  font-weight: bold !important;
+  font-size: 15px !important;
+  font-family: 'Comic Sans MS', 'Marker Felt', 'Chalkboard', cursive !important;
+  color: #000 !important;
+  flex: 1 !important;
+  text-align: left !important;
+}
+
+/* Detected Badge */
+.wallet-adapter-button span:last-child {
+  margin-left: auto !important;
+  background: var(--yellow-bright) !important;
+  color: #000 !important;
+  border: 2px solid #000 !important;
+  border-radius: 4px !important;
+  padding: 4px 10px !important;
+  font-size: 10px !important;
+  font-weight: bold !important;
+  font-family: 'Comic Sans MS', 'Marker Felt', 'Chalkboard', cursive !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1.2 !important;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+/* More Options Button */
+.wallet-adapter-modal-list-more {
+  width: 100% !important;
+  background: white !important;
+  border: 3px solid #000 !important;
+  border-radius: 8px !important;
+  padding: 14px 18px !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-family: 'Comic Sans MS', 'Marker Felt', 'Chalkboard', cursive !important;
+  font-weight: bold !important;
+  font-size: 15px !important;
+  color: #000 !important;
+  box-sizing: border-box !important;
+}
+
+.wallet-adapter-modal-list-more:hover {
+  background: var(--yellow-bright) !important;
+  transform: translateX(4px) translateY(-2px) !important;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+.wallet-adapter-modal-list-more:active {
+  transform: translateX(2px) translateY(0) !important;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15) !important;
+}
+
+.wallet-adapter-modal-list-more svg {
+  width: 13px !important;
+  height: 7px !important;
+  fill: #000 !important;
+  transition: transform 0.2s ease !important;
+}
+
+.wallet-adapter-modal-list-more:hover svg {
+  transform: translateY(2px) !important;
+}
+
+/* Collapsed Wallet List */
+.wallet-adapter-collapse {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.wallet-adapter-collapse li {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Overlay */
+.wallet-adapter-modal-overlay {
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px) !important;
 }

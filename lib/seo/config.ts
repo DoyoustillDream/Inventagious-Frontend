@@ -1,0 +1,138 @@
+/**
+ * SEO Configuration for Inventagious
+ * Centralized SEO metadata and configuration
+ */
+
+export const siteConfig = {
+  name: "Inventagious",
+  title: "Inventagious",
+  description: "A revolutionary crowdfunding & private fundraising platform for Inventors & Innovators in Web3 & Worldwide using Solana blockchain. Discover innovative projects, invest in groundbreaking ideas, and support the future of innovation.",
+  url: "https://inventagious.com",
+  domain: "inventagious.com",
+  ogImage: "https://inventagious.com/banners/banner-main.jpg",
+  twitterImage: "https://inventagious.com/banners/banner-x.jpeg",
+  logo: "https://inventagious.com/logos/logo-bulb.png",
+  keywords: [
+    "crowdfunding",
+    "fundraising",
+    "inventors",
+    "innovators",
+    "Web3",
+    "Solana",
+    "blockchain",
+    "crypto fundraising",
+    "startup funding",
+    "innovation platform",
+    "decentralized funding",
+    "NFT fundraising",
+    "crypto investment",
+    "blockchain projects",
+    "inventor platform",
+    "innovation crowdfunding",
+    "Solana blockchain",
+    "Web3 platform",
+    "crypto crowdfunding",
+    "blockchain innovation"
+  ],
+  author: "Inventagious",
+  creator: "Inventagious",
+  publisher: "Inventagious",
+  category: "Technology",
+  language: "en-US",
+  locale: "en_US",
+  type: "website",
+  siteName: "Inventagious",
+  twitterHandle: "@inventagious",
+  facebookAppId: "",
+  googleSiteVerification: "",
+  bingSiteVerification: "",
+  yandexVerification: "",
+};
+
+export const defaultMetadata = {
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.title,
+    template: `%s | ${siteConfig.title}`,
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  authors: [{ name: siteConfig.author }],
+  creator: siteConfig.creator,
+  publisher: siteConfig.publisher,
+  category: siteConfig.category,
+  alternates: {
+    canonical: siteConfig.url,
+    languages: {
+      'en-US': siteConfig.url,
+    },
+  },
+  openGraph: {
+    type: siteConfig.type as "website",
+    locale: siteConfig.locale,
+    url: siteConfig.url,
+    siteName: siteConfig.siteName,
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.title,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large" as const,
+      "max-snippet": -1,
+    },
+  },
+  icons: {
+    icon: [
+      { url: "/logos/logo-bulb.png", sizes: "32x32", type: "image/png" },
+      { url: "/logos/logo-bulb.png", sizes: "16x16", type: "image/png" },
+      { url: "/logos/logo-bulb.png", sizes: "any", type: "image/png" },
+    ],
+    shortcut: "/logos/logo-bulb.png",
+    apple: "/logos/logo-bulb.png",
+  },
+  manifest: "/manifest.json",
+  verification: {
+    google: siteConfig.googleSiteVerification || undefined,
+    yandex: siteConfig.yandexVerification || undefined,
+    yahoo: siteConfig.bingSiteVerification || undefined,
+  },
+  other: {
+    "geo.region": "US",
+    "geo.placename": "United States",
+    "format-detection": "telephone=no",
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "Inventagious",
+    "application-name": "Inventagious",
+    "msapplication-TileColor": "#facc15",
+    "msapplication-config": "/browserconfig.xml",
+    "language": "English",
+    "rating": "General",
+    "distribution": "Global",
+    "revisit-after": "7 days",
+    "HandheldFriendly": "true",
+    "MobileOptimized": "320",
+  },
+};
+

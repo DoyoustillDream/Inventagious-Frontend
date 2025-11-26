@@ -1,0 +1,592 @@
+'use client';
+
+import { useState, useCallback } from 'react';
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
+import * as anchor from '@coral-xyz/anchor';
+import { useWallet } from '@/hooks/useWallet';
+import { getConnection } from '../connection';
+import { getCampaignProgramId, getProgramIds } from '../program-ids';
+import {
+  initializeCampaignTransaction,
+  contributeTransaction,
+  getCampaign,
+} from '../campaign';
+import { projectsApi } from '@/lib/api/projects';
+
+/**
+ * Hook for campaign operations
+ */
+export function useCampaign() {
+  const { publicKey, connected, wallet, signTransaction } = useWallet();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Initialize a campaign on-chain
+   */
+  const initializeCampaign = useCallback(
+    async (
+      projectId: string,
+      fundingGoal: number,
+      deadline: number,
+    ): Promise<{ signature: string; campaignPda: string }> => {
+      if (!connected || !publicKey || !wallet) {
+        throw new Error('Wallet not connected');
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      // Get program ID early so it's available in catch block
+      let programId: PublicKey;
+      try {
+        programId = await getCampaignProgramId();
+      } catch (idError) {
+        setIsLoading(false);
+        throw new Error(`Failed to get program ID: ${idError instanceof Error ? idError.message : 'Unknown error'}`);
+      }
+
+      try {
+        // Get connection
+        const connection = await getConnection();
+
+        // Create Anchor provider from wallet
+        const anchorWallet = {
+          publicKey,
+          signTransaction: async (tx: Transaction | VersionedTransaction) => {
+            if (!tx) {
+              throw new Error('Transaction to sign is undefined');
+            }
+            return await signTransaction(tx);
+          },
+          signAllTransactions: wallet.signAllTransactions 
+            ? async (txs: (Transaction | VersionedTransaction)[]) => {
+                return await wallet.signAllTransactions!(txs);
+              }
+            : undefined,
+        };
+
+        const provider = new anchor.AnchorProvider(
+          connection,
+          anchorWallet as any,
+          { commitment: 'confirmed' }
+        );
+
+        // Create a program instance for the provider
+        const program = {
+          provider,
+        };
+
+        // Build transaction with detailed error handling
+        let transaction, campaignPda;
+        try {
+          const result = await initializeCampaignTransaction(
+            publicKey,
+            projectId,
+            fundingGoal,
+            deadline,
+            program,
+            connection,
+          );
+          transaction = result.transaction;
+          campaignPda = result.campaignPda;
+        } catch (buildError: any) {
+          console.error('Error in initializeCampaignTransaction:', buildError);
+          console.error('Build error stack:', buildError?.stack);
+          throw new Error(
+            `Failed to build campaign transaction: ${buildError?.message || 'Unknown error'}. ` +
+            `Check console for details.`
+          );
+        }
+
+        if (!transaction) {
+          throw new Error('Failed to build transaction: transaction is undefined');
+        }
+
+        // Ensure transaction is properly prepared for signing
+        if (transaction instanceof Transaction) {
+          // Get fresh blockhash if not set (Anchor should set it, but verify)
+          if (!transaction.recentBlockhash) {
+            const { blockhash } = await connection.getLatestBlockhash('confirmed');
+            transaction.recentBlockhash = blockhash;
+          }
+          
+          // Ensure feePayer is set
+          if (!transaction.feePayer) {
+            transaction.feePayer = publicKey;
+          }
+          
+          // Verify transaction is ready for signing
+          if (!transaction.recentBlockhash || !transaction.feePayer) {
+            throw new Error(
+              `Transaction not properly initialized: ` +
+              `recentBlockhash=${!!transaction.recentBlockhash}, ` +
+              `feePayer=${!!transaction.feePayer}`
+            );
+          }
+          
+          // Verify instructions exist
+          if (!transaction.instructions || transaction.instructions.length === 0) {
+            throw new Error('Transaction has no instructions');
+          }
+          
+          // Verify all instructions are valid
+          for (let i = 0; i < transaction.instructions.length; i++) {
+            const ix = transaction.instructions[i];
+            if (!ix || !ix.programId) {
+              throw new Error(`Invalid instruction at index ${i}`);
+            }
+          }
+        } else if (transaction instanceof VersionedTransaction) {
+          // For VersionedTransaction, the blockhash should already be set by Anchor
+          // Verify it's properly initialized
+          if (!transaction.message) {
+            throw new Error('VersionedTransaction message is undefined');
+          }
+        } else {
+          throw new Error(`Invalid transaction type: ${typeof transaction}. Expected Transaction or VersionedTransaction`);
+        }
+
+        // Sign transaction
+        let signedTransaction;
+        try {
+          // Log transaction details before signing for debugging
+          if (transaction instanceof Transaction) {
+            // Try to serialize to check size (but don't use this serialized version)
+            let serializedSize = 0;
+            try {
+              const testSerialized = transaction.serialize({ requireAllSignatures: false });
+              serializedSize = testSerialized.length;
+            } catch (e) {
+              console.warn('Could not serialize transaction for size check:', e);
+            }
+            
+            // Log detailed instruction information
+            const instructionDetails = transaction.instructions.map((ix, i) => {
+              const accountKeys = ix.keys.map((key, idx) => ({
+                pubkey: key.pubkey.toBase58(),
+                isSigner: key.isSigner,
+                isWritable: key.isWritable,
+              }));
+              
+              return {
+                index: i,
+                programId: ix.programId.toBase58(),
+                keys: accountKeys,
+                keysCount: ix.keys.length,
+                dataLength: ix.data?.length || 0,
+                dataPreview: ix.data ? Array.from(ix.data.slice(0, 20)) : null,
+              };
+            });
+            
+            console.log('Transaction details before signing:', {
+              hasRecentBlockhash: !!transaction.recentBlockhash,
+              recentBlockhash: transaction.recentBlockhash?.toString().substring(0, 20) + '...',
+              hasFeePayer: !!transaction.feePayer,
+              feePayer: transaction.feePayer?.toBase58(),
+              instructionCount: transaction.instructions.length,
+              signatures: transaction.signatures.length,
+              serializedSize: serializedSize,
+              instructions: instructionDetails,
+            });
+            
+            // Log the first instruction in detail (should be initializeCampaign)
+            if (transaction.instructions.length > 0) {
+              const firstIx = transaction.instructions[0];
+              console.log('First instruction details:', {
+                programId: firstIx.programId.toBase58(),
+                accountCount: firstIx.keys.length,
+                accounts: firstIx.keys.map((key, i) => ({
+                  index: i,
+                  pubkey: key.pubkey.toBase58(),
+                  isSigner: key.isSigner,
+                  isWritable: key.isWritable,
+                })),
+                dataLength: firstIx.data?.length || 0,
+              });
+            }
+            
+            // Check if transaction is too large (Solana limit is ~1232 bytes)
+            if (serializedSize > 1232) {
+              throw new Error(
+                `Transaction too large: ${serializedSize} bytes (max 1232 bytes). ` +
+                `This might be due to too many accounts or large instruction data.`
+              );
+            }
+          }
+          
+          // Ensure transaction is properly prepared for wallet signing
+          if (transaction instanceof Transaction) {
+            // Verify the transaction is in a valid state for signing
+            // The wallet expects a clean transaction with proper structure
+            
+            // Ensure fee payer is set (should already be set)
+            if (!transaction.feePayer) {
+              transaction.feePayer = publicKey;
+            }
+            
+            // Ensure blockhash is set (should already be set)
+            if (!transaction.recentBlockhash) {
+              const { blockhash } = await connection.getLatestBlockhash('confirmed');
+              transaction.recentBlockhash = blockhash;
+            }
+            
+            // Verify all instructions have valid program IDs and accounts
+            for (const ix of transaction.instructions) {
+              if (!ix.programId) {
+                throw new Error('Instruction missing program ID');
+              }
+              for (const key of ix.keys) {
+                if (!key.pubkey) {
+                  throw new Error('Instruction account missing public key');
+                }
+              }
+            }
+            
+            // Transaction is already built cleanly from instruction, no need to recreate
+          }
+          
+          // Sign the transaction with the wallet
+          signedTransaction = await signTransaction(transaction);
+        } catch (signError: any) {
+          console.error('Error signing transaction:', signError);
+          console.error('Sign error details:', {
+            message: signError?.message,
+            name: signError?.name,
+            code: signError?.code,
+            stack: signError?.stack,
+          });
+          
+          // Check for common wallet errors
+          if (signError?.code === -32603) {
+            console.error('Wallet returned internal error. This might be due to:');
+            console.error('1. Network mismatch - ensure wallet is on the same network as the app');
+            console.error('2. Transaction structure issue - the wallet cannot parse the transaction');
+            console.error('3. Wallet extension bug - try updating or using a different wallet');
+            console.error('4. Invalid instruction data - check instruction format');
+          }
+          console.error('Transaction that failed to sign:', {
+            type: transaction?.constructor?.name,
+            isTransaction: transaction instanceof Transaction,
+            isVersionedTransaction: transaction instanceof VersionedTransaction,
+            hasRecentBlockhash: transaction instanceof Transaction ? !!transaction.recentBlockhash : 'N/A',
+            hasFeePayer: transaction instanceof Transaction ? !!transaction.feePayer : 'N/A',
+            instructionCount: transaction instanceof Transaction ? transaction.instructions?.length : 'N/A',
+          });
+          throw new Error(
+            `Failed to sign transaction: ${signError?.message || 'Unexpected error from wallet'}. ` +
+            `This might be due to: transaction too large, invalid instruction, missing account, network mismatch, or insufficient funds.`
+          );
+        }
+        
+        if (!signedTransaction) {
+          throw new Error('Failed to sign transaction: signed transaction is undefined');
+        }
+        
+        // Send transaction - handle both Transaction and VersionedTransaction serialization
+        // Some wallets return objects that look like transactions but instanceof checks fail
+        // due to multiple versions of @solana/web3.js being loaded
+        let serialized: Uint8Array;
+        try {
+          // First priority: check if it has a serialize method (most reliable)
+          // This handles cases where the wallet returns a Transaction but instanceof fails
+          if (signedTransaction && typeof (signedTransaction as any).serialize === 'function') {
+            serialized = (signedTransaction as any).serialize();
+          } else if (signedTransaction instanceof VersionedTransaction) {
+            // Fallback: instanceof check for VersionedTransaction
+            if (!signedTransaction.message) {
+              throw new Error('VersionedTransaction message is undefined');
+            }
+            serialized = signedTransaction.serialize();
+          } else if (signedTransaction instanceof Transaction) {
+            // Fallback: instanceof check for Transaction
+            if (!signedTransaction.recentBlockhash) {
+              throw new Error('Transaction missing recentBlockhash');
+            }
+            if (!signedTransaction.feePayer) {
+              throw new Error('Transaction missing feePayer');
+            }
+            if (!signedTransaction.instructions || signedTransaction.instructions.length === 0) {
+              throw new Error('Transaction has no instructions');
+            }
+            serialized = signedTransaction.serialize();
+          } else {
+            // Last resort: wallet might have modified the original transaction in place
+            // Try using the original transaction (it should now be signed)
+            console.warn('Signed transaction does not have serialize method, trying original transaction:', {
+              signedTxType: typeof signedTransaction,
+              signedTxConstructor: (signedTransaction as any)?.constructor?.name,
+              originalTxType: typeof transaction,
+              originalTxConstructor: (transaction as any)?.constructor?.name,
+              originalHasSerialize: typeof (transaction as any)?.serialize === 'function',
+            });
+            
+            // Use the original transaction - wallets often modify it in place
+            if (transaction && typeof (transaction as any).serialize === 'function') {
+              serialized = (transaction as any).serialize();
+            } else {
+              throw new Error(
+                `Cannot serialize transaction: signed transaction type is ${typeof signedTransaction} ` +
+                `(${(signedTransaction as any)?.constructor?.name || 'unknown'}), ` +
+                `and original transaction ${transaction ? (typeof (transaction as any).serialize === 'function' ? 'has serialize' : 'does not have serialize method') : 'is undefined'}. ` +
+                `This might indicate the wallet did not properly sign the transaction.`
+              );
+            }
+          }
+        } catch (serializeError: any) {
+          console.error('Error serializing transaction:', serializeError);
+          console.error('Transaction type:', signedTransaction?.constructor?.name);
+          console.error('Transaction details:', {
+            isTransaction: signedTransaction instanceof Transaction,
+            isVersionedTransaction: signedTransaction instanceof VersionedTransaction,
+            hasRecentBlockhash: signedTransaction instanceof Transaction ? !!signedTransaction.recentBlockhash : 'N/A',
+            hasFeePayer: signedTransaction instanceof Transaction ? !!signedTransaction.feePayer : 'N/A',
+            instructionCount: signedTransaction instanceof Transaction ? signedTransaction.instructions?.length : 'N/A',
+          });
+          throw new Error(
+            `Failed to serialize transaction: ${serializeError?.message || 'Unknown error'}. ` +
+            `This usually means the transaction is not properly initialized.`
+          );
+        }
+        
+        if (!serialized || serialized.length === 0) {
+          throw new Error('Serialized transaction is empty');
+        }
+        
+        // Verify program exists before sending transaction
+        try {
+          const programInfo = await connection.getAccountInfo(programId);
+          if (!programInfo) {
+            const programIds = await getProgramIds();
+            throw new Error(
+              `Program ${programId.toBase58()} is not deployed on ${programIds.solanaCluster || 'the current network'}.\n\n` +
+              `Please deploy the program to ${programIds.solanaCluster || 'devnet'} first, or switch to a network where it is deployed.\n\n` +
+              `Network: ${programIds.solanaCluster || 'devnet'}\n` +
+              `RPC URL: ${programIds.solanaRpcUrl || 'https://api.devnet.solana.com'}`
+            );
+          }
+        } catch (programCheckError: any) {
+          // If it's our custom error, throw it
+          if (programCheckError.message?.includes('not deployed')) {
+            throw programCheckError;
+          }
+          // Otherwise, log and continue (might be network issue)
+          console.warn('Could not verify program existence:', programCheckError);
+        }
+        
+        const signature = await connection.sendRawTransaction(
+          serialized,
+          { skipPreflight: false }
+        );
+
+        // Wait for confirmation
+        await connection.confirmTransaction(signature, 'confirmed');
+
+        // Notify backend with wallet address
+        await projectsApi.publish(projectId, publicKey.toBase58());
+
+        return {
+          signature,
+          campaignPda: campaignPda.toBase58(),
+        };
+      } catch (err: any) {
+        // Log detailed error information
+        console.error('Error in initializeCampaign:', err);
+        console.error('Error stack:', err?.stack);
+        console.error('Error name:', err?.name);
+        console.error('Error message:', err?.message);
+        
+        // Check for program deployment error
+        if (err?.message?.includes('program that does not exist') || 
+            err?.message?.includes('not deployed') ||
+            err?.message?.includes('Attempt to load a program')) {
+          const programIds = await getProgramIds().catch(() => null);
+          const network = programIds?.solanaCluster || 'devnet';
+          const rpcUrl = programIds?.solanaRpcUrl || 'https://api.devnet.solana.com';
+          
+          const errorMessage = 
+            `Solana program is not deployed on ${network}.\n\n` +
+            `Program ID: ${programId.toBase58()}\n` +
+            `Network: ${network}\n` +
+            `RPC URL: ${rpcUrl}\n\n` +
+            `Please deploy the program to ${network} before creating campaigns.\n\n` +
+            `To deploy:\n` +
+            `1. Navigate to the 'sc' directory\n` +
+            `2. Run: anchor build\n` +
+            `3. Run: anchor deploy --provider.cluster ${network}`;
+          
+          setError(errorMessage);
+          throw new Error(errorMessage);
+        }
+        
+        // Check if it's the specific .size error
+        if (err?.message?.includes('size') || err?.stack?.includes('size')) {
+          console.error('This appears to be a serialization error. The transaction may not be properly initialized.');
+          console.error('This could be due to:');
+          console.error('1. IDL structure mismatch');
+          console.error('2. Account names not matching IDL');
+          console.error('3. Instruction data format issues');
+          console.error('4. Transaction not fully built');
+        }
+        
+        const errorMessage =
+          err.message || 'Failed to initialize campaign on-chain';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [publicKey, connected, wallet, signTransaction],
+  );
+
+  /**
+   * Contribute to a campaign
+   */
+  const contribute = useCallback(
+    async (
+      projectId: string,
+      campaignPda: string,
+      amount: number,
+    ): Promise<string> => {
+      if (!connected || !publicKey || !wallet) {
+        throw new Error('Wallet not connected');
+      }
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const campaignPubkey = new PublicKey(campaignPda);
+
+        // Get connection
+        const connection = await getConnection();
+        
+        // Get program ID
+        const programId = await getCampaignProgramId();
+
+        // Create Anchor provider from wallet
+        const anchorWallet = {
+          publicKey,
+          signTransaction: async (tx: Transaction | VersionedTransaction) => {
+            return await signTransaction(tx);
+          },
+          signAllTransactions: wallet.signAllTransactions 
+            ? async (txs: (Transaction | VersionedTransaction)[]) => {
+                return await wallet.signAllTransactions!(txs);
+              }
+            : undefined,
+        };
+
+        const provider = new anchor.AnchorProvider(
+          connection,
+          anchorWallet as any,
+          { commitment: 'confirmed' }
+        );
+
+        // Create a program instance for the provider
+        const program = {
+          provider,
+        };
+
+        // Build transaction
+        const transaction = await contributeTransaction(
+          publicKey,
+          campaignPubkey,
+          amount,
+          program,
+          connection,
+        );
+
+        // Get recent blockhash and set it on the transaction
+        const { blockhash } = await connection.getLatestBlockhash('confirmed');
+        
+        // Handle both Transaction and VersionedTransaction
+        if (transaction instanceof Transaction) {
+          transaction.recentBlockhash = blockhash;
+          transaction.feePayer = publicKey;
+        }
+        // For VersionedTransaction, the blockhash should already be set by Anchor
+
+        // Sign transaction
+        const signedTransaction = await signTransaction(transaction);
+        
+        // Send transaction - handle both Transaction and VersionedTransaction serialization
+        const serialized = signedTransaction instanceof VersionedTransaction
+          ? signedTransaction.serialize()
+          : signedTransaction.serialize();
+        
+        const signature = await connection.sendRawTransaction(
+          serialized,
+          { skipPreflight: false }
+        );
+
+        // Wait for confirmation
+        await connection.confirmTransaction(signature, 'confirmed');
+
+        // Notify backend with signature and wallet address
+        await projectsApi.contribute(
+          projectId,
+          amount,
+          publicKey.toBase58(),
+          signature,
+        );
+
+        return signature;
+      } catch (err: any) {
+        const errorMessage = err.message || 'Failed to contribute';
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [publicKey, connected, wallet, signTransaction],
+  );
+
+  /**
+   * Fetch campaign data from chain
+   */
+  const fetchCampaign = useCallback(
+    async (campaignPda: string): Promise<any> => {
+      try {
+        const campaignPubkey = new PublicKey(campaignPda);
+        const connection = await getConnection();
+        
+        // Get program ID
+        const programId = await getCampaignProgramId();
+
+        // Create a minimal program instance for fetching
+        const anchorWallet = {
+          publicKey: PublicKey.default,
+          signTransaction: async (tx: Transaction | VersionedTransaction) => tx,
+          signAllTransactions: undefined,
+        };
+
+        const provider = new anchor.AnchorProvider(
+          connection,
+          anchorWallet as any,
+          { commitment: 'confirmed' }
+        );
+
+        const program = {
+          provider,
+        };
+
+        return await getCampaign(campaignPubkey, connection, program);
+      } catch (err: any) {
+        throw new Error(err.message || 'Failed to fetch campaign');
+      }
+    },
+    [],
+  );
+
+  return {
+    initializeCampaign,
+    contribute,
+    fetchCampaign,
+    isLoading,
+    error,
+  };
+}
+
