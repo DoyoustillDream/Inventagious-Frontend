@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   // SEO Optimizations
@@ -9,7 +10,37 @@ const nextConfig: NextConfig = {
   // No need for explicit env section - it can cause issues if values are undefined at config load time
 
   // Webpack configuration for Solana/Anchor dependencies (when using webpack)
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    // Memory optimizations for build process
+    if (!dev) {
+      // Optimize memory usage during production builds
+      config.optimization = {
+        ...config.optimization,
+        // Reduce memory usage by limiting parallel processing
+        moduleIds: 'deterministic',
+        // Split chunks more aggressively to reduce memory pressure
+        splitChunks: {
+          ...(config.optimization?.splitChunks || {}),
+          maxInitialRequests: 25,
+          minSize: 20000,
+        },
+      };
+
+      // Limit worker pool size to reduce memory usage
+      // Next.js 16 may use SWC minifier, but we check for TerserPlugin as fallback
+      if (config.plugins) {
+        const terserPlugin = config.plugins.find(
+          (plugin: any) => plugin?.constructor?.name === 'TerserPlugin'
+        );
+        if (terserPlugin && terserPlugin.options) {
+          terserPlugin.options = {
+            ...terserPlugin.options,
+            parallel: 2, // Limit parallel workers to reduce memory usage
+          };
+        }
+      }
+    }
+
     if (!isServer) {
       // For client-side, we need to handle Node.js modules
       config.resolve.fallback = {
@@ -34,6 +65,10 @@ const nextConfig: NextConfig = {
   // Turbopack configuration for Next.js 16
   // Turbopack handles Node.js polyfills automatically, but we can add custom config if needed
   turbopack: {
+    // Set root directory to silence the multiple lockfiles warning
+    // This tells Turbopack that the frontend directory is the workspace root
+    // Resolve to absolute path to ensure Turbopack finds the Next.js package correctly
+    root: path.resolve(process.cwd()),
     resolveAlias: {
       // Turbopack automatically handles Node.js polyfills, but we can add aliases if needed
     },

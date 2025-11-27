@@ -80,6 +80,8 @@ The Inventagious Frontend is a cutting-edge web application built with Next.js 1
   - Wallet Adapter React 0.15.39
 - **Testing**: Jest, React Testing Library
 - **Code Quality**: ESLint
+- **Build Tool**: Webpack (configured for Solana dependencies)
+- **Package Manager**: npm/yarn (with workspace configuration via .npmrc)
 
 ## 📦 Prerequisites
 
@@ -112,6 +114,8 @@ Or using yarn:
 ```bash
 yarn install
 ```
+
+**Note:** The project includes an `.npmrc` file to prevent React dependency hoisting in monorepo setups. This ensures the frontend uses its own React 19 installation and avoids version conflicts.
 
 ### 3. Environment Setup
 
@@ -222,11 +226,27 @@ npm run build
 yarn build
 ```
 
+**Build Configuration:**
+- Uses webpack for Solana/Anchor dependency handling
+- Memory optimization: 4GB heap size for standard builds (`--max-old-space-size=4096`)
+- Production builds: 6GB heap size (`build:prod` script with `--max-old-space-size=6144`)
+- Optimized chunk splitting and parallel processing limits to prevent memory issues
+- Node.js polyfills configured for browser compatibility
+
 2. Start the production server:
 ```bash
 npm run start
 # or
 yarn start
+```
+
+**Note:** If you encounter build lock errors, remove the `.next` directory:
+```bash
+# Windows PowerShell
+Remove-Item -Recurse -Force .next
+
+# Linux/Mac
+rm -rf .next
 ```
 
 ### Port Configuration
