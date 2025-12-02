@@ -1,14 +1,8 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { authApi } from '@/lib/api/auth';
+import { createContext, useContext, useEffect, useState, useRef, useCallback, ReactNode } from 'react';
+import { authApi, AuthUser } from '@/lib/api/auth';
 import { apiClient } from '@/lib/api/client';
-
-interface AuthUser {
-  id: string;
-  email?: string;
-  walletAddress?: string;
-}
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -35,9 +29,13 @@ interface AuthProviderProps {
 export default function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const initRef = useRef(false);
 
   // Initialize auth state on mount
   useEffect(() => {
+    if (initRef.current) return;
+    initRef.current = true;
+
     const initializeAuth = async () => {
       try {
         const token = apiClient.getToken();
@@ -66,16 +64,29 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     initializeAuth();
   }, []);
 
-  const logout = () => {
+  // Enhanced setUser that also validates token
+  const setUserWithValidation = useCallback((newUser: AuthUser | null) => {
+    setUser(newUser);
+    // If setting user, ensure token exists
+    if (newUser && !apiClient.getToken()) {
+      console.warn('Setting user but no token found');
+    }
+    // If clearing user, clear token
+    if (!newUser) {
+      apiClient.clearToken();
+    }
+  }, []);
+
+  const logout = useCallback(() => {
     apiClient.clearToken();
     setUser(null);
-  };
+  }, []);
 
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
     isLoading,
-    setUser,
+    setUser: setUserWithValidation,
     logout,
   };
 

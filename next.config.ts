@@ -65,9 +65,10 @@ const nextConfig: NextConfig = {
   // Turbopack configuration for Next.js 16
   // Turbopack handles Node.js polyfills automatically, but we can add custom config if needed
   turbopack: {
-    // Set root directory to silence the multiple lockfiles warning
+    // Set root directory explicitly to the frontend directory
     // This tells Turbopack that the frontend directory is the workspace root
-    // Resolve to absolute path to ensure Turbopack finds the Next.js package correctly
+    // Use absolute path resolution to ensure Turbopack finds the Next.js package correctly
+    // When running from frontend/, process.cwd() should be the frontend directory
     root: path.resolve(process.cwd()),
     resolveAlias: {
       // Turbopack automatically handles Node.js polyfills, but we can add aliases if needed
@@ -80,12 +81,22 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
-    // Allow images from Supabase Storage
+    // Allow images from Supabase Storage, Moddio, and Solana
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '**.supabase.co',
         pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.modd.io',
+        pathname: '/_next/static/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'solana.com',
+        pathname: '/_next/**',
       },
     ],
   },

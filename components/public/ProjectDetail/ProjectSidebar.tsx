@@ -6,6 +6,7 @@ import CircularProgress from './CircularProgress';
 import DonationsList from './DonationsList';
 import ContributeModal from './ContributeModal';
 import { solToUsd } from '@/lib/solana/price';
+import { useToast } from '@/components/shared/Toast';
 
 interface ProjectSidebarProps {
   project: Project;
@@ -15,6 +16,7 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
   const [usdRaised, setUsdRaised] = useState<number | null>(null);
   const [usdGoal, setUsdGoal] = useState<number | null>(null);
+  const { showSuccess } = useToast();
   const progress = (project.amountRaised / project.fundingGoal) * 100;
 
   // Convert SOL to USD for display
@@ -51,7 +53,7 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
+      showSuccess('Link copied to clipboard!');
     }
   };
 
@@ -158,6 +160,7 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
           projectId={project.id}
           campaignPda={project.solanaAddress}
           fundingGoal={project.fundingGoal}
+          isOnChain={project.isOnChain ?? false}
           isOpen={isContributeModalOpen}
           onClose={() => setIsContributeModalOpen(false)}
           onSuccess={handleContributeSuccess}

@@ -47,7 +47,7 @@ export function useWallet(): UseWalletReturn {
     };
   }, []);
 
-  // Check for existing connection on mount
+  // Check for existing connection on mount and listen for changes
   useEffect(() => {
     const checkExistingConnection = async () => {
       if (typeof window !== 'undefined') {
@@ -55,31 +55,135 @@ export function useWallet(): UseWalletReturn {
         await new Promise(resolve => setTimeout(resolve, 100));
         
         // Check Phantom
-        if ((window as any).phantom?.solana?.isConnected) {
-          const phantomWallet = createDirectWalletFromProvider('Phantom', (window as any).phantom.solana);
-          setWallet(phantomWallet);
-          setPublicKey(phantomWallet.publicKey);
-          setConnected(phantomWallet.connected);
+        if ((window as any).phantom?.solana) {
+          const phantomProvider = (window as any).phantom.solana;
+          const checkPhantomConnection = () => {
+            if (phantomProvider.isConnected && phantomProvider.publicKey) {
+              const phantomWallet = createDirectWalletFromProvider('Phantom', phantomProvider);
+              setWallet(phantomWallet);
+              setPublicKey(phantomWallet.publicKey);
+              setConnected(true);
+            } else {
+              setWallet(null);
+              setPublicKey(null);
+              setConnected(false);
+            }
+          };
+          
+          checkPhantomConnection();
+          
+          // Listen for Phantom connection changes
+          if (phantomProvider.on) {
+            phantomProvider.on('connect', checkPhantomConnection);
+            phantomProvider.on('disconnect', checkPhantomConnection);
+            phantomProvider.on('accountChanged', checkPhantomConnection);
+          }
         }
         // Check Solflare
-        else if ((window as any).solflare?.isConnected) {
-          const solflareWallet = createDirectWalletFromProvider('Solflare', (window as any).solflare);
-          setWallet(solflareWallet);
-          setPublicKey(solflareWallet.publicKey);
-          setConnected(solflareWallet.connected);
+        else if ((window as any).solflare) {
+          const solflareProvider = (window as any).solflare;
+          const checkSolflareConnection = () => {
+            if (solflareProvider.isConnected && solflareProvider.publicKey) {
+              const solflareWallet = createDirectWalletFromProvider('Solflare', solflareProvider);
+              setWallet(solflareWallet);
+              setPublicKey(solflareWallet.publicKey);
+              setConnected(true);
+            } else {
+              setWallet(null);
+              setPublicKey(null);
+              setConnected(false);
+            }
+          };
+          
+          checkSolflareConnection();
+          
+          // Listen for Solflare connection changes
+          if (solflareProvider.on) {
+            solflareProvider.on('connect', checkSolflareConnection);
+            solflareProvider.on('disconnect', checkSolflareConnection);
+            solflareProvider.on('accountChanged', checkSolflareConnection);
+          }
         }
         // Check Backpack
-        else if ((window as any).backpack?.isConnected) {
-          const backpackWallet = createDirectWalletFromProvider('Backpack', (window as any).backpack);
-          setWallet(backpackWallet);
-          setPublicKey(backpackWallet.publicKey);
-          setConnected(backpackWallet.connected);
+        else if ((window as any).backpack) {
+          const backpackProvider = (window as any).backpack;
+          const checkBackpackConnection = () => {
+            if (backpackProvider.isConnected && backpackProvider.publicKey) {
+              const backpackWallet = createDirectWalletFromProvider('Backpack', backpackProvider);
+              setWallet(backpackWallet);
+              setPublicKey(backpackWallet.publicKey);
+              setConnected(true);
+            } else {
+              setWallet(null);
+              setPublicKey(null);
+              setConnected(false);
+            }
+          };
+          
+          checkBackpackConnection();
+          
+          // Listen for Backpack connection changes
+          if (backpackProvider.on) {
+            backpackProvider.on('connect', checkBackpackConnection);
+            backpackProvider.on('disconnect', checkBackpackConnection);
+            backpackProvider.on('accountChanged', checkBackpackConnection);
+          }
         }
       }
       setIsLoading(false); // Mark as done loading
     };
+    
     checkExistingConnection();
-  }, []);
+    
+    // Also check periodically in case wallet connects after initial check
+    const interval = setInterval(() => {
+      if (typeof window !== 'undefined') {
+        // Re-check connection status for all wallets
+        if ((window as any).phantom?.solana) {
+          const phantomProvider = (window as any).phantom.solana;
+          const isConnected = phantomProvider.isConnected && phantomProvider.publicKey;
+          if (isConnected && !connected) {
+            const phantomWallet = createDirectWalletFromProvider('Phantom', phantomProvider);
+            setWallet(phantomWallet);
+            setPublicKey(phantomWallet.publicKey);
+            setConnected(true);
+          } else if (!isConnected && connected && wallet?.name === 'Phantom') {
+            setWallet(null);
+            setPublicKey(null);
+            setConnected(false);
+          }
+        } else if ((window as any).solflare) {
+          const solflareProvider = (window as any).solflare;
+          const isConnected = solflareProvider.isConnected && solflareProvider.publicKey;
+          if (isConnected && !connected) {
+            const solflareWallet = createDirectWalletFromProvider('Solflare', solflareProvider);
+            setWallet(solflareWallet);
+            setPublicKey(solflareWallet.publicKey);
+            setConnected(true);
+          } else if (!isConnected && connected && wallet?.name === 'Solflare') {
+            setWallet(null);
+            setPublicKey(null);
+            setConnected(false);
+          }
+        } else if ((window as any).backpack) {
+          const backpackProvider = (window as any).backpack;
+          const isConnected = backpackProvider.isConnected && backpackProvider.publicKey;
+          if (isConnected && !connected) {
+            const backpackWallet = createDirectWalletFromProvider('Backpack', backpackProvider);
+            setWallet(backpackWallet);
+            setPublicKey(backpackWallet.publicKey);
+            setConnected(true);
+          } else if (!isConnected && connected && wallet?.name === 'Backpack') {
+            setWallet(null);
+            setPublicKey(null);
+            setConnected(false);
+          }
+        }
+      }
+    }, 500); // Check every 500ms
+    
+    return () => clearInterval(interval);
+  }, [connected, wallet]);
 
   const connect = useCallback(async (walletName?: string) => {
     setConnecting(true);
@@ -172,34 +276,33 @@ export function useWallet(): UseWalletReturn {
  * Helper to create wallet from provider (for existing connections)
  */
 function createDirectWalletFromProvider(name: string, provider: any): Wallet {
-  let publicKey: PublicKey | null = null;
-  let connected = false;
-
-  if (provider.publicKey) {
-    publicKey = new PublicKey(provider.publicKey);
-    connected = provider.isConnected || false;
-  }
-
   return {
     name,
     icon: provider.icon,
     get publicKey() {
-      return publicKey;
+      // Always check current state from provider
+      if (provider.publicKey) {
+        try {
+          return new PublicKey(provider.publicKey);
+        } catch {
+          return null;
+        }
+      }
+      return null;
     },
     get connected() {
-      return connected;
+      // Always check current state from provider
+      return provider.isConnected === true && !!provider.publicKey;
     },
     async connect() {
       const response = await provider.connect();
       if (response?.publicKey) {
-        publicKey = new PublicKey(response.publicKey);
-        connected = true;
+        // State will be updated via getters
       }
     },
     async disconnect() {
       await provider.disconnect();
-      publicKey = null;
-      connected = false;
+      // State will be updated via getters
     },
     async signTransaction(transaction: Transaction | VersionedTransaction) {
       return await provider.signTransaction(transaction);

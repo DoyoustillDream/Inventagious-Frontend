@@ -17,11 +17,23 @@ export const metadata: Metadata = {
     description: 'Discover trending and featured projects on Inventagious. Explore the most innovative crowdfunding and private funding projects from inventors and innovators worldwide.',
     url: `${siteConfig.url}/projects/featured`,
     type: 'website',
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Featured Projects - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Featured Projects - Inventagious',
     description: 'Discover trending and featured projects on Inventagious.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

@@ -17,11 +17,23 @@ export const metadata: Metadata = {
     description: 'Discover private funding opportunities on Inventagious. Connect inventors with investors for exclusive deals on Solana blockchain.',
     url: `${siteConfig.url}/deals`,
     type: 'website',
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Private Funding Deals - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Private Funding Deals - Inventagious',
     description: 'Discover private funding opportunities on Inventagious.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

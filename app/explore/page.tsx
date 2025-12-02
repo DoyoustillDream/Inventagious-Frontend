@@ -18,11 +18,23 @@ export const metadata: Metadata = {
     description: 'Explore innovative crowdfunding and private funding projects on Inventagious. Discover groundbreaking ideas from inventors and innovators building on Solana blockchain.',
     url: `${siteConfig.url}/explore`,
     type: 'website',
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Explore - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Explore - Inventagious',
     description: 'Explore innovative crowdfunding and private funding projects on Inventagious.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

@@ -12,6 +12,23 @@ export const metadata: Metadata = {
     title: 'Project Categories Guide - Find the Right Category | Inventagious',
     description: 'Learn about all project categories on Inventagious. Find the perfect category for your Web3, Solana, hardware, software, or innovation project.',
     url: `${siteConfig.url}/help/categories`,
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Project Categories Guide - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Project Categories Guide - Find the Right Category | Inventagious',
+    description: 'Learn about all project categories on Inventagious.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

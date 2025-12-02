@@ -12,6 +12,23 @@ export const metadata: Metadata = {
     title: 'How to Start a Project - Step-by-Step Guide | Inventagious',
     description: 'Learn how to launch your project on Inventagious. Complete step-by-step guide covering everything from account setup to project launch and fundraising.',
     url: `${siteConfig.url}/help/start-project`,
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'How to Start a Project - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'How to Start a Project - Step-by-Step Guide | Inventagious',
+    description: 'Learn how to launch your project on Inventagious.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { projectsApi, CreateProjectData } from '@/lib/api/projects';
-import { useCampaign } from '@/lib/solana/hooks/useCampaign';
 import { useWallet } from '@/hooks/useWallet';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
@@ -18,7 +17,6 @@ export default function CreateCampaignForm() {
   const { publicKey, connected } = useWallet();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { authenticateWallet } = useWalletAuth();
-  const { initializeCampaign, isLoading: isInitializing } = useCampaign();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,12 +109,6 @@ export default function CreateCampaignForm() {
       return;
     }
 
-    // Check if wallet is connected
-    if (!connected || !publicKey) {
-      setError('Please connect your wallet to create a campaign on-chain');
-      return;
-    }
-
     // Check if user is authenticated with backend
     if (!isAuthenticated) {
       setError('Please sign the authentication message with your wallet to continue. If you see a wallet popup, please approve it.');
@@ -140,38 +132,31 @@ export default function CreateCampaignForm() {
         isPublic: formData.isPublic ?? true,
       };
 
-      // Step 1: Create project in database first (we need the ID for the PDA)
+      // Step 1: Create project in database first
       const project = await projectsApi.create(submitData);
       
-      // Step 2: Initialize campaign on-chain using the project ID
-      // Calculate deadline: if not provided, set to max duration from now (default 30 days)
-      // Backend will validate and enforce max deadline duration
-      const deadline = formData.deadline
-        ? Math.floor(new Date(formData.deadline).getTime() / 1000)
-        : Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60; // Default to 30 days from now
-
+      // Step 2: Publish the campaign
+      // The backend will handle both on-chain and off-chain logic based on feature flags
+      // For off-chain: generates a campaign wallet and publishes without Solana transactions
+      // For on-chain: requires wallet connection and creates Solana transactions
       try {
-        // This will:
-        // 1. Create the campaign on-chain using the project ID
-        // 2. Call projectsApi.publish() which updates the project with the campaign PDA
-        await initializeCampaign(
+        await projectsApi.publish(
           project.id,
-          formData.fundingGoal,
-          deadline,
+          publicKey?.toBase58(), // Pass wallet address if connected (for on-chain mode)
         );
-      } catch (onChainError: any) {
-        console.error('Failed to create campaign on-chain:', onChainError);
+      } catch (publishError: any) {
+        console.error('Failed to publish campaign:', publishError);
         // Don't redirect - show error and let user try again
         // The project exists in database but is unpublished (draft state)
         setError(
-          `Failed to create campaign on-chain: ${onChainError.message}. ` +
-          'The project was created but not published. Please ensure your wallet is connected and has sufficient SOL, then try again from the project page.'
+          `Failed to publish campaign: ${publishError.message}. ` +
+          'The project was created but not published. Please try again from the project page.'
         );
         setIsSubmitting(false);
         return;
       }
       
-      // Redirect to the campaign page only if on-chain creation succeeded
+      // Redirect to the campaign page
       router.push(`/campaigns/${project.slug}`);
     } catch (err: any) {
       console.error('Error creating campaign:', err);
@@ -274,15 +259,6 @@ export default function CreateCampaignForm() {
           </div>
         )}
 
-        {!connected && (
-          <div className="mb-6 browser-window border-yellow-500 bg-yellow-50">
-            <div className="p-4">
-              <p className="hand-drawn text-base font-bold text-yellow-800">
-                ⚠️ Please connect your wallet to create a campaign on-chain
-              </p>
-            </div>
-          </div>
-        )}
 
         {connected && !isAuthenticated && !authLoading && (
           <div className="mb-6 browser-window border-yellow-500 bg-yellow-50">
@@ -377,14 +353,10 @@ export default function CreateCampaignForm() {
               </button>
               <button
                 type="submit"
-                disabled={isSubmitting || isInitializing}
+                disabled={isSubmitting}
                 className="hand-drawn border-4 border-black bg-black px-8 py-4 text-lg font-bold text-white transition-all hover:bg-yellow-400 hover:border-yellow-600 hover:text-black hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:hover:border-black disabled:hover:text-white disabled:hover:scale-100"
               >
-                {isSubmitting || isInitializing
-                  ? isInitializing
-                    ? 'Creating on-chain...'
-                    : 'Creating Campaign...'
-                  : 'Create Campaign'}
+                {isSubmitting ? 'Creating Campaign...' : 'Create Campaign'}
               </button>
             </>
           )}

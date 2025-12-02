@@ -14,6 +14,24 @@ export const metadata: Metadata = {
     description:
       'Learn about Inventagious platform guarantee: fund protection through Solana escrow, 100% ownership protection, blockchain transparency, and enterprise-grade security.',
     url: `${siteConfig.url}/guarantee`,
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Platform Guarantee - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Platform Guarantee - Fund & Ownership Protection | Inventagious',
+    description:
+      'Learn about Inventagious platform guarantee: fund protection through Solana escrow, 100% ownership protection, blockchain transparency, and enterprise-grade security.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

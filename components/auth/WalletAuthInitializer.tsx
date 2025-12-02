@@ -1,6 +1,7 @@
 'use client';
 
 import { useWalletAuth } from '@/hooks/useWalletAuth';
+import WalletAuthProfileForm from '@/components/auth/WalletAuthProfileForm';
 
 /**
  * Component to initialize wallet authentication
@@ -9,6 +10,8 @@ import { useWalletAuth } from '@/hooks/useWalletAuth';
 export default function WalletAuthInitializer() {
   // This hook automatically handles wallet authentication
   useWalletAuth();
-  return null;
+  
+  // Render profile completion form when needed
+  return <WalletAuthProfileForm />;
 }
 

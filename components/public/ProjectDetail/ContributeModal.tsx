@@ -3,11 +3,14 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useCampaign } from '@/lib/solana/hooks/useCampaign';
 import { usdToSol } from '@/lib/solana/price';
+import { useWallet } from '@/hooks/useWallet';
+import { useToast } from '@/components/shared/Toast';
 
 interface ContributeModalProps {
   projectId: string;
-  campaignPda?: string;
+  campaignPda?: string; // Optional - for backward compatibility with on-chain projects
   fundingGoal: number;
+  isOnChain?: boolean; // Whether project uses on-chain smart contracts
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -17,6 +20,7 @@ export default function ContributeModal({
   projectId,
   campaignPda,
   fundingGoal,
+  isOnChain = false,
   isOpen,
   onClose,
   onSuccess,
@@ -26,7 +30,15 @@ export default function ContributeModal({
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
   const { contribute, isLoading, error } = useCampaign();
-  const connected = false; // No SDK - always false
+  const { connected, publicKey, isLoading: walletLoading } = useWallet();
+  const { showError, showWarning, showSuccess } = useToast();
+
+  // Debug: Log wallet connection status
+  useEffect(() => {
+    if (isOpen) {
+      console.log('ContributeModal - Wallet status:', { connected, publicKey: publicKey?.toBase58(), walletLoading });
+    }
+  }, [isOpen, connected, publicKey, walletLoading]);
 
   // Convert USD to SOL when USD amount changes
   useEffect(() => {
@@ -59,34 +71,36 @@ export default function ContributeModal({
     e.preventDefault();
     
     if (!connected) {
-      alert('Please connect your wallet to contribute');
+      showWarning('Please connect your wallet to contribute');
       return;
     }
 
-    if (!campaignPda) {
-      alert('Campaign not initialized on-chain yet');
+    // For on-chain projects, campaignPda is required
+    if (isOnChain && !campaignPda) {
+      showError('Campaign not initialized on-chain yet');
       return;
     }
 
     if (solAmount <= 0 || priceError) {
-      alert('Please enter a valid USD amount');
+      showWarning('Please enter a valid USD amount');
       return;
     }
 
     if (solAmount < 0.1) {
-      alert('Minimum contribution is 0.1 SOL');
+      showWarning('Minimum contribution is 0.1 SOL');
       return;
     }
 
     try {
-      await contribute(projectId, campaignPda, solAmount);
+      await contribute(projectId, campaignPda || undefined, solAmount, isOnChain);
       setUsdAmount('');
       setSolAmount(0);
+      showSuccess('Contribution successful!');
       onSuccess();
       onClose();
     } catch (err: any) {
       console.error('Contribution failed:', err);
-      alert(err.message || 'Failed to contribute');
+      showError(err.message || 'Failed to contribute');
     }
   };
 
@@ -125,7 +139,7 @@ export default function ContributeModal({
                 min="0.01"
                 value={usdAmount}
                 onChange={(e) => setUsdAmount(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-black rounded-lg hand-drawn"
+                className="w-full px-4 py-2 border-2 border-black rounded-lg hand-drawn text-black bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 placeholder="0.00"
                 required
                 disabled={isLoading || isLoadingPrice}
@@ -145,16 +159,16 @@ export default function ContributeModal({
 
             {solAmount > 0 && (
               <div className="mb-4 p-4 bg-gray-50 border-2 border-black rounded-lg">
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2 text-sm text-black">
                   <div className="flex justify-between">
-                    <span className="font-semibold">Contribution:</span>
-                    <span>{solAmount.toFixed(4)} SOL</span>
+                    <span className="font-semibold text-black">Contribution:</span>
+                    <span className="text-black">{solAmount.toFixed(4)} SOL</span>
                   </div>
                   <div className="flex justify-between text-gray-800">
                     <span>Platform Fee (1.9%):</span>
                     <span>-{platformFee.toFixed(4)} SOL</span>
                   </div>
-                  <div className="flex justify-between font-bold border-t-2 border-black pt-2">
+                  <div className="flex justify-between font-bold border-t-2 border-black pt-2 text-black">
                     <span>Net Amount:</span>
                     <span>{netAmount.toFixed(4)} SOL</span>
                   </div>
@@ -168,9 +182,14 @@ export default function ContributeModal({
               </div>
             )}
 
-            {!connected && (
+            {!walletLoading && !connected && (
               <div className="mb-4 p-3 bg-yellow-50 border-2 border-yellow-500 rounded-lg text-sm text-yellow-700">
                 Please connect your wallet to contribute
+              </div>
+            )}
+            {walletLoading && (
+              <div className="mb-4 p-3 bg-blue-50 border-2 border-blue-500 rounded-lg text-sm text-blue-700">
+                Checking wallet connection...
               </div>
             )}
 

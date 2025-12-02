@@ -8,6 +8,7 @@ export interface LoginCredentials {
 export interface RegisterData {
   email: string;
   password: string;
+  fullName: string;
 }
 
 export interface WalletConnectData {
@@ -20,11 +21,24 @@ export interface AuthUser {
   id: string;
   email?: string;
   walletAddress?: string;
+  fullName?: string;
 }
 
 export interface AuthResponse {
   access_token: string;
   user: AuthUser;
+  requiresProfileCompletion?: boolean;
+  walletAddress?: string;
+}
+
+export interface CompleteWalletProfileData {
+  fullName: string;
+  email: string;
+}
+
+export interface ProfileStatus {
+  isComplete: boolean;
+  missingFields: string[];
 }
 
 export const authApi = {
@@ -54,6 +68,18 @@ export const authApi = {
 
   getProfile: async (): Promise<AuthUser> => {
     return apiClient.get<AuthUser>('/auth/profile');
+  },
+
+  completeWalletProfile: async (data: CompleteWalletProfileData): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/wallet/complete-profile', data);
+    if (response.access_token) {
+      apiClient.setToken(response.access_token);
+    }
+    return response;
+  },
+
+  getProfileStatus: async (): Promise<ProfileStatus> => {
+    return apiClient.get<ProfileStatus>('/auth/profile/status');
   },
 
   logout: () => {

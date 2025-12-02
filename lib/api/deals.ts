@@ -8,10 +8,16 @@ export interface Deal {
   netAmount: number;
   platformFee: number;
   status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled';
+  escrowStatus?: 'pending' | 'funded' | 'released' | 'completed' | 'cancelled';
+  escrowBalance?: number;
+  escrowWallet?: string; // Keep for backward compatibility
+  dealWalletAddress?: string; // Unique wallet for this deal
+  isOnChain?: boolean;
   message?: string;
   terms?: string;
   proposedDeadline?: string;
   solanaAddress?: string;
+  transactionSignature?: string;
   createdAt: string;
   updatedAt: string;
   acceptedAt?: string;
@@ -70,6 +76,12 @@ export const dealsApi = {
     if (role) params.append('role', role);
     const query = params.toString();
     return apiClient.put<Deal>(`/deals/${id}${query ? `?${query}` : ''}`, data);
+  },
+
+  releaseFunds: async (id: string, amount: number): Promise<Deal & { releaseTransactionSignature?: string }> => {
+    return apiClient.post<Deal & { releaseTransactionSignature?: string }>(`/deals/${id}/release-funds`, {
+      amount,
+    });
   },
 
   complete: async (

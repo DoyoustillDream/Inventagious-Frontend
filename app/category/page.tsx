@@ -15,11 +15,23 @@ export const metadata: Metadata = {
     description: 'Browse innovative projects by category on Inventagious. Discover Web3, Solana, hardware, software, and more groundbreaking projects from inventors and innovators worldwide.',
     url: `${siteConfig.url}/category`,
     type: 'website',
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Categories - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Categories - Inventagious',
     description: 'Browse innovative projects by category on Inventagious. Discover Web3, Solana, hardware, software, and more groundbreaking projects from inventors and innovators worldwide.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

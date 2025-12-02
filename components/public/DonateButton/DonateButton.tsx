@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { usdToSol } from '@/lib/solana/price';
+import { useToast } from '@/components/shared/Toast';
 
 interface DonateButtonProps {
   projectId: string;
@@ -15,6 +16,7 @@ export default function DonateButton({ projectId, onDonate }: DonateButtonProps)
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
+  const { showWarning, showSuccess, showError } = useToast();
 
   // Convert USD to SOL when USD amount changes
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function DonateButton({ projectId, onDonate }: DonateButtonProps)
     e.preventDefault();
     
     if (solAmount <= 0 || priceError) {
-      alert('Please enter a valid USD amount');
+      showWarning('Please enter a valid USD amount');
       return;
     }
 
@@ -55,9 +57,11 @@ export default function DonateButton({ projectId, onDonate }: DonateButtonProps)
       await onDonate(solAmount);
       setUsdAmount('');
       setSolAmount(0);
+      showSuccess('Donation successful!');
       setIsOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error donating:', error);
+      showError(error?.message || 'Failed to donate');
     } finally {
       setIsSubmitting(false);
     }

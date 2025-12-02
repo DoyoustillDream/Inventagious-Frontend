@@ -14,6 +14,24 @@ export const metadata: Metadata = {
     description:
       'Get support and find answers to common questions about Inventagious. Browse help guides, FAQs, and learn how to use our crowdfunding and private funding platform.',
     url: `${siteConfig.url}/help`,
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Help Center - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Help Center - Get Support & Answers | Inventagious',
+    description:
+      'Get support and find answers to common questions about Inventagious.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

@@ -13,6 +13,7 @@ import AuthProvider from "@/components/auth/AuthProvider";
 import WalletAuthInitializer from "@/components/auth/WalletAuthInitializer";
 import ProgramIdsInitializer from "@/components/solana/ProgramIdsInitializer";
 import AnalyticsInitializer from "@/components/analytics/AnalyticsInitializer";
+import { ToastProvider } from "@/components/shared/Toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,14 +54,16 @@ export default function RootLayout({
       >
         <WalletProvider>
           <AuthProvider>
-            <AnalyticsInitializer />
-            <WalletAuthInitializer />
-            <ProgramIdsInitializer />
-            <OrganizationSchema />
-            <WebsiteSchema />
-            <SoftwareApplicationSchema />
-            <FinancialProductSchema />
-            {children}
+            <ToastProvider>
+              <AnalyticsInitializer />
+              <WalletAuthInitializer />
+              <ProgramIdsInitializer />
+              <OrganizationSchema />
+              <WebsiteSchema />
+              <SoftwareApplicationSchema />
+              <FinancialProductSchema />
+              {children}
+            </ToastProvider>
           </AuthProvider>
         </WalletProvider>
       </body>

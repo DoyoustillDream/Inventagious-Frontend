@@ -34,8 +34,15 @@ export default function DealCardWithIntegration({
       return;
     }
 
-    if (!deal.solanaAddress || !inventorWalletAddress) {
-      setError('Deal not initialized on-chain or inventor wallet not found');
+    // For on-chain deals, solanaAddress is required
+    // For off-chain deals, we only need inventorWalletAddress and deal amount
+    if (deal.isOnChain && !deal.solanaAddress) {
+      setError('Deal not initialized on-chain');
+      return;
+    }
+    
+    if (!inventorWalletAddress) {
+      setError('Inventor wallet address not found');
       return;
     }
 
@@ -43,7 +50,12 @@ export default function DealCardWithIntegration({
     setError(null);
 
     try {
-      await acceptDeal(deal.id, deal.solanaAddress, inventorWalletAddress);
+      await acceptDeal(
+        deal.id, 
+        deal.solanaAddress || undefined, 
+        inventorWalletAddress,
+        deal.amount, // Pass deal amount for off-chain transfers
+      );
       if (onUpdate) onUpdate();
     } catch (err: any) {
       setError(err.message || 'Failed to accept deal');

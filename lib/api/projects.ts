@@ -30,6 +30,8 @@ export interface Project {
   videoUrl?: string;
   deadline?: string;
   solanaAddress?: string;
+  isOnChain?: boolean;
+  campaignWalletAddress?: string; // Unique wallet for this campaign
   donations?: Donation[];
   contributions?: Contribution[];
   createdAt: string;
@@ -170,6 +172,14 @@ export const projectsApi = {
     return apiClient.put<Milestone>(
       `/projects/${id}/milestones/${milestoneId}`,
       data,
+    );
+  },
+
+  releaseFunds: async (
+    id: string,
+  ): Promise<Project & { releaseTransactionSignature?: string; amountReleased?: number }> => {
+    return apiClient.post<Project & { releaseTransactionSignature?: string; amountReleased?: number }>(
+      `/projects/${id}/release-funds`,
     );
   },
 };

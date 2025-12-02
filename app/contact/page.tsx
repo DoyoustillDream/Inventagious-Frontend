@@ -14,6 +14,24 @@ export const metadata: Metadata = {
     description:
       'Contact Inventagious support team. Get help with your projects, campaigns, or questions. Email support@inventagious.com or visit our help center.',
     url: `${siteConfig.url}/contact`,
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Contact Us - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact Us - Get Support | Inventagious',
+    description:
+      'Contact Inventagious support team. Get help with your projects, campaigns, or questions.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

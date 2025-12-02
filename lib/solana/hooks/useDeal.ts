@@ -90,12 +90,14 @@ export function useDeal() {
 
   /**
    * Accept a deal (inventor accepts, investor signs to transfer funds)
+   * Supports both on-chain smart contract and off-chain direct SOL transfers
    */
   const acceptDeal = useCallback(
     async (
       dealId: string,
-      dealPda: string,
+      dealPda: string | undefined,
       inventorWalletAddress: string,
+      dealAmount?: number, // Required for off-chain deals
     ): Promise<string> => {
       if (!wallet.publicKey || !wallet.sendTransaction) {
         throw new Error('Wallet not connected');
@@ -105,22 +107,76 @@ export function useDeal() {
       setError(null);
 
       try {
-        const dealPubkey = new PublicKey(dealPda);
-        const inventorPubkey = new PublicKey(inventorWalletAddress);
+        // Check if deal uses on-chain smart contracts
+        const useOnChain = dealPda && dealPda.length > 0 && program;
 
-        // Build transaction
-        const transaction = await acceptDealTransaction(
-          wallet.publicKey, // Investor must sign
-          inventorPubkey,
-          dealPubkey,
-          program,
+        if (useOnChain) {
+          // On-chain smart contract flow (existing logic)
+          try {
+            const dealPubkey = new PublicKey(dealPda);
+            const inventorPubkey = new PublicKey(inventorWalletAddress);
+
+            const transaction = await acceptDealTransaction(
+              wallet.publicKey,
+              inventorPubkey,
+              dealPubkey,
+              program,
+              connection,
+            );
+
+            const signature = await wallet.sendTransaction(transaction, connection);
+            await connection.confirmTransaction(signature, 'confirmed');
+
+            await dealsApi.update(
+              dealId,
+              {
+                status: 'accepted',
+                walletAddress: wallet.publicKey.toBase58(),
+                transactionSignature: signature,
+              },
+              'inventor',
+            );
+
+            return signature;
+          } catch (onChainError: any) {
+            // If on-chain fails, fall back to direct transfer
+            console.warn('On-chain deal acceptance failed, falling back to direct transfer:', onChainError);
+            // Continue to direct transfer flow below
+          }
+        }
+
+        // Off-chain: Direct SOL transfer flow
+        if (!dealAmount) {
+          throw new Error('Deal amount is required for off-chain deals');
+        }
+
+        // Get deal wallet address from backend (unique wallet for this deal)
+        // REQUIRED: Deal must have its own wallet (no fallback to platform wallet)
+        let escrowWallet: string;
+        try {
+          const dealWalletResponse = await fetch(`/api/solana/deal-wallet/${dealId}`);
+          if (!dealWalletResponse.ok) {
+            throw new Error('Deal wallet not found. Deal must be created before funds can be sent.');
+          }
+          const data = await dealWalletResponse.json();
+          escrowWallet = data.walletAddress;
+        } catch (error: any) {
+          throw new Error(`Failed to get deal wallet: ${error?.message || 'Unknown error'}`);
+        }
+
+        // Import direct transfer utilities
+        const { createDirectSOLTransfer } = await import('../direct-transfer');
+
+        // Create direct SOL transfer to escrow wallet
+        const transaction = await createDirectSOLTransfer(
+          wallet.publicKey,
+          new PublicKey(escrowWallet),
+          dealAmount,
           connection,
         );
 
-        // Send transaction
+        // Sign and send transaction
         const signature = await wallet.sendTransaction(transaction, connection);
-
-        // Wait for confirmation
         await connection.confirmTransaction(signature, 'confirmed');
 
         // Notify backend with signature
@@ -252,44 +308,25 @@ export function useDeal() {
 
   /**
    * Release milestone funds
+   * AUTOMATIC: Backend sends SOL from platform wallet to inventor
    */
   const releaseMilestone = useCallback(
     async (
       dealId: string,
-      dealPda: string,
-      inventorWalletAddress: string,
-      milestoneIndex: number,
       amount: number,
     ): Promise<string> => {
-      if (!wallet.publicKey || !wallet.sendTransaction) {
-        throw new Error('Wallet not connected');
-      }
-
       setIsLoading(true);
       setError(null);
 
       try {
-        const dealPubkey = new PublicKey(dealPda);
-        const inventorPubkey = new PublicKey(inventorWalletAddress);
+        // Backend automatically sends SOL from platform wallet
+        const result = await dealsApi.releaseFunds(dealId, amount);
+        
+        if (!result.releaseTransactionSignature) {
+          throw new Error('Transaction signature not returned from backend');
+        }
 
-        // Build transaction
-        const transaction = await releaseMilestoneTransaction(
-          wallet.publicKey,
-          inventorPubkey,
-          dealPubkey,
-          milestoneIndex,
-          amount,
-          program,
-          connection,
-        );
-
-        // Send transaction
-        const signature = await wallet.sendTransaction(transaction, connection);
-
-        // Wait for confirmation
-        await connection.confirmTransaction(signature, 'confirmed');
-
-        return signature;
+        return result.releaseTransactionSignature;
       } catch (err: any) {
         const errorMessage = err.message || 'Failed to release milestone';
         setError(errorMessage);
@@ -298,7 +335,7 @@ export function useDeal() {
         setIsLoading(false);
       }
     },
-    [wallet, connection, program],
+    [],
   );
 
   /**

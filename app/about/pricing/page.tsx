@@ -14,6 +14,24 @@ export const metadata: Metadata = {
     description:
       'Transparent pricing for Inventagious. 1.9% platform fee, zero equity required, no hidden fees. See exactly what you will pay when you fundraise.',
     url: `${siteConfig.url}/about/pricing`,
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Pricing - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pricing - Transparent Fees | Inventagious',
+    description:
+      'Transparent pricing for Inventagious. 1.9% platform fee, zero equity required, no hidden fees.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

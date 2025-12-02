@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js';
+import { PublicKey, Transaction, VersionedTransaction, Connection } from '@solana/web3.js';
 import * as anchor from '@coral-xyz/anchor';
 import { useWallet } from '@/hooks/useWallet';
 import { getConnection } from '../connection';
@@ -442,12 +442,14 @@ export function useCampaign() {
 
   /**
    * Contribute to a campaign
+   * Supports both on-chain smart contract and off-chain direct SOL transfers
    */
   const contribute = useCallback(
     async (
       projectId: string,
-      campaignPda: string,
+      campaignPda: string | undefined,
       amount: number,
+      isOnChain: boolean = false,
     ): Promise<string> => {
       if (!connected || !publicKey || !wallet) {
         throw new Error('Wallet not connected');
@@ -457,71 +459,143 @@ export function useCampaign() {
       setError(null);
 
       try {
-        const campaignPubkey = new PublicKey(campaignPda);
+        // Check if project uses on-chain smart contracts
+        // Only try on-chain if explicitly marked as on-chain AND campaignPda is provided
+        const useOnChain = isOnChain && campaignPda && campaignPda.length > 0;
 
-        // Get connection
-        const connection = await getConnection();
-        
-        // Get program ID
-        const programId = await getCampaignProgramId();
+        if (useOnChain) {
+          // Only get connection for on-chain operations
+          const connection = await getConnection();
+          // On-chain smart contract flow (existing logic)
+          try {
+            const campaignPubkey = new PublicKey(campaignPda);
+            const programId = await getCampaignProgramId();
 
-        // Create Anchor provider from wallet
-        const anchorWallet = {
-          publicKey,
-          signTransaction: async (tx: Transaction | VersionedTransaction) => {
-            return await signTransaction(tx);
-          },
-          signAllTransactions: wallet.signAllTransactions 
-            ? async (txs: (Transaction | VersionedTransaction)[]) => {
-                return await wallet.signAllTransactions!(txs);
-              }
-            : undefined,
-        };
+            const anchorWallet = {
+              publicKey,
+              signTransaction: async (tx: Transaction | VersionedTransaction) => {
+                return await signTransaction(tx);
+              },
+              signAllTransactions: wallet.signAllTransactions 
+                ? async (txs: (Transaction | VersionedTransaction)[]) => {
+                    return await wallet.signAllTransactions!(txs);
+                  }
+                : undefined,
+            };
 
-        const provider = new anchor.AnchorProvider(
-          connection,
-          anchorWallet as any,
-          { commitment: 'confirmed' }
-        );
+            const provider = new anchor.AnchorProvider(
+              connection,
+              anchorWallet as any,
+              { commitment: 'confirmed' }
+            );
 
-        // Create a program instance for the provider
-        const program = {
-          provider,
-        };
+            const program = { provider };
 
-        // Build transaction
-        const transaction = await contributeTransaction(
-          publicKey,
-          campaignPubkey,
-          amount,
-          program,
-          connection,
-        );
+            const transaction = await contributeTransaction(
+              publicKey,
+              campaignPubkey,
+              amount,
+              program,
+              connection,
+            );
 
-        // Get recent blockhash and set it on the transaction
-        const { blockhash } = await connection.getLatestBlockhash('confirmed');
-        
-        // Handle both Transaction and VersionedTransaction
-        if (transaction instanceof Transaction) {
-          transaction.recentBlockhash = blockhash;
-          transaction.feePayer = publicKey;
+            const { blockhash } = await connection.getLatestBlockhash('confirmed');
+            
+            if (transaction instanceof Transaction) {
+              transaction.recentBlockhash = blockhash;
+              transaction.feePayer = publicKey;
+            }
+
+            const signedTransaction = await signTransaction(transaction);
+            const serialized = signedTransaction instanceof VersionedTransaction
+              ? signedTransaction.serialize()
+              : signedTransaction.serialize();
+            
+            const signature = await connection.sendRawTransaction(
+              serialized,
+              { skipPreflight: false }
+            );
+
+            await connection.confirmTransaction(signature, 'confirmed');
+
+            await projectsApi.contribute(
+              projectId,
+              amount,
+              publicKey.toBase58(),
+              signature,
+            );
+
+            return signature;
+          } catch (onChainError: any) {
+            // If on-chain fails, fall back to direct transfer
+            console.warn('On-chain contribution failed, falling back to direct transfer:', onChainError);
+            // Continue to direct transfer flow below
+          }
         }
-        // For VersionedTransaction, the blockhash should already be set by Anchor
+
+        // Off-chain: Direct SOL transfer flow
+        // Get campaign wallet address from backend (unique wallet for this campaign)
+        // REQUIRED: Campaign must have its own wallet (no fallback to platform wallet)
+        let recipientWallet: string;
+        try {
+          const campaignWalletResponse = await fetch(`/api/solana/campaign-wallet/${projectId}`);
+          if (!campaignWalletResponse.ok) {
+            throw new Error('Campaign wallet not found. Campaign must be published before contributions can be made.');
+          }
+          const data = await campaignWalletResponse.json();
+          recipientWallet = data.walletAddress;
+        } catch (error: any) {
+          throw new Error(`Failed to get campaign wallet: ${error?.message || 'Unknown error'}`);
+        }
+
+        // Get connection for off-chain transfer (still needs Solana RPC for transactions)
+        // Use fallback to public RPC if backend RPC is unavailable
+        let connection: Connection;
+        try {
+          // Try to get connection from backend config
+          const programIds = await getProgramIds();
+          
+          // Try backend RPC first
+          const backendRpc = programIds.solanaRpcUrl;
+          connection = new Connection(backendRpc, { commitment: 'confirmed' });
+          
+          // Test the connection by getting blockhash (with timeout)
+          const testConnection = Promise.race([
+            connection.getLatestBlockhash('confirmed'),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Connection timeout')), 5000)
+            ),
+          ]);
+          
+          await testConnection;
+        } catch (rpcError: any) {
+          // If backend RPC fails, use public fallback
+          console.warn('Backend RPC unavailable, using public fallback:', rpcError);
+          // Use devnet as fallback (or mainnet if needed)
+          const fallbackRpc = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+          connection = new Connection(fallbackRpc, { commitment: 'confirmed' });
+        }
+
+        // Import direct transfer utilities
+        const { createDirectSOLTransfer } = await import('../direct-transfer');
+
+        // Create direct SOL transfer transaction
+        const transaction = await createDirectSOLTransfer(
+          publicKey,
+          new PublicKey(recipientWallet),
+          amount,
+          connection,
+        );
 
         // Sign transaction
         const signedTransaction = await signTransaction(transaction);
-        
-        // Send transaction - handle both Transaction and VersionedTransaction serialization
-        const serialized = signedTransaction instanceof VersionedTransaction
-          ? signedTransaction.serialize()
-          : signedTransaction.serialize();
-        
-        const signature = await connection.sendRawTransaction(
-          serialized,
-          { skipPreflight: false }
-        );
 
-        // Wait for confirmation
+        // Send and wait for confirmation
+        // Note: signedTransaction is Transaction (not VersionedTransaction) from createDirectSOLTransfer
+        const serialized = (signedTransaction as Transaction).serialize();
+        const signature = await connection.sendRawTransaction(serialized, {
+          skipPreflight: false,
+        });
         await connection.confirmTransaction(signature, 'confirmed');
 
         // Notify backend with signature and wallet address

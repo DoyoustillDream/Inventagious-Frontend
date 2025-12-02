@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Hero from '@/components/public/Hero';
+import ModdioTechSection from '@/components/public/ModdioTechSection';
 import HowItWorks from '@/components/public/HowItWorks';
 import FeaturedProjects from '@/components/public/FeaturedProjects';
 import FeaturedTopics from '@/components/public/FeaturedTopics';
@@ -23,11 +24,23 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     url: siteConfig.url,
     type: 'website',
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.title,
+      },
+    ],
+    locale: siteConfig.locale,
   },
   twitter: {
     card: 'summary_large_image',
     title: siteConfig.title,
     description: siteConfig.description,
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 
@@ -43,6 +56,7 @@ export default function Home() {
         <Header />
         <main id="main-content" className="flex-1">
           <Hero />
+          <ModdioTechSection />
           <HowItWorks />
           <FeaturedProjects />
           <FeaturedTopics />

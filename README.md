@@ -796,8 +796,6 @@ export const metadata = generateArticleMetadata({
 });
 ```
 
-See [SEO_IMPLEMENTATION.md](./SEO_IMPLEMENTATION.md) for complete SEO documentation.
-
 ## 🧪 Testing
 
 ### Unit Tests
@@ -930,13 +928,8 @@ components/
 If you encounter issues not covered here:
 
 1. Check the [Issues](https://github.com/konstantinos193/inventagious/issues) page
-2. Review the documentation files:
-   - `SEO_IMPLEMENTATION.md`
-   - `FRONTEND_SMART_CONTRACT_INTEGRATION.md`
-   - `WALLET_INTEGRATION_COMPLETE.md`
-   - `COMPONENT_STRUCTURE.md`
-3. Check Next.js and React documentation
-4. Open a new issue with detailed error information
+2. Check Next.js and React documentation
+3. Open a new issue with detailed error information
 
 ## 🤝 Contributing
 
@@ -987,11 +980,6 @@ This project is licensed under the ISC License.
 
 - [Backend API README](../backend/README.md)
 - [Admin Panel README](../admin/README.md)
-- [SEO Implementation Guide](./SEO_IMPLEMENTATION.md)
-- [Frontend Smart Contract Integration](./FRONTEND_SMART_CONTRACT_INTEGRATION.md)
-- [Wallet Integration Complete](./WALLET_INTEGRATION_COMPLETE.md)
-- [Component Structure](./COMPONENT_STRUCTURE.md)
-- [Proxy Security](./PROXY_SECURITY.md)
 
 ## 📞 Support
 

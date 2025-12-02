@@ -18,12 +18,24 @@ export const metadata: Metadata = {
       'Find projects by name, location, title, or keyword. Discover innovative crowdfunding and private funding projects.',
     url: `${siteConfig.url}/search`,
     type: 'website',
+    siteName: siteConfig.siteName,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'Search Projects - Inventagious',
+      },
+    ],
+    locale: siteConfig.locale,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Search Projects - Inventagious',
     description:
       'Find projects by name, location, title, or keyword. Discover innovative crowdfunding and private funding projects.',
+    images: [siteConfig.twitterImage],
+    creator: siteConfig.twitterHandle,
   },
 };
 

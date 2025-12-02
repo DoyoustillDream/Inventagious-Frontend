@@ -1,21 +1,31 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { setRedirectPath } from '@/lib/utils/redirect';
 
 export default function CreateProjectPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/');
-    }
-  }, [isAuthenticated, isLoading, router]);
+    // Add a small delay to avoid race condition with auth state updates after redirect
+    const timer = setTimeout(() => {
+      if (!isLoading && !isAuthenticated) {
+        // Store the current path so we can redirect back after sign in
+        if (pathname) {
+          setRedirectPath(pathname);
+        }
+        router.push('/sign-in');
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, isLoading, router, pathname]);
 
   if (isLoading) {
     return (

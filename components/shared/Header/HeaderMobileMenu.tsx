@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Logo from '../Logo';
 import WalletConnect from '@/components/auth/WalletConnect';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface MobileMenuSection {
   title: string;
@@ -49,6 +50,8 @@ interface HeaderMobileMenuProps {
 }
 
 export default function HeaderMobileMenu({ isOpen, onClose }: HeaderMobileMenuProps) {
+  const { isAuthenticated } = useAuth();
+  
   if (!isOpen) return null;
 
   return (
@@ -124,6 +127,27 @@ export default function HeaderMobileMenu({ isOpen, onClose }: HeaderMobileMenuPr
               </ul>
             </div>
           ))}
+
+          {/* Profile Link (if authenticated) */}
+          {isAuthenticated && (
+            <div className="pt-4 border-t-4 border-black">
+              <Link
+                href="/profile"
+                onClick={onClose}
+                className="flex items-center gap-2 p-3 rounded-lg border-4 border-black bg-white hover:bg-yellow-100 transition-all"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+                <span className="font-bold">My Profile</span>
+              </Link>
+            </div>
+          )}
 
           {/* Auth Section */}
           <div className="pt-4 border-t-4 border-black">

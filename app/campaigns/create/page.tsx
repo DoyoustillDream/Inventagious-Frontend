@@ -1,30 +1,34 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import CreateCampaignForm from '@/components/private/CreateCampaignForm';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { useWallet } from '@/hooks/useWallet';
+import { setRedirectPath } from '@/lib/utils/redirect';
 
 export default function CreateCampaignPage() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const { connected, publicKey, isLoading: walletLoading } = useWallet();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
-
-  // Allow access if either authenticated OR wallet connected
-  const hasAccess = isAuthenticated || (connected && publicKey);
-  const stillLoading = authLoading || walletLoading;
+  const pathname = usePathname();
 
   useEffect(() => {
-    // Only redirect if both auth and wallet are loaded and user has no access
-    if (!stillLoading && !hasAccess) {
-      router.push('/');
-    }
-  }, [hasAccess, stillLoading, router]);
+    // Add a delay to avoid race condition with auth state updates after redirect
+    // Also check if we're coming back from sign-in (token might be in storage but state not updated yet)
+    const timer = setTimeout(() => {
+      if (!isLoading && !isAuthenticated) {
+        // Store the current path so we can redirect back after sign in
+        if (pathname) {
+          setRedirectPath(pathname);
+        }
+        router.push('/sign-in');
+      }
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, isLoading, router, pathname]);
 
-  if (stillLoading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen flex-col">
         <Header />
@@ -38,7 +42,7 @@ export default function CreateCampaignPage() {
     );
   }
 
-  if (!hasAccess) {
+  if (!isAuthenticated) {
     return null;
   }
 
