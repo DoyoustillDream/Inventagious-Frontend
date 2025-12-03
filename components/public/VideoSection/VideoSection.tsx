@@ -1,17 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function VideoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlay = () => {
     setIsPlaying(true);
-    // TODO: Implement video playback logic
-    // This could open a modal with the video or play inline
+    // Play the video when button is clicked
+    if (videoRef.current) {
+      videoRef.current.play().catch((error) => {
+        console.error('Error playing video:', error);
+      });
+    }
   };
+
+  const handlePause = () => {
+    setIsPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+    }
+  };
+
+  // Reset video when it ends
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      const handleEnded = () => {
+        setIsPlaying(false);
+        video.currentTime = 0;
+      };
+      video.addEventListener('ended', handleEnded);
+      return () => {
+        video.removeEventListener('ended', handleEnded);
+      };
+    }
+  }, []);
 
   return (
     <section className="bg-white py-20">
@@ -33,31 +60,35 @@ export default function VideoSection() {
         <div className="relative mb-8 overflow-hidden rounded-lg border-4 border-black bg-gray-200">
           <div className="relative aspect-video w-full">
             {/* Video Thumbnail/Preview Image */}
-            <picture>
-              <source
-                media="(max-width: 360px)"
-                srcSet="/images/video-thumbnail-mobile.jpg"
-              />
-              <source
-                media="(min-width: 361px)"
-                srcSet="/images/video-thumbnail-desktop.jpg"
-              />
-              <Image
-                src="/images/video-thumbnail-desktop.jpg"
-                alt="How Inventagious works video preview"
-                fill
-                className="object-cover"
-                loading="lazy"
-                onError={(e) => {
-                  // Fallback to gradient if image doesn't exist
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-            </picture>
+            {!isPlaying && (
+              <>
+                <picture>
+                  <source
+                    media="(max-width: 360px)"
+                    srcSet="/images/video-thumbnail-mobile.jpg"
+                  />
+                  <source
+                    media="(min-width: 361px)"
+                    srcSet="/images/video-thumbnail-desktop.jpg"
+                  />
+                  <Image
+                    src="/images/video-thumbnail-desktop.jpg"
+                    alt="How Inventagious works video preview"
+                    fill
+                    className="object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      // Fallback to gradient if image doesn't exist
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                </picture>
 
-            {/* Fallback gradient if image doesn't exist */}
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-300 to-yellow-200" />
+                {/* Fallback gradient if image doesn't exist */}
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-300 to-yellow-200" />
+              </>
+            )}
 
             {/* Play Button Overlay */}
             {!isPlaying && (
@@ -86,23 +117,16 @@ export default function VideoSection() {
 
             {/* Video Player (when playing) */}
             {isPlaying && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black">
-                <div className="text-center text-white">
-                  <p className="hand-drawn mb-4 text-xl font-bold">
-                    Video Player Placeholder
-                  </p>
-                  <p className="text-sm">
-                    Video integration coming soon. Replace this with your video player
-                    component.
-                  </p>
-                  <button
-                    onClick={() => setIsPlaying(false)}
-                    className="mt-4 rounded border-2 border-white px-4 py-2 text-sm hover:bg-white hover:text-black"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
+              <video
+                ref={videoRef}
+                className="absolute inset-0 h-full w-full object-cover"
+                controls
+                onPause={handlePause}
+                onEnded={handlePause}
+              >
+                <source src="/videos/Trailers-1.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             )}
           </div>
         </div>
