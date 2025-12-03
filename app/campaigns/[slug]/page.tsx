@@ -41,7 +41,10 @@ function isValidSlug(slug: string | undefined | null): slug is string {
  */
 async function fetchCampaignBySlug(slug: string): Promise<Project | null> {
   try {
-    const project = await projectsApi.getById(slug);
+    // Decode the slug in case it's URL-encoded
+    const decodedSlug = decodeURIComponent(slug);
+    
+    const project = await projectsApi.getById(decodedSlug);
     
     // Only return crowdfunding campaigns
     if (project && project.type === 'crowdfunding') {

@@ -97,7 +97,9 @@ export const projectsApi = {
       return apiClient.get<Project>(`/projects/${id}`);
     } else {
       // Use slug endpoint for better clarity
-      return apiClient.get<Project>(`/projects/slug/${id}`);
+      // Encode the slug to handle special characters in URLs
+      const encodedSlug = encodeURIComponent(id);
+      return apiClient.get<Project>(`/projects/slug/${encodedSlug}`);
     }
   },
 
