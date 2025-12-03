@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { PublicKey, Transaction, VersionedTransaction, Connection } from '@solana/web3.js';
 import * as anchor from '@coral-xyz/anchor';
 import { useWallet } from '@/hooks/useWallet';
+import { useTransactionSigning } from './useTransactionSigning';
 import { getConnection } from '../connection';
 import { getCampaignProgramId, getProgramIds } from '../program-ids';
 import {
@@ -12,12 +13,14 @@ import {
   getCampaign,
 } from '../campaign';
 import { projectsApi } from '@/lib/api/projects';
+import { serializeSignedTransaction } from '../transaction-signing';
 
 /**
  * Hook for campaign operations
  */
 export function useCampaign() {
-  const { publicKey, connected, wallet, signTransaction } = useWallet();
+  const { publicKey, connected, wallet } = useWallet();
+  const { signTransaction, serializeTransaction } = useTransactionSigning();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,17 +54,24 @@ export function useCampaign() {
         const connection = await getConnection();
 
         // Create Anchor provider from wallet
+        // Note: We use the signTransaction from useTransactionSigning hook which is already available
         const anchorWallet = {
           publicKey,
           signTransaction: async (tx: Transaction | VersionedTransaction) => {
             if (!tx) {
               throw new Error('Transaction to sign is undefined');
             }
-            return await signTransaction(tx);
+            // Use optimized signing service with connection for preparation and validation
+            return await signTransaction(tx, connection);
           },
           signAllTransactions: wallet.signAllTransactions 
             ? async (txs: (Transaction | VersionedTransaction)[]) => {
-                return await wallet.signAllTransactions!(txs);
+                // For batch signing, we'll use the wallet's native method
+                // The optimized service can be used if needed, but requires the hook
+                if (!wallet.signAllTransactions) {
+                  throw new Error('Wallet does not support batch transaction signing');
+                }
+                return await wallet.signAllTransactions(txs);
               }
             : undefined,
         };
@@ -103,251 +113,12 @@ export function useCampaign() {
           throw new Error('Failed to build transaction: transaction is undefined');
         }
 
-        // Ensure transaction is properly prepared for signing
-        if (transaction instanceof Transaction) {
-          // Get fresh blockhash if not set (Anchor should set it, but verify)
-          if (!transaction.recentBlockhash) {
-            const { blockhash } = await connection.getLatestBlockhash('confirmed');
-            transaction.recentBlockhash = blockhash;
-          }
-          
-          // Ensure feePayer is set
-          if (!transaction.feePayer) {
-            transaction.feePayer = publicKey;
-          }
-          
-          // Verify transaction is ready for signing
-          if (!transaction.recentBlockhash || !transaction.feePayer) {
-            throw new Error(
-              `Transaction not properly initialized: ` +
-              `recentBlockhash=${!!transaction.recentBlockhash}, ` +
-              `feePayer=${!!transaction.feePayer}`
-            );
-          }
-          
-          // Verify instructions exist
-          if (!transaction.instructions || transaction.instructions.length === 0) {
-            throw new Error('Transaction has no instructions');
-          }
-          
-          // Verify all instructions are valid
-          for (let i = 0; i < transaction.instructions.length; i++) {
-            const ix = transaction.instructions[i];
-            if (!ix || !ix.programId) {
-              throw new Error(`Invalid instruction at index ${i}`);
-            }
-          }
-        } else if (transaction instanceof VersionedTransaction) {
-          // For VersionedTransaction, the blockhash should already be set by Anchor
-          // Verify it's properly initialized
-          if (!transaction.message) {
-            throw new Error('VersionedTransaction message is undefined');
-          }
-        } else {
-          throw new Error(`Invalid transaction type: ${typeof transaction}. Expected Transaction or VersionedTransaction`);
-        }
-
-        // Sign transaction
-        let signedTransaction;
-        try {
-          // Log transaction details before signing for debugging
-          if (transaction instanceof Transaction) {
-            // Try to serialize to check size (but don't use this serialized version)
-            let serializedSize = 0;
-            try {
-              const testSerialized = transaction.serialize({ requireAllSignatures: false });
-              serializedSize = testSerialized.length;
-            } catch (e) {
-              console.warn('Could not serialize transaction for size check:', e);
-            }
-            
-            // Log detailed instruction information
-            const instructionDetails = transaction.instructions.map((ix, i) => {
-              const accountKeys = ix.keys.map((key, idx) => ({
-                pubkey: key.pubkey.toBase58(),
-                isSigner: key.isSigner,
-                isWritable: key.isWritable,
-              }));
-              
-              return {
-                index: i,
-                programId: ix.programId.toBase58(),
-                keys: accountKeys,
-                keysCount: ix.keys.length,
-                dataLength: ix.data?.length || 0,
-                dataPreview: ix.data ? Array.from(ix.data.slice(0, 20)) : null,
-              };
-            });
-            
-            console.log('Transaction details before signing:', {
-              hasRecentBlockhash: !!transaction.recentBlockhash,
-              recentBlockhash: transaction.recentBlockhash?.toString().substring(0, 20) + '...',
-              hasFeePayer: !!transaction.feePayer,
-              feePayer: transaction.feePayer?.toBase58(),
-              instructionCount: transaction.instructions.length,
-              signatures: transaction.signatures.length,
-              serializedSize: serializedSize,
-              instructions: instructionDetails,
-            });
-            
-            // Log the first instruction in detail (should be initializeCampaign)
-            if (transaction.instructions.length > 0) {
-              const firstIx = transaction.instructions[0];
-              console.log('First instruction details:', {
-                programId: firstIx.programId.toBase58(),
-                accountCount: firstIx.keys.length,
-                accounts: firstIx.keys.map((key, i) => ({
-                  index: i,
-                  pubkey: key.pubkey.toBase58(),
-                  isSigner: key.isSigner,
-                  isWritable: key.isWritable,
-                })),
-                dataLength: firstIx.data?.length || 0,
-              });
-            }
-            
-            // Check if transaction is too large (Solana limit is ~1232 bytes)
-            if (serializedSize > 1232) {
-              throw new Error(
-                `Transaction too large: ${serializedSize} bytes (max 1232 bytes). ` +
-                `This might be due to too many accounts or large instruction data.`
-              );
-            }
-          }
-          
-          // Ensure transaction is properly prepared for wallet signing
-          if (transaction instanceof Transaction) {
-            // Verify the transaction is in a valid state for signing
-            // The wallet expects a clean transaction with proper structure
-            
-            // Ensure fee payer is set (should already be set)
-            if (!transaction.feePayer) {
-              transaction.feePayer = publicKey;
-            }
-            
-            // Ensure blockhash is set (should already be set)
-            if (!transaction.recentBlockhash) {
-              const { blockhash } = await connection.getLatestBlockhash('confirmed');
-              transaction.recentBlockhash = blockhash;
-            }
-            
-            // Verify all instructions have valid program IDs and accounts
-            for (const ix of transaction.instructions) {
-              if (!ix.programId) {
-                throw new Error('Instruction missing program ID');
-              }
-              for (const key of ix.keys) {
-                if (!key.pubkey) {
-                  throw new Error('Instruction account missing public key');
-                }
-              }
-            }
-            
-            // Transaction is already built cleanly from instruction, no need to recreate
-          }
-          
-          // Sign the transaction with the wallet
-          signedTransaction = await signTransaction(transaction);
-        } catch (signError: any) {
-          console.error('Error signing transaction:', signError);
-          console.error('Sign error details:', {
-            message: signError?.message,
-            name: signError?.name,
-            code: signError?.code,
-            stack: signError?.stack,
-          });
-          
-          // Check for common wallet errors
-          if (signError?.code === -32603) {
-            console.error('Wallet returned internal error. This might be due to:');
-            console.error('1. Network mismatch - ensure wallet is on the same network as the app');
-            console.error('2. Transaction structure issue - the wallet cannot parse the transaction');
-            console.error('3. Wallet extension bug - try updating or using a different wallet');
-            console.error('4. Invalid instruction data - check instruction format');
-          }
-          console.error('Transaction that failed to sign:', {
-            type: transaction?.constructor?.name,
-            isTransaction: transaction instanceof Transaction,
-            isVersionedTransaction: transaction instanceof VersionedTransaction,
-            hasRecentBlockhash: transaction instanceof Transaction ? !!transaction.recentBlockhash : 'N/A',
-            hasFeePayer: transaction instanceof Transaction ? !!transaction.feePayer : 'N/A',
-            instructionCount: transaction instanceof Transaction ? transaction.instructions?.length : 'N/A',
-          });
-          throw new Error(
-            `Failed to sign transaction: ${signError?.message || 'Unexpected error from wallet'}. ` +
-            `This might be due to: transaction too large, invalid instruction, missing account, network mismatch, or insufficient funds.`
-          );
-        }
+        // Sign transaction using optimized signing service
+        // This handles validation, preparation, retry logic, and error handling
+        const signedTransaction = await signTransaction(transaction, connection);
         
-        if (!signedTransaction) {
-          throw new Error('Failed to sign transaction: signed transaction is undefined');
-        }
-        
-        // Send transaction - handle both Transaction and VersionedTransaction serialization
-        // Some wallets return objects that look like transactions but instanceof checks fail
-        // due to multiple versions of @solana/web3.js being loaded
-        let serialized: Uint8Array;
-        try {
-          // First priority: check if it has a serialize method (most reliable)
-          // This handles cases where the wallet returns a Transaction but instanceof fails
-          if (signedTransaction && typeof (signedTransaction as any).serialize === 'function') {
-            serialized = (signedTransaction as any).serialize();
-          } else if (signedTransaction instanceof VersionedTransaction) {
-            // Fallback: instanceof check for VersionedTransaction
-            if (!signedTransaction.message) {
-              throw new Error('VersionedTransaction message is undefined');
-            }
-            serialized = signedTransaction.serialize();
-          } else if (signedTransaction instanceof Transaction) {
-            // Fallback: instanceof check for Transaction
-            if (!signedTransaction.recentBlockhash) {
-              throw new Error('Transaction missing recentBlockhash');
-            }
-            if (!signedTransaction.feePayer) {
-              throw new Error('Transaction missing feePayer');
-            }
-            if (!signedTransaction.instructions || signedTransaction.instructions.length === 0) {
-              throw new Error('Transaction has no instructions');
-            }
-            serialized = signedTransaction.serialize();
-          } else {
-            // Last resort: wallet might have modified the original transaction in place
-            // Try using the original transaction (it should now be signed)
-            console.warn('Signed transaction does not have serialize method, trying original transaction:', {
-              signedTxType: typeof signedTransaction,
-              signedTxConstructor: (signedTransaction as any)?.constructor?.name,
-              originalTxType: typeof transaction,
-              originalTxConstructor: (transaction as any)?.constructor?.name,
-              originalHasSerialize: typeof (transaction as any)?.serialize === 'function',
-            });
-            
-            // Use the original transaction - wallets often modify it in place
-            if (transaction && typeof (transaction as any).serialize === 'function') {
-              serialized = (transaction as any).serialize();
-            } else {
-              throw new Error(
-                `Cannot serialize transaction: signed transaction type is ${typeof signedTransaction} ` +
-                `(${(signedTransaction as any)?.constructor?.name || 'unknown'}), ` +
-                `and original transaction ${transaction ? (typeof (transaction as any).serialize === 'function' ? 'has serialize' : 'does not have serialize method') : 'is undefined'}. ` +
-                `This might indicate the wallet did not properly sign the transaction.`
-              );
-            }
-          }
-        } catch (serializeError: any) {
-          console.error('Error serializing transaction:', serializeError);
-          console.error('Transaction type:', signedTransaction?.constructor?.name);
-          console.error('Transaction details:', {
-            isTransaction: signedTransaction instanceof Transaction,
-            isVersionedTransaction: signedTransaction instanceof VersionedTransaction,
-            hasRecentBlockhash: signedTransaction instanceof Transaction ? !!signedTransaction.recentBlockhash : 'N/A',
-            hasFeePayer: signedTransaction instanceof Transaction ? !!signedTransaction.feePayer : 'N/A',
-            instructionCount: signedTransaction instanceof Transaction ? signedTransaction.instructions?.length : 'N/A',
-          });
-          throw new Error(
-            `Failed to serialize transaction: ${serializeError?.message || 'Unknown error'}. ` +
-            `This usually means the transaction is not properly initialized.`
-          );
-        }
+        // Serialize the signed transaction
+        const serialized = serializeTransaction(signedTransaction);
         
         if (!serialized || serialized.length === 0) {
           throw new Error('Serialized transaction is empty');
@@ -506,10 +277,9 @@ export function useCampaign() {
               transaction.feePayer = publicKey;
             }
 
-            const signedTransaction = await signTransaction(transaction);
-            const serialized = signedTransaction instanceof VersionedTransaction
-              ? signedTransaction.serialize()
-              : signedTransaction.serialize();
+            // Use optimized signing service
+            const signedTransaction = await signTransaction(transaction, connection);
+            const serialized = serializeTransaction(signedTransaction);
             
             const signature = await connection.sendRawTransaction(
               serialized,
@@ -589,12 +359,11 @@ export function useCampaign() {
           connection,
         );
 
-        // Sign transaction
-        const signedTransaction = await signTransaction(transaction);
-
-        // Send and wait for confirmation
-        // Note: signedTransaction is Transaction (not VersionedTransaction) from createDirectSOLTransfer
-        const serialized = (signedTransaction as Transaction).serialize();
+        // Sign transaction using optimized signing service
+        const signedTransaction = await signTransaction(transaction, connection);
+        
+        // Serialize the signed transaction
+        const serialized = serializeTransaction(signedTransaction);
         const signature = await connection.sendRawTransaction(serialized, {
           skipPreflight: false,
         });

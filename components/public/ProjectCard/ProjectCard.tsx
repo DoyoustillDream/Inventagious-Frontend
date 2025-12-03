@@ -38,11 +38,6 @@ export default function ProjectCard({
             <div className="browser-dot yellow" />
             <div className="browser-dot green" />
           </div>
-          <div className="flex-1" />
-          <div className="yellow-highlight hand-drawn text-xs font-bold text-center">
-            {type === 'crowdfunding' ? 'CROWD FUNDING' : 'PRIVATE FUNDING'}
-          </div>
-          <div className="flex-1" />
         </div>
         {firstImage && (
           <div className="relative h-48 w-full bg-gray-200">

@@ -103,12 +103,12 @@ export const defaultMetadata = {
   },
   icons: {
     icon: [
-      { url: "/logos/logo-bulb.png", sizes: "32x32", type: "image/png" },
-      { url: "/logos/logo-bulb.png", sizes: "16x16", type: "image/png" },
-      { url: "/logos/logo-bulb.png", sizes: "any", type: "image/png" },
+      { url: "/logos/logo-main.jpeg", sizes: "32x32", type: "image/jpeg" },
+      { url: "/logos/logo-main.jpeg", sizes: "16x16", type: "image/jpeg" },
+      { url: "/logos/logo-main.jpeg", sizes: "any", type: "image/jpeg" },
     ],
-    shortcut: "/logos/logo-bulb.png",
-    apple: "/logos/logo-bulb.png",
+    shortcut: "/logos/logo-main.jpeg",
+    apple: "/logos/logo-main.jpeg",
   },
   manifest: "/manifest.json",
   verification: {

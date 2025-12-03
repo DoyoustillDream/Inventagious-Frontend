@@ -237,8 +237,12 @@ export function useWallet(): UseWalletReturn {
     if (!wallet || !connected) {
       throw new Error('Wallet not connected');
     }
+    if (!publicKey) {
+      throw new Error('Public key not available');
+    }
+    // Use basic wallet signing - for optimized signing with retry logic, use useTransactionSigning hook
     return await wallet.signTransaction(transaction);
-  }, [wallet, connected]);
+  }, [wallet, connected, publicKey]);
 
   const signMessage = useCallback(async (message: Uint8Array) => {
     if (!wallet || !connected) {
@@ -251,11 +255,15 @@ export function useWallet(): UseWalletReturn {
     if (!wallet || !connected) {
       throw new Error('Wallet not connected');
     }
+    if (!publicKey) {
+      throw new Error('Public key not available');
+    }
     if (!wallet.signAllTransactions) {
       throw new Error('Wallet does not support signing multiple transactions');
     }
+    // Use basic wallet signing - for optimized signing with retry logic, use useTransactionSigning hook
     return await wallet.signAllTransactions(transactions);
-  }, [wallet, connected]);
+  }, [wallet, connected, publicKey]);
 
   return {
     wallet,
