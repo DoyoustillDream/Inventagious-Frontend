@@ -97,7 +97,8 @@ export const projectsApi = {
       return apiClient.get<Project>(`/projects/${id}`);
     } else {
       // Use slug endpoint for better clarity
-      // Encode the slug to handle special characters in URLs
+      // Next.js route params are already decoded, so we need to encode for the URL path
+      // encodeURIComponent handles special characters properly
       const encodedSlug = encodeURIComponent(id);
       return apiClient.get<Project>(`/projects/slug/${encodedSlug}`);
     }

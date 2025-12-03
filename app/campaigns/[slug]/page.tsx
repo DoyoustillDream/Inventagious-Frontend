@@ -41,10 +41,12 @@ function isValidSlug(slug: string | undefined | null): slug is string {
  */
 async function fetchCampaignBySlug(slug: string): Promise<Project | null> {
   try {
-    // Decode the slug in case it's URL-encoded
-    const decodedSlug = decodeURIComponent(slug);
+    // Next.js route params are already decoded, so we can use the slug directly
+    // Trim whitespace to ensure clean slug
+    const normalizedSlug = slug.trim();
     
-    const project = await projectsApi.getById(decodedSlug);
+    // Call the API - it will handle encoding for the URL path
+    const project = await projectsApi.getById(normalizedSlug);
     
     // Only return crowdfunding campaigns
     if (project && project.type === 'crowdfunding') {
@@ -58,8 +60,29 @@ async function fetchCampaignBySlug(slug: string): Promise<Project | null> {
       return null;
     }
     
-    // Log other errors for debugging but don't expose to user
-    console.error('Error fetching campaign:', error);
+    // Log other errors for debugging (only on server-side to avoid exposing to client)
+    if (typeof window === 'undefined') {
+      const errorDetails = {
+        message: error?.message,
+        status: error?.status,
+        statusText: error?.statusText,
+        name: error?.name,
+        slug: slug,
+        // Include environment info for debugging
+        env: {
+          hasBackendUrl: !!process.env.BACKEND_URL,
+          siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+          vercelUrl: process.env.VERCEL_URL,
+        },
+      };
+      console.error(`[CampaignPage] Error fetching campaign by slug "${slug}":`, errorDetails);
+      
+      // If it's a network error (status 0), log additional info
+      if (error?.status === 0) {
+        console.error(`[CampaignPage] Network error - check BACKEND_URL environment variable on Vercel`);
+      }
+    }
+    
     return null;
   }
 }

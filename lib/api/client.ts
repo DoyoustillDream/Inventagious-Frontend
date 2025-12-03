@@ -117,10 +117,43 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${this.token}`;
     }
 
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
+    let response: Response;
+    try {
+      // Create abort controller for timeout (server-side only)
+      let abortController: AbortController | undefined;
+      let timeoutId: NodeJS.Timeout | undefined;
+      
+      if (typeof window === 'undefined') {
+        abortController = new AbortController();
+        timeoutId = setTimeout(() => {
+          abortController?.abort();
+        }, 30000); // 30 second timeout
+      }
+      
+      try {
+        response = await fetch(url, {
+          ...options,
+          headers,
+          signal: abortController?.signal,
+        });
+      } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      }
+    } catch (fetchError: any) {
+      // Handle network errors, timeouts, etc.
+      const isTimeout = fetchError.name === 'AbortError' && typeof window === 'undefined';
+      const error = new Error(
+        isTimeout
+          ? `API request timeout: ${url}`
+          : `API request failed: ${fetchError.message || 'Network error'}`
+      );
+      (error as any).status = 0;
+      (error as any).statusText = isTimeout ? 'Timeout' : (fetchError.name || 'Network Error');
+      (error as any).originalError = fetchError;
+      throw error;
+    }
 
     if (!response.ok) {
       let errorMessage = `API Error: ${response.statusText}`;
