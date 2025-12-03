@@ -26,17 +26,30 @@ function getApiBaseUrl(): string {
   
   // On server-side, we need to construct the full URL
   if (typeof window === 'undefined') {
-    // Get the site URL from environment or use default
+    // For server-side calls on Vercel, rewrites might not work reliably
+    // So we use BACKEND_URL directly if available (it's server-side only, so secure)
+    const backendUrl = process.env.BACKEND_URL;
+    if (backendUrl) {
+      // Normalize: remove trailing slash if present (endpoints start with /)
+      const normalizedUrl = backendUrl.replace(/\/+$/, '');
+      console.log(`[ApiClient] Using BACKEND_URL for server-side calls: ${normalizedUrl}`);
+      return normalizedUrl;
+    }
+    
+    // Fallback: construct URL from site URL (for local development or when BACKEND_URL not set)
     let siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
     if (!siteUrl) {
       if (process.env.VERCEL_URL) {
+        // On Vercel, use the deployment URL
         siteUrl = `https://${process.env.VERCEL_URL}`;
       } else {
         // Default to localhost for development
         siteUrl = 'http://localhost:3000';
       }
     }
-    return `${siteUrl}${proxyPath}`;
+    const fullUrl = `${siteUrl}${proxyPath}`;
+    console.log(`[ApiClient] Constructed server-side URL (no BACKEND_URL): ${fullUrl}`);
+    return fullUrl;
   }
   
   // Client-side: use relative path (works with Next.js rewrites)
