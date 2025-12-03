@@ -6,6 +6,7 @@ import Image from 'next/image';
 
 export default function VideoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlay = () => {
@@ -62,7 +63,12 @@ export default function VideoSection() {
             {/* Video Thumbnail/Preview Image */}
             {!isPlaying && (
               <>
-                <picture>
+                {/* Fallback gradient - only shows if image fails to load */}
+                {imageError && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-300 to-yellow-200 z-0" />
+                )}
+                
+                <picture className="absolute inset-0 z-0">
                   <source
                     media="(max-width: 360px)"
                     srcSet="/images/video-thumbnail-mobile.jpg"
@@ -77,24 +83,25 @@ export default function VideoSection() {
                     fill
                     className="object-cover"
                     loading="lazy"
-                    onError={(e) => {
-                      // Fallback to gradient if image doesn't exist
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
+                    onError={() => {
+                      // Show gradient fallback if image doesn't exist
+                      setImageError(true);
                     }}
                   />
                 </picture>
-
-                {/* Fallback gradient if image doesn't exist */}
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-300 to-yellow-200" />
               </>
+            )}
+
+            {/* Subtle overlay for better play button visibility */}
+            {!isPlaying && (
+              <div className="absolute inset-0 bg-black/20 pointer-events-none" />
             )}
 
             {/* Play Button Overlay */}
             {!isPlaying && (
               <button
                 onClick={handlePlay}
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg border-4 border-black bg-yellow-400 px-8 py-4 shadow-lg transition-all hover:scale-110 hover:bg-yellow-500 active:scale-95"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform z-10 rounded-lg border-4 border-black bg-yellow-400 px-8 py-4 shadow-2xl transition-all hover:scale-110 hover:bg-yellow-500 hover:shadow-3xl active:scale-95"
                 type="button"
                 aria-label="Play video: How Inventagious works"
               >
