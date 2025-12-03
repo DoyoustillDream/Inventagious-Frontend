@@ -116,95 +116,129 @@ async function fetchCampaignBySlug(slug: string): Promise<Project | null> {
  * Generates metadata for the campaign page
  */
 export async function generateMetadata({ params }: CampaignPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  
-  // Validate slug format
-  if (!isValidSlug(slug)) {
+  try {
+    const { slug } = await params;
+    
+    // Validate slug format
+    if (!isValidSlug(slug)) {
+      return {
+        title: 'Campaign Not Found - Inventagious',
+        description: 'The campaign you are looking for could not be found.',
+      };
+    }
+    
+    const project = await fetchCampaignBySlug(slug);
+    
+    if (!project) {
+      return {
+        title: 'Campaign Not Found - Inventagious',
+        description: 'The campaign you are looking for could not be found.',
+      };
+    }
+    
+    return generateProjectMetadata({
+      project,
+      url: `/campaigns/${project.slug}`,
+    });
+  } catch (error: any) {
+    // Log error but don't throw - return default metadata
+    if (typeof window === 'undefined') {
+      console.error('[CampaignPage] Error in generateMetadata:', error);
+    }
     return {
       title: 'Campaign Not Found - Inventagious',
       description: 'The campaign you are looking for could not be found.',
     };
   }
-  
-  const project = await fetchCampaignBySlug(slug);
-  
-  if (!project) {
-    return {
-      title: 'Campaign Not Found - Inventagious',
-      description: 'The campaign you are looking for could not be found.',
-    };
-  }
-  
-  return generateProjectMetadata({
-    project,
-    url: `/campaigns/${project.slug}`,
-  });
 }
 
 /**
  * Main campaign page component
  */
 export default async function CampaignPage({ params }: CampaignPageProps) {
-  const { slug } = await params;
-  
-  // Validate slug format
-  if (!isValidSlug(slug)) {
-    notFound();
+  try {
+    const { slug } = await params;
+    
+    // Validate slug format
+    if (!isValidSlug(slug)) {
+      if (typeof window === 'undefined') {
+        console.log(`[CampaignPage] Invalid slug format: "${slug}"`);
+      }
+      notFound();
+    }
+    
+    // Fetch campaign data
+    const project = await fetchCampaignBySlug(slug);
+    
+    // If campaign not found or not a crowdfunding campaign, show 404
+    if (!project) {
+      if (typeof window === 'undefined') {
+        console.log(`[CampaignPage] Project not found for slug: "${slug}"`);
+      }
+      notFound();
+    }
+    
+    // TypeScript doesn't understand that notFound() throws, so we assert project is non-null
+    // At this point, project is guaranteed to be defined
+    const validProject: Project = project;
+    
+    // Build page data
+    const campaignUrl = `${siteConfig.url}/campaigns/${validProject.slug}`;
+    const tags = [
+      'crowdfunding',
+      ...(validProject.category ? [validProject.category.toLowerCase()] : []),
+      'solana',
+      'blockchain',
+      'web3',
+    ];
+    
+    if (typeof window === 'undefined') {
+      console.log(`[CampaignPage] Rendering page for project: ${validProject.id} - ${validProject.title}`);
+    }
+    
+    return (
+      <>
+        <WebPageSchema
+          title={`${validProject.title} - Inventagious`}
+          description={validProject.description || `Support ${validProject.title} on Inventagious`}
+          url={campaignUrl}
+        />
+        <ArticleSchema
+          title={validProject.title}
+          description={validProject.description || `Support ${validProject.title} on Inventagious`}
+          url={campaignUrl}
+          image={getFirstImage(validProject.imageUrl)}
+          publishedTime={validProject.createdAt}
+          modifiedTime={validProject.updatedAt || validProject.createdAt}
+          tags={tags}
+        />
+        <BreadcrumbSchema
+          items={[
+            { name: 'Home', url: siteConfig.url },
+            { name: 'Campaigns', url: `${siteConfig.url}/campaigns` },
+            { name: validProject.title, url: campaignUrl },
+          ]}
+        />
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          <main className="flex-1 bg-white">
+            <ProjectDetailContent project={validProject} />
+          </main>
+          <Footer />
+        </div>
+      </>
+    );
+  } catch (error: any) {
+    // Log the error for debugging
+    if (typeof window === 'undefined') {
+      console.error('[CampaignPage] Unexpected error rendering page:', {
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name,
+      });
+    }
+    // Re-throw to let Next.js handle it (will show error page)
+    throw error;
   }
-  
-  // Fetch campaign data
-  const project = await fetchCampaignBySlug(slug);
-  
-  // If campaign not found or not a crowdfunding campaign, show 404
-  if (!project) {
-    notFound();
-  }
-  
-  // TypeScript doesn't understand that notFound() throws, so we assert project is non-null
-  // At this point, project is guaranteed to be defined
-  const validProject: Project = project;
-  
-  // Build page data
-  const campaignUrl = `${siteConfig.url}/campaigns/${validProject.slug}`;
-  const tags = [
-    'crowdfunding',
-    ...(validProject.category ? [validProject.category.toLowerCase()] : []),
-    'solana',
-    'blockchain',
-    'web3',
-  ];
-  
-  return (
-    <>
-      <WebPageSchema
-        title={`${validProject.title} - Inventagious`}
-        description={validProject.description || `Support ${validProject.title} on Inventagious`}
-        url={campaignUrl}
-      />
-      <ArticleSchema
-        title={validProject.title}
-        description={validProject.description || `Support ${validProject.title} on Inventagious`}
-        url={campaignUrl}
-        image={getFirstImage(validProject.imageUrl)}
-        publishedTime={validProject.createdAt}
-        modifiedTime={validProject.updatedAt || validProject.createdAt}
-        tags={tags}
-      />
-      <BreadcrumbSchema
-        items={[
-          { name: 'Home', url: siteConfig.url },
-          { name: 'Campaigns', url: `${siteConfig.url}/campaigns` },
-          { name: validProject.title, url: campaignUrl },
-        ]}
-      />
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1 bg-white">
-          <ProjectDetailContent project={validProject} />
-        </main>
-        <Footer />
-      </div>
-    </>
-  );
 }
 
