@@ -105,6 +105,13 @@ class ApiClient {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
+    // Log request details (server-side only for debugging)
+    if (typeof window === 'undefined') {
+      console.log(`[ApiClient] Making request to: ${url}`);
+      console.log(`[ApiClient] Base URL: ${this.baseUrl}`);
+      console.log(`[ApiClient] Endpoint: ${endpoint}`);
+    }
+    
     // SECURITY: Validate that we're using the proxy, not a direct backend URL
     validateProxyUrl(url);
     
@@ -131,17 +138,30 @@ class ApiClient {
       }
       
       try {
+        if (typeof window === 'undefined') {
+          console.log(`[ApiClient] Fetching URL: ${url}`);
+        }
         response = await fetch(url, {
           ...options,
           headers,
           signal: abortController?.signal,
         });
+        if (typeof window === 'undefined') {
+          console.log(`[ApiClient] Response status: ${response.status} ${response.statusText}`);
+        }
       } finally {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
       }
     } catch (fetchError: any) {
+      if (typeof window === 'undefined') {
+        console.error(`[ApiClient] Fetch error for ${url}:`, {
+          name: fetchError?.name,
+          message: fetchError?.message,
+          stack: fetchError?.stack,
+        });
+      }
       // Handle network errors, timeouts, etc.
       const isTimeout = fetchError.name === 'AbortError' && typeof window === 'undefined';
       const error = new Error(

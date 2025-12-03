@@ -40,17 +40,42 @@ function isValidSlug(slug: string | undefined | null): slug is string {
  * Returns null if campaign not found or not a crowdfunding campaign
  */
 async function fetchCampaignBySlug(slug: string): Promise<Project | null> {
+  // Log the attempt (server-side only)
+  if (typeof window === 'undefined') {
+    console.log(`[CampaignPage] Attempting to fetch campaign with slug: "${slug}"`);
+  }
+  
   try {
     // Next.js route params are already decoded, so we can use the slug directly
     // Trim whitespace to ensure clean slug
     const normalizedSlug = slug.trim();
     
+    if (typeof window === 'undefined') {
+      console.log(`[CampaignPage] Normalized slug: "${normalizedSlug}"`);
+      console.log(`[CampaignPage] API base URL: ${process.env.NEXT_PUBLIC_API_URL || '/api'}`);
+      console.log(`[CampaignPage] BACKEND_URL: ${process.env.BACKEND_URL || 'not set'}`);
+    }
+    
     // Call the API - it will handle encoding for the URL path
     const project = await projectsApi.getById(normalizedSlug);
+    
+    if (typeof window === 'undefined') {
+      console.log(`[CampaignPage] Project fetched:`, {
+        found: !!project,
+        id: project?.id,
+        slug: project?.slug,
+        type: project?.type,
+        title: project?.title,
+      });
+    }
     
     // Only return crowdfunding campaigns
     if (project && project.type === 'crowdfunding') {
       return project;
+    }
+    
+    if (typeof window === 'undefined') {
+      console.log(`[CampaignPage] Project not returned - either not found or not crowdfunding type`);
     }
     
     return null;
