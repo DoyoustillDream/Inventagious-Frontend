@@ -32,11 +32,12 @@ async function loadIdl(programId: PublicKey): Promise<ProgramIdl | null> {
 
     // In production, you'd fetch from your CDN or public directory
     // For now, we'll try to fetch from the chain
+    const rpcUrl = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
+    if (!rpcUrl) {
+      throw new Error('NEXT_PUBLIC_SOLANA_RPC_URL is required in .env file');
+    }
     const idl = await anchor.Program.fetchIdl(programId, {
-      connection: new Connection(
-        process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
-          'https://api.devnet.solana.com',
-      ),
+      connection: new Connection(rpcUrl),
     } as any);
 
     return idl;

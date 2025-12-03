@@ -569,10 +569,12 @@ export function useCampaign() {
           
           await testConnection;
         } catch (rpcError: any) {
-          // If backend RPC fails, use public fallback
-          console.warn('Backend RPC unavailable, using public fallback:', rpcError);
-          // Use devnet as fallback (or mainnet if needed)
-          const fallbackRpc = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+          // If backend RPC fails, use public fallback from .env
+          console.warn('Backend RPC unavailable, using .env fallback:', rpcError);
+          const fallbackRpc = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
+          if (!fallbackRpc) {
+            throw new Error('SOLANA_RPC_URL must be configured. Set NEXT_PUBLIC_SOLANA_RPC_URL in .env file.');
+          }
           connection = new Connection(fallbackRpc, { commitment: 'confirmed' });
         }
 

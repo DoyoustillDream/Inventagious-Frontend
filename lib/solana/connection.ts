@@ -22,7 +22,12 @@ export async function getConnection(): Promise<Connection> {
   connectionPromise = (async () => {
     try {
       const programIds = await getProgramIds();
-      const rpcUrl = programIds.solanaRpcUrl || process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+      const rpcUrl = programIds.solanaRpcUrl || process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
+      
+      if (!rpcUrl) {
+        throw new Error('SOLANA_RPC_URL must be configured. Set NEXT_PUBLIC_SOLANA_RPC_URL in .env file or ensure backend provides it.');
+      }
+      
       const commitment: Commitment = 'confirmed';
 
       connectionInstance = new Connection(rpcUrl, {
@@ -46,7 +51,12 @@ export async function getConnection(): Promise<Connection> {
  */
 export async function createConnection(): Promise<Connection> {
   const programIds = await getProgramIds();
-  const rpcUrl = programIds.solanaRpcUrl || process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
+  const rpcUrl = programIds.solanaRpcUrl || process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
+  
+  if (!rpcUrl) {
+    throw new Error('SOLANA_RPC_URL must be configured. Set NEXT_PUBLIC_SOLANA_RPC_URL in .env file or ensure backend provides it.');
+  }
+  
   const commitment: Commitment = 'confirmed';
 
   return new Connection(rpcUrl, {
