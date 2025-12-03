@@ -90,7 +90,15 @@ export const projectsApi = {
   },
 
   getById: async (id: string): Promise<Project> => {
-    return apiClient.get<Project>(`/projects/${id}`);
+    // Check if it's a UUID (36 chars with hyphens) or a slug
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    
+    if (isUuid) {
+      return apiClient.get<Project>(`/projects/${id}`);
+    } else {
+      // Use slug endpoint for better clarity
+      return apiClient.get<Project>(`/projects/slug/${id}`);
+    }
   },
 
   getMyProjects: async (): Promise<Project[]> => {
