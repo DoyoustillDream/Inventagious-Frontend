@@ -11,19 +11,30 @@
  * @throws Error if the URL is a direct backend URL
  */
 export function validateProxyUrl(url: string): void {
-  // Check if it's a direct backend URL (contains localhost:3001 or other backend patterns)
-  const backendPatterns = [
-    /localhost:3001/,
-    /127\.0\.0\.1:3001/,
-    // Add other backend URL patterns here if needed
-  ];
+  const isServerSide = typeof window === 'undefined';
+  const backendUrl = process.env.BACKEND_URL;
+  const normalizedBackendUrl = backendUrl ? backendUrl.replace(/\/+$/, '') : null;
+  
+  // Allow BACKEND_URL for server-side calls only (secure - never exposed to client)
+  if (isServerSide && normalizedBackendUrl && url.startsWith(normalizedBackendUrl)) {
+    return; // Valid server-side direct backend URL
+  }
+  
+  // Client-side: must use proxy, never allow direct backend URLs
+  if (!isServerSide) {
+    const backendPatterns = [
+      /localhost:3001/,
+      /127\.0\.0\.1:3001/,
+      // Add other backend URL patterns here if needed
+    ];
 
-  for (const pattern of backendPatterns) {
-    if (pattern.test(url)) {
-      throw new Error(
-        `SECURITY ERROR: Direct backend URL detected: ${url}. ` +
-        `All API calls must go through the Next.js proxy at '/api' to hide the backend identity.`
-      );
+    for (const pattern of backendPatterns) {
+      if (pattern.test(url)) {
+        throw new Error(
+          `SECURITY ERROR: Direct backend URL detected: ${url}. ` +
+          `All client-side API calls must go through the Next.js proxy at '/api' to hide the backend identity.`
+        );
+      }
     }
   }
 
@@ -32,7 +43,7 @@ export function validateProxyUrl(url: string): void {
     return; // Valid proxy usage
   }
 
-  // For absolute URLs (server-side), they must include '/api' in the path
+  // For absolute URLs (server-side), they must include '/api' in the path (unless using BACKEND_URL)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     // Check if it's a backend API call (not external services)
     const isExternalService = url.includes('google') || 
@@ -42,10 +53,20 @@ export function validateProxyUrl(url: string): void {
                               url.includes('analytics');
     
     if (!isExternalService && !url.includes('/api')) {
-      throw new Error(
-        `SECURITY ERROR: Backend API URL must use '/api' proxy path. ` +
-        `Received: ${url}. This exposes the backend identity.`
-      );
+      // Server-side can use BACKEND_URL, client-side cannot
+      if (!isServerSide) {
+        throw new Error(
+          `SECURITY ERROR: Client-side backend API URL must use '/api' proxy path. ` +
+          `Received: ${url}. This exposes the backend identity.`
+        );
+      }
+      // Server-side: if not using BACKEND_URL, must use /api
+      if (isServerSide && (!normalizedBackendUrl || !url.startsWith(normalizedBackendUrl))) {
+        throw new Error(
+          `SECURITY ERROR: Server-side backend API URL must use '/api' proxy path or BACKEND_URL. ` +
+          `Received: ${url}.`
+        );
+      }
     }
   }
 }

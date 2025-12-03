@@ -63,22 +63,36 @@ class ApiClient {
   private token: string | null = null;
 
   constructor(baseUrl: string) {
-    // Validate that we're using the proxy, not a direct backend URL
-    // Check for direct backend URLs (localhost:3001 or 127.0.0.1:3001)
-    if (baseUrl.includes('localhost:3001') || baseUrl.includes('127.0.0.1:3001')) {
-      throw new Error(
-        'SECURITY ERROR: API client cannot use direct backend URLs. ' +
-        'All calls must go through the Next.js proxy at "/api"'
-      );
+    const isServerSide = typeof window === 'undefined';
+    const isBackendUrl = process.env.BACKEND_URL && baseUrl === process.env.BACKEND_URL.replace(/\/+$/, '');
+    
+    // Allow BACKEND_URL for server-side calls only (secure - never exposed to client)
+    if (isServerSide && isBackendUrl) {
+      this.baseUrl = baseUrl;
+      return;
     }
     
-    // For server-side full URLs, ensure they include '/api' proxy path
-    if (baseUrl.startsWith('http://') || baseUrl.startsWith('https://')) {
-      if (!baseUrl.includes('/api')) {
+    // Client-side: must use proxy, never allow direct backend URLs
+    if (!isServerSide) {
+      if (baseUrl.includes('localhost:3001') || baseUrl.includes('127.0.0.1:3001') || 
+          (baseUrl.startsWith('http://') && !baseUrl.includes('/api')) ||
+          (baseUrl.startsWith('https://') && !baseUrl.includes('/api'))) {
         throw new Error(
-          'SECURITY ERROR: API client URLs must use the "/api" proxy path. ' +
-          `Received: ${baseUrl}`
+          'SECURITY ERROR: Client-side API calls cannot use direct backend URLs. ' +
+          'All calls must go through the Next.js proxy at "/api"'
         );
+      }
+    }
+    
+    // Server-side validation: if not using BACKEND_URL, must use /api proxy
+    if (isServerSide && !isBackendUrl) {
+      if (baseUrl.startsWith('http://') || baseUrl.startsWith('https://')) {
+        if (!baseUrl.includes('/api')) {
+          throw new Error(
+            'SECURITY ERROR: Server-side API URLs must use the "/api" proxy path or BACKEND_URL. ' +
+            `Received: ${baseUrl}`
+          );
+        }
       }
     }
     
