@@ -67,19 +67,36 @@ export default function CompleteProfileForm({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md mx-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="browser-window max-w-md w-full mx-4">
+        <div className="browser-header">
+          <div className="browser-controls">
+            <div className="browser-dot red" />
+            <div className="browser-dot yellow" />
+            <div className="browser-dot green" />
+          </div>
+          <div className="flex-1" />
+          <h2 className="hand-drawn text-lg font-bold text-black">Complete Your Profile</h2>
+          <div className="flex-1" />
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="text-gray-500 hover:text-black text-xl font-bold"
+              disabled={isLoading}
+            >
+              ×
+            </button>
+          )}
+        </div>
+
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Complete Your Profile
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
+          <p className="hand-drawn text-base font-semibold text-gray-700 mb-6">
             Please provide your full name and email to continue using Inventagious.
           </p>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
-              <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+            <div className="mb-4 p-3 bg-red-50 border-2 border-red-500 rounded-lg text-sm text-red-700">
+              <p className="hand-drawn font-bold">{error}</p>
             </div>
           )}
 
@@ -87,9 +104,9 @@ export default function CompleteProfileForm({
             <div>
               <label
                 htmlFor="fullName"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-bold text-black mb-2"
               >
-                Full Name <span className="text-red-500">*</span>
+                Full Name <span className="text-red-600">*</span>
               </label>
               <input
                 id="fullName"
@@ -98,7 +115,7 @@ export default function CompleteProfileForm({
                 onChange={(e) => setFullName(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2 border-2 border-black rounded-lg hand-drawn text-black bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="John Doe"
               />
             </div>
@@ -106,9 +123,9 @@ export default function CompleteProfileForm({
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                className="block text-sm font-bold text-black mb-2"
               >
-                Email <span className="text-red-500">*</span>
+                Email <span className="text-red-600">*</span>
               </label>
               <input
                 id="email"
@@ -117,13 +134,13 @@ export default function CompleteProfileForm({
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2 border-2 border-black rounded-lg hand-drawn text-black bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="john@example.com"
               />
             </div>
 
-            <div className="text-xs text-gray-500 dark:text-gray-400">
-              <p>Wallet Address: {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}</p>
+            <div className="text-xs text-gray-700">
+              <p className="font-semibold">Wallet Address: <span className="hand-drawn font-bold text-black">{walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}</span></p>
             </div>
 
             <div className="flex gap-3 pt-4">
@@ -132,7 +149,7 @@ export default function CompleteProfileForm({
                   type="button"
                   onClick={onCancel}
                   disabled={isLoading}
-                  className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex-1 hand-drawn rounded-lg border-4 border-black bg-white px-6 py-3 text-base font-bold text-black transition hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
@@ -140,7 +157,7 @@ export default function CompleteProfileForm({
               <button
                 type="submit"
                 disabled={isLoading || !fullName.trim() || !email.trim()}
-                className="flex-1 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 hand-drawn rounded-lg border-4 border-black bg-yellow-400 px-6 py-3 text-base font-bold text-black transition hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? 'Completing...' : 'Complete Profile'}
               </button>
