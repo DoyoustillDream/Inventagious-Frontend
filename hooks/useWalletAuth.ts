@@ -22,26 +22,34 @@ export function useWalletAuth() {
   
   // Track current authentication attempt to prevent duplicates
   const authAttemptRef = useRef<string | null>(null);
-  const authTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   /**
    * Authenticate wallet with backend
+   * Manual authentication only - must be called explicitly by user action
    */
   const authenticateWallet = useCallback(async (force = false) => {
     // Safety checks
     if (!connected || !publicKey) {
-      return;
+      throw new Error('Wallet is not connected');
     }
 
     const walletAddress = publicKey.toString();
 
+    // Prevent duplicate authentication attempts - check both ref and state
+    if (isAuthenticating) {
+      console.log('Authentication already in progress');
+      return;
+    }
+
     // Prevent duplicate authentication attempts for the same wallet
-    if (!force && authAttemptRef.current === walletAddress && isAuthenticating) {
+    if (!force && authAttemptRef.current === walletAddress) {
+      console.log('Authentication already attempted for this wallet. Use force=true to retry.');
       return;
     }
 
     // Skip if already authenticated with this wallet
     if (!force && isAuthenticated && user?.walletAddress === walletAddress) {
+      console.log('Already authenticated with this wallet');
       return;
     }
 
@@ -84,7 +92,7 @@ export function useWalletAuth() {
       try {
         signature = await signMessage(messageBytes);
       } catch (signError: any) {
-        // Handle user rejection
+        // Handle user rejection - reset state so they can try again
         if (
           signError?.message?.includes('User rejected') ||
           signError?.message?.includes('User cancelled') ||
@@ -93,8 +101,11 @@ export function useWalletAuth() {
           console.log('User rejected wallet signature');
           authAttemptRef.current = null;
           setIsAuthenticating(false);
-          return;
+          throw new Error('Sign in cancelled by user');
         }
+        // Reset state on other errors too
+        authAttemptRef.current = null;
+        setIsAuthenticating(false);
         throw signError;
       }
 
@@ -148,38 +159,23 @@ export function useWalletAuth() {
       }
     } catch (error) {
       console.error('Authentication error:', error);
-      // Reset state on error
+      // Reset state on error so user can try again
       authAttemptRef.current = null;
-    } finally {
       setIsAuthenticating(false);
+      // Re-throw to allow caller to handle the error
+      throw error;
     }
   }, [connected, publicKey, signMessage, isAuthenticated, user, setUser, authLogout, redirectAfterAuth]);
 
-  // Auto-authenticate when wallet connects (but not if already authenticated)
+  // Reset state when wallet disconnects (manual authentication only - no auto-trigger)
   useEffect(() => {
-    // Clear any existing timeout
-    if (authTimeoutRef.current) {
-      clearTimeout(authTimeoutRef.current);
-    }
-
-    if (connected && publicKey && !isAuthenticated && !isAuthenticating) {
-      // Small delay to ensure wallet state is stable
-      authTimeoutRef.current = setTimeout(() => {
-        authenticateWallet();
-      }, 200);
-    } else if (!connected) {
+    if (!connected) {
       // Reset when disconnected
       authAttemptRef.current = null;
       setShowProfileForm(false);
       setPendingWalletAddress(null);
     }
-
-    return () => {
-      if (authTimeoutRef.current) {
-        clearTimeout(authTimeoutRef.current);
-      }
-    };
-  }, [connected, publicKey, isAuthenticated, isAuthenticating, authenticateWallet]);
+  }, [connected]);
 
   // Handle wallet disconnection
   const handleDisconnect = useCallback(async () => {
