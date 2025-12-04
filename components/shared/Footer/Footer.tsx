@@ -1,19 +1,17 @@
 import Link from 'next/link';
 import Logo from '../Logo';
+import NewsletterSignup from './NewsletterSignup';
 
 export default function Footer() {
   return (
     <footer className="border-t-4 border-white bg-black">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-          <div>
-            <div className="flex items-center gap-3 mb-4">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <div className="flex items-center justify-center gap-3 mb-4">
               <Logo variant="bulb" size="sm" />
               <h3 className="hand-drawn text-xl font-bold text-white">INVENTAGIOUS</h3>
             </div>
-            <p className="text-sm font-semibold text-white">
-              Where Ideas & Innovation Meet
-            </p>
           </div>
           <div>
             <h4 className="hand-drawn mb-4 text-base font-bold text-white">Platform</h4>
@@ -46,14 +44,7 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="hand-drawn mb-4 text-base font-bold text-white">Connect</h4>
-            <ul className="space-y-2 text-sm font-semibold">
-              <li>
-                <Link href="/contact" className="text-white hover:underline">
-                  Contact
-                </Link>
-              </li>
-            </ul>
+            <NewsletterSignup />
           </div>
         </div>
         <div className="mt-8 border-t-2 border-white pt-8 text-center">

@@ -7,15 +7,26 @@ import Image from 'next/image';
 export default function VideoSection() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const handlePlay = () => {
+  const handlePlay = async () => {
     setIsPlaying(true);
+    // Small delay to ensure video element is rendered
+    await new Promise(resolve => setTimeout(resolve, 50));
     // Play the video when button is clicked
     if (videoRef.current) {
-      videoRef.current.play().catch((error) => {
+      try {
+        await videoRef.current.play();
+        // Ensure video is actually playing
+        if (videoRef.current.paused) {
+          // If still paused, try again
+          await videoRef.current.play();
+        }
+      } catch (error) {
         console.error('Error playing video:', error);
-      });
+        setIsPlaying(false);
+      }
     }
   };
 
@@ -41,6 +52,21 @@ export default function VideoSection() {
     }
   }, []);
 
+  // Ensure video plays when isPlaying becomes true
+  useEffect(() => {
+    if (isPlaying && videoRef.current) {
+      const playVideo = async () => {
+        try {
+          await videoRef.current?.play();
+        } catch (error) {
+          console.error('Error auto-playing video:', error);
+          setIsPlaying(false);
+        }
+      };
+      playVideo();
+    }
+  }, [isPlaying]);
+
   return (
     <section className="bg-white py-20">
       <div className="container mx-auto px-4">
@@ -64,7 +90,7 @@ export default function VideoSection() {
             {!isPlaying && (
               <>
                 {/* Fallback gradient - only shows if image fails to load */}
-                {imageError && (
+                {imageError && !imageLoaded && (
                   <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-yellow-300 to-yellow-200 z-0" />
                 )}
                 
@@ -83,9 +109,14 @@ export default function VideoSection() {
                     fill
                     className="object-cover"
                     loading="lazy"
+                    onLoad={() => {
+                      setImageLoaded(true);
+                      setImageError(false);
+                    }}
                     onError={() => {
                       // Show gradient fallback if image doesn't exist
                       setImageError(true);
+                      setImageLoaded(false);
                     }}
                   />
                 </picture>
@@ -126,10 +157,16 @@ export default function VideoSection() {
             {isPlaying && (
               <video
                 ref={videoRef}
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover z-10"
                 controls
+                autoPlay
+                playsInline
                 onPause={handlePause}
                 onEnded={handlePause}
+                onPlay={() => {
+                  // Ensure state is synced when video plays
+                  setIsPlaying(true);
+                }}
               >
                 <source src="/videos/Trailers-1.mp4" type="video/mp4" />
                 Your browser does not support the video tag.

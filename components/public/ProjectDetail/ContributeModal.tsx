@@ -133,8 +133,11 @@ export default function ContributeModal({
     const feePercentage = paymentSettings?.feePercentage ?? 0.019;
     const netAmount = solAmount * (1 - feePercentage);
     const newAmountRaised = amountRaised + netAmount;
+    
+    // Allow small tolerance for rounding (0.00001 SOL) to allow exact goal completion
+    const roundingTolerance = 0.00001;
 
-    if (newAmountRaised > fundingGoal) {
+    if (newAmountRaised > fundingGoal + roundingTolerance) {
       const remainingToGoal = fundingGoal - amountRaised;
       const maxAllowedGross = remainingToGoal / (1 - feePercentage);
       showError(
@@ -144,6 +147,9 @@ export default function ContributeModal({
       );
       return;
     }
+    
+    // If contribution would result in exactly reaching the goal (within tolerance), allow it
+    // This handles the case where remaining is very small and fees prevent exact completion
 
     // Set submitting flag
     isSubmittingRef.current = true;
@@ -171,6 +177,12 @@ export default function ContributeModal({
   const feePercentageDisplay = (feePercentage * 100).toFixed(1);
   const isFunded = status === 'funded' || amountRaised >= fundingGoal;
   const remainingToGoal = Math.max(0, fundingGoal - amountRaised);
+  
+  // Calculate gross amount needed to reach exactly 100% (accounting for fees)
+  // If remaining is 0.0001 SOL net, we need: 0.0001 / (1 - 0.019) = 0.0001019 SOL gross
+  const grossAmountNeededToComplete = remainingToGoal > 0 
+    ? remainingToGoal / (1 - feePercentage)
+    : 0;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -214,7 +226,16 @@ export default function ContributeModal({
               </div>
               <div className="text-blue-600 mt-1">
                 {remainingToGoal > 0 ? (
-                  <>Remaining: <span className="font-bold">{remainingToGoal.toFixed(4)} SOL</span></>
+                  <>
+                    <div>
+                      Net remaining: <span className="font-bold">{remainingToGoal.toFixed(4)} SOL</span>
+                    </div>
+                    {grossAmountNeededToComplete > remainingToGoal && (
+                      <div className="text-xs mt-1 text-blue-500">
+                        Contribute <span className="font-bold">{grossAmountNeededToComplete.toFixed(4)} SOL</span> to reach 100%
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <>Goal reached!</>
                 )}
@@ -284,6 +305,31 @@ export default function ContributeModal({
                   required
                   disabled={isLoading || isLoadingPrice}
                 />
+                {grossAmountNeededToComplete > 0 && grossAmountNeededToComplete < 1 && !isFunded && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (inputCurrency === 'SOL') {
+                        setInputAmount(grossAmountNeededToComplete.toFixed(4));
+                      } else {
+                        // Convert to USD if needed
+                        try {
+                          const usd = await solToUsd(grossAmountNeededToComplete);
+                          setInputAmount(usd.toFixed(2));
+                        } catch (error) {
+                          console.error('Failed to convert SOL to USD:', error);
+                          // Fallback to SOL amount if conversion fails
+                          setInputCurrency('SOL');
+                          setInputAmount(grossAmountNeededToComplete.toFixed(4));
+                        }
+                      }
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 bg-yellow-400 border-2 border-black rounded hover:bg-yellow-500 transition"
+                    title="Fill exact amount to reach 100%"
+                  >
+                    Fill to 100%
+                  </button>
+                )}
               </div>
               {isLoadingPrice && (
                 <p className="mt-2 text-xs text-gray-700">Converting...</p>

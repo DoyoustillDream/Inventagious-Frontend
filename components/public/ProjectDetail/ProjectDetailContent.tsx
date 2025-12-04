@@ -7,6 +7,7 @@ import ProjectHero from './ProjectHero';
 import ProjectDescription from './ProjectDescription';
 import OrganizerSection from './OrganizerSection';
 import DonationsList from './DonationsList';
+import CampaignUpdates from './CampaignUpdates';
 
 interface ProjectDetailContentProps {
   project: Project; // Initial project data from server
@@ -34,6 +35,7 @@ export default function ProjectDetailContent({ project: initialProject }: Projec
         <div className="campaign-main-content">
           <ProjectHero project={projectData} />
           <ProjectDescription project={projectData} />
+          <CampaignUpdates project={projectData} />
           <DonationsList projectId={projectData.id} />
           <OrganizerSection project={projectData} />
         </div>

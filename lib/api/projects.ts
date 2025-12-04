@@ -80,6 +80,37 @@ export interface FeaturedTopic {
   keywords?: string[];
 }
 
+export interface CampaignUpdate {
+  id: string;
+  projectId: string;
+  creatorId: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  isPinned: boolean;
+  emailSent: boolean;
+  emailSentAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCampaignUpdateData {
+  title: string;
+  content: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  isPinned?: boolean;
+}
+
+export interface UpdateCampaignUpdateData {
+  title?: string;
+  content?: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  isPinned?: boolean;
+}
+
 export const projectsApi = {
   getAll: async (type?: string, status?: string): Promise<Project[]> => {
     const params = new URLSearchParams();
@@ -192,6 +223,34 @@ export const projectsApi = {
     return apiClient.post<Project & { releaseTransactionSignature?: string; amountReleased?: number }>(
       `/projects/${id}/release-funds`,
     );
+  },
+
+  // Campaign Updates
+  getCampaignUpdates: async (projectId: string): Promise<CampaignUpdate[]> => {
+    return apiClient.get<CampaignUpdate[]>(`/projects/${projectId}/updates`);
+  },
+
+  getCampaignUpdate: async (projectId: string, updateId: string): Promise<CampaignUpdate> => {
+    return apiClient.get<CampaignUpdate>(`/projects/${projectId}/updates/${updateId}`);
+  },
+
+  createCampaignUpdate: async (
+    projectId: string,
+    data: CreateCampaignUpdateData,
+  ): Promise<CampaignUpdate> => {
+    return apiClient.post<CampaignUpdate>(`/projects/${projectId}/updates`, data);
+  },
+
+  updateCampaignUpdate: async (
+    projectId: string,
+    updateId: string,
+    data: UpdateCampaignUpdateData,
+  ): Promise<CampaignUpdate> => {
+    return apiClient.put<CampaignUpdate>(`/projects/${projectId}/updates/${updateId}`, data);
+  },
+
+  deleteCampaignUpdate: async (projectId: string, updateId: string): Promise<void> => {
+    return apiClient.delete<void>(`/projects/${projectId}/updates/${updateId}`);
   },
 };
 
