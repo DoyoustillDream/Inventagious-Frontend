@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Project } from '@/lib/api/projects';
+import { useProject } from '@/hooks/useProject';
 import CircularProgress from './CircularProgress';
 import DonationsList from './DonationsList';
 import ContributeModal from './ContributeModal';
@@ -12,12 +13,21 @@ interface ProjectSidebarProps {
   project: Project;
 }
 
-export default function ProjectSidebar({ project }: ProjectSidebarProps) {
+export default function ProjectSidebar({ project: initialProject }: ProjectSidebarProps) {
+  // Use real-time project data
+  const { project, optimisticUpdate } = useProject(initialProject.id, {
+    pollInterval: 2000, // Poll every 2 seconds for sidebar (more frequent)
+    enablePolling: true,
+  });
+
+  // Use real-time project if available, otherwise fall back to initial
+  const projectData = project || initialProject;
+
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
   const [usdRaised, setUsdRaised] = useState<number | null>(null);
   const [usdGoal, setUsdGoal] = useState<number | null>(null);
   const { showSuccess } = useToast();
-  const progress = (project.amountRaised / project.fundingGoal) * 100;
+  const progress = (projectData.amountRaised / projectData.fundingGoal) * 100;
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Convert SOL to USD for display with debouncing to prevent excessive API calls
@@ -30,8 +40,8 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
     // Debounce the conversion to avoid excessive API calls
     debounceTimerRef.current = setTimeout(async () => {
       try {
-        const raised = await solToUsd(project.amountRaised);
-        const goal = await solToUsd(project.fundingGoal);
+        const raised = await solToUsd(projectData.amountRaised);
+        const goal = await solToUsd(projectData.fundingGoal);
         setUsdRaised(raised);
         setUsdGoal(goal);
       } catch (error) {
@@ -44,22 +54,23 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [project.amountRaised, project.fundingGoal]);
+  }, [projectData.amountRaised, projectData.fundingGoal]);
 
   const handleContribute = () => {
     setIsContributeModalOpen(true);
   };
 
   const handleContributeSuccess = () => {
-    // Refresh page or update project data
-    window.location.reload();
+    // Real-time updates will handle the refresh automatically
+    // No need to reload the page
+    setIsContributeModalOpen(false);
   };
 
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: project.title,
-        text: project.description,
+        title: projectData.title,
+        text: projectData.description,
         url: window.location.href,
       });
     } else {
@@ -78,7 +89,7 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
         </div>
         <div className="flex-1" />
         <div className="yellow-highlight hand-drawn text-xs font-bold text-center px-4">
-          {project.type === 'crowdfunding' ? 'CROWD FUNDING' : 'PRIVATE FUNDING'}
+          {projectData.type === 'crowdfunding' ? 'CROWD FUNDING' : 'PRIVATE FUNDING'}
         </div>
         <div className="flex-1" />
       </div>
@@ -90,7 +101,7 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
           <div className="mt-4 space-y-2">
             <div>
               <div className="hand-drawn text-2xl font-bold text-black">
-                {project.amountRaised.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL
+                {projectData.amountRaised.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL
               </div>
               {usdRaised !== null && (
                 <div className="text-sm font-semibold text-gray-600 mt-1">
@@ -101,7 +112,7 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
             <div className="text-sm font-semibold text-gray-700">
               <span>raised of </span>
               <span className="hand-drawn font-bold text-black">
-                {project.fundingGoal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL
+                {projectData.fundingGoal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL
               </span>
               {usdGoal !== null && (
                 <span className="text-gray-600 ml-1">
@@ -110,7 +121,7 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
               )}
             </div>
             <div className="text-sm font-semibold text-gray-600">
-              {project.backersCount} {project.backersCount === 1 ? 'backer' : 'backers'}
+              {projectData.backersCount} {projectData.backersCount === 1 ? 'backer' : 'backers'}
             </div>
           </div>
         </div>
@@ -123,17 +134,23 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
           >
             Share
           </button>
-          <button
-            onClick={handleContribute}
-            className="hand-drawn w-full rounded-lg border-4 border-black bg-yellow-400 px-6 py-3 text-base font-bold text-black transition-all duration-300 hover:bg-yellow-600 hover:scale-105 active:scale-95"
-          >
-            {project.type === 'crowdfunding' ? 'Contribute' : 'Donate'} now
-          </button>
+          {projectData.status === 'funded' || projectData.amountRaised >= projectData.fundingGoal ? (
+            <div className="hand-drawn w-full rounded-lg border-4 border-green-600 bg-green-100 px-6 py-3 text-base font-bold text-green-800 text-center">
+              ✓ Funding Goal Reached!
+            </div>
+          ) : (
+            <button
+              onClick={handleContribute}
+              className="hand-drawn w-full rounded-lg border-4 border-black bg-yellow-400 px-6 py-3 text-base font-bold text-black transition-all duration-300 hover:bg-yellow-600 hover:scale-105 active:scale-95"
+            >
+              {projectData.type === 'crowdfunding' ? 'Contribute' : 'Donate'} now
+            </button>
+          )}
         </div>
 
         {/* Recent Donations */}
         <div className="mb-6">
-          <DonationsList projectId={project.id} compact />
+          <DonationsList projectId={projectData.id} compact />
         </div>
 
         {/* Become Early Supporter */}
@@ -166,15 +183,18 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
       </div>
 
       {/* Contribute Modal */}
-      {project.type === 'crowdfunding' && (
+      {projectData.type === 'crowdfunding' && (
         <ContributeModal
-          projectId={project.id}
-          campaignPda={project.solanaAddress}
-          fundingGoal={project.fundingGoal}
-          isOnChain={project.isOnChain ?? false}
+          projectId={projectData.id}
+          campaignPda={projectData.solanaAddress}
+          fundingGoal={projectData.fundingGoal}
+          amountRaised={projectData.amountRaised}
+          status={projectData.status}
+          isOnChain={projectData.isOnChain ?? false}
           isOpen={isContributeModalOpen}
           onClose={() => setIsContributeModalOpen(false)}
           onSuccess={handleContributeSuccess}
+          onOptimisticUpdate={optimisticUpdate}
         />
       )}
     </div>

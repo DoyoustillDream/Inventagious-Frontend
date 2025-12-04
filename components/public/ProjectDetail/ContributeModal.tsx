@@ -6,26 +6,43 @@ import { usdToSol, solToUsd } from '@/lib/solana/price';
 import { useWallet } from '@/hooks/useWallet';
 import { useToast } from '@/components/shared/Toast';
 import { usePaymentSettings } from '@/hooks/usePaymentSettings';
+import { useProject } from '@/hooks/useProject';
 
 interface ContributeModalProps {
   projectId: string;
   campaignPda?: string; // Optional - for backward compatibility with on-chain projects
   fundingGoal: number;
+  amountRaised: number;
+  status: string;
   isOnChain?: boolean; // Whether project uses on-chain smart contracts
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onOptimisticUpdate?: (amount: number, feePercentage: number) => void;
 }
 
 export default function ContributeModal({
   projectId,
   campaignPda,
   fundingGoal,
+  amountRaised,
+  status,
   isOnChain = false,
   isOpen,
   onClose,
   onSuccess,
+  onOptimisticUpdate,
 }: ContributeModalProps) {
+  // Use real-time project data for this modal
+  const { project: realTimeProject } = useProject(projectId, {
+    pollInterval: 2000, // Poll every 2 seconds
+    enablePolling: isOpen, // Only poll when modal is open
+  });
+
+  // Use real-time data if available, otherwise use props
+  const currentAmountRaised = realTimeProject?.amountRaised ?? amountRaised;
+  const currentStatus = realTimeProject?.status ?? status;
+  const currentFundingGoal = realTimeProject?.fundingGoal ?? fundingGoal;
   const [inputCurrency, setInputCurrency] = useState<'USD' | 'SOL'>('USD');
   const [inputAmount, setInputAmount] = useState('');
   const [solAmount, setSolAmount] = useState<number>(0);
@@ -84,6 +101,12 @@ export default function ContributeModal({
       return;
     }
 
+    // Check if campaign has reached its goal
+    if (status === 'funded' || amountRaised >= fundingGoal) {
+      showError('This campaign has already reached its funding goal. Contributions are no longer accepted.');
+      return;
+    }
+
     if (!connected) {
       showWarning('Please connect your wallet to contribute');
       return;
@@ -103,6 +126,22 @@ export default function ContributeModal({
     const minContribution = paymentSettings?.minContributionAmountSol ?? 0.1;
     if (solAmount < minContribution) {
       showWarning(`Minimum contribution is ${minContribution} SOL`);
+      return;
+    }
+
+    // Validate that contribution won't exceed funding goal
+    const feePercentage = paymentSettings?.feePercentage ?? 0.019;
+    const netAmount = solAmount * (1 - feePercentage);
+    const newAmountRaised = amountRaised + netAmount;
+
+    if (newAmountRaised > fundingGoal) {
+      const remainingToGoal = fundingGoal - amountRaised;
+      const maxAllowedGross = remainingToGoal / (1 - feePercentage);
+      showError(
+        `This contribution would exceed the funding goal. ` +
+        `Maximum contribution allowed: ${maxAllowedGross.toFixed(4)} SOL ` +
+        `(would result in ${fundingGoal.toFixed(4)} SOL total after fees).`
+      );
       return;
     }
 
@@ -130,6 +169,8 @@ export default function ContributeModal({
   const platformFee = solAmount * feePercentage;
   const netAmount = solAmount - platformFee;
   const feePercentageDisplay = (feePercentage * 100).toFixed(1);
+  const isFunded = status === 'funded' || amountRaised >= fundingGoal;
+  const remainingToGoal = Math.max(0, fundingGoal - amountRaised);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -152,6 +193,34 @@ export default function ContributeModal({
         </div>
 
         <div className="p-6">
+          {/* Funding Goal Status */}
+          {isFunded ? (
+            <div className="mb-4 p-4 bg-green-50 border-2 border-green-600 rounded-lg text-center">
+              <div className="text-2xl mb-2 font-bold text-green-700">✓</div>
+              <div className="hand-drawn text-base font-bold text-green-800 mb-1">
+                Funding Goal Reached!
+              </div>
+              <div className="text-sm text-green-700">
+                This campaign has reached its goal of {fundingGoal.toFixed(4)} SOL.
+                Contributions are no longer accepted.
+              </div>
+            </div>
+          ) : (
+            <div className="mb-4 p-3 bg-blue-50 border-2 border-blue-500 rounded-lg text-sm">
+              <div className="font-semibold text-blue-800 mb-1">Funding Progress</div>
+              <div className="text-blue-700">
+                <span className="font-bold">{amountRaised.toFixed(4)} SOL</span> raised of{' '}
+                <span className="font-bold">{fundingGoal.toFixed(4)} SOL</span> goal
+              </div>
+              <div className="text-blue-600 mt-1">
+                {remainingToGoal > 0 ? (
+                  <>Remaining: <span className="font-bold">{remainingToGoal.toFixed(4)} SOL</span></>
+                ) : (
+                  <>Goal reached!</>
+                )}
+              </div>
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <div className="flex items-center justify-between mb-2">
@@ -281,9 +350,9 @@ export default function ContributeModal({
               <button
                 type="submit"
                 className="flex-1 hand-drawn rounded-lg border-4 border-black bg-yellow-400 px-6 py-3 text-base font-bold text-black transition hover:bg-yellow-600 disabled:opacity-50"
-                disabled={isLoading || isLoadingPrice || !connected || solAmount <= 0 || !!priceError}
+                disabled={isLoading || isLoadingPrice || !connected || solAmount <= 0 || !!priceError || isFunded}
               >
-                {isLoading ? 'Processing...' : 'Contribute'}
+                {isLoading ? 'Processing...' : isFunded ? 'Goal Reached' : 'Contribute'}
               </button>
             </div>
           </form>
