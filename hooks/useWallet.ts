@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PublicKey, Connection, Transaction, VersionedTransaction } from '@solana/web3.js';
 import { detectWallets, getFirstAvailableWallet, Wallet } from '@/lib/wallet/wallet-standard';
 
@@ -47,6 +47,12 @@ export function useWallet(): UseWalletReturn {
     };
   }, []);
 
+  // Use refs to track state without causing re-renders in the interval
+  const connectedRef = useRef(false);
+  const walletRef = useRef<Wallet | null>(null);
+  const lastCheckRef = useRef<number>(0);
+  const CHECK_DEBOUNCE_MS = 1000; // Don't check more than once per second
+
   // Check for existing connection on mount and listen for changes
   useEffect(() => {
     const checkExistingConnection = async () => {
@@ -58,15 +64,40 @@ export function useWallet(): UseWalletReturn {
         if ((window as any).phantom?.solana) {
           const phantomProvider = (window as any).phantom.solana;
           const checkPhantomConnection = () => {
-            if (phantomProvider.isConnected && phantomProvider.publicKey) {
+            // Debounce rapid calls
+            const now = Date.now();
+            if (now - lastCheckRef.current < CHECK_DEBOUNCE_MS) {
+              return;
+            }
+            lastCheckRef.current = now;
+
+            const isConnected = phantomProvider.isConnected && phantomProvider.publicKey;
+            const currentPublicKeyStr = connectedRef.current && walletRef.current?.publicKey 
+              ? walletRef.current.publicKey.toBase58() 
+              : null;
+            const newPublicKeyStr = isConnected && phantomProvider.publicKey 
+              ? (typeof phantomProvider.publicKey === 'string' 
+                  ? phantomProvider.publicKey 
+                  : phantomProvider.publicKey.toBase58())
+              : null;
+            
+            // Only update if state actually changed
+            if (isConnected && newPublicKeyStr && newPublicKeyStr !== currentPublicKeyStr) {
               const phantomWallet = createDirectWalletFromProvider('Phantom', phantomProvider);
-              setWallet(phantomWallet);
-              setPublicKey(phantomWallet.publicKey);
-              setConnected(true);
-            } else {
+              const newPublicKey = phantomWallet.publicKey;
+              if (newPublicKey) {
+                setWallet(phantomWallet);
+                setPublicKey(newPublicKey);
+                setConnected(true);
+                connectedRef.current = true;
+                walletRef.current = phantomWallet;
+              }
+            } else if (!isConnected && connectedRef.current) {
               setWallet(null);
               setPublicKey(null);
               setConnected(false);
+              connectedRef.current = false;
+              walletRef.current = null;
             }
           };
           
@@ -83,15 +114,40 @@ export function useWallet(): UseWalletReturn {
         else if ((window as any).solflare) {
           const solflareProvider = (window as any).solflare;
           const checkSolflareConnection = () => {
-            if (solflareProvider.isConnected && solflareProvider.publicKey) {
+            // Debounce rapid calls
+            const now = Date.now();
+            if (now - lastCheckRef.current < CHECK_DEBOUNCE_MS) {
+              return;
+            }
+            lastCheckRef.current = now;
+
+            const isConnected = solflareProvider.isConnected && solflareProvider.publicKey;
+            const currentPublicKeyStr = connectedRef.current && walletRef.current?.publicKey 
+              ? walletRef.current.publicKey.toBase58() 
+              : null;
+            const newPublicKeyStr = isConnected && solflareProvider.publicKey 
+              ? (typeof solflareProvider.publicKey === 'string' 
+                  ? solflareProvider.publicKey 
+                  : solflareProvider.publicKey.toBase58())
+              : null;
+            
+            // Only update if state actually changed
+            if (isConnected && newPublicKeyStr && newPublicKeyStr !== currentPublicKeyStr) {
               const solflareWallet = createDirectWalletFromProvider('Solflare', solflareProvider);
-              setWallet(solflareWallet);
-              setPublicKey(solflareWallet.publicKey);
-              setConnected(true);
-            } else {
+              const newPublicKey = solflareWallet.publicKey;
+              if (newPublicKey) {
+                setWallet(solflareWallet);
+                setPublicKey(newPublicKey);
+                setConnected(true);
+                connectedRef.current = true;
+                walletRef.current = solflareWallet;
+              }
+            } else if (!isConnected && connectedRef.current) {
               setWallet(null);
               setPublicKey(null);
               setConnected(false);
+              connectedRef.current = false;
+              walletRef.current = null;
             }
           };
           
@@ -108,15 +164,40 @@ export function useWallet(): UseWalletReturn {
         else if ((window as any).backpack) {
           const backpackProvider = (window as any).backpack;
           const checkBackpackConnection = () => {
-            if (backpackProvider.isConnected && backpackProvider.publicKey) {
+            // Debounce rapid calls
+            const now = Date.now();
+            if (now - lastCheckRef.current < CHECK_DEBOUNCE_MS) {
+              return;
+            }
+            lastCheckRef.current = now;
+
+            const isConnected = backpackProvider.isConnected && backpackProvider.publicKey;
+            const currentPublicKeyStr = connectedRef.current && walletRef.current?.publicKey 
+              ? walletRef.current.publicKey.toBase58() 
+              : null;
+            const newPublicKeyStr = isConnected && backpackProvider.publicKey 
+              ? (typeof backpackProvider.publicKey === 'string' 
+                  ? backpackProvider.publicKey 
+                  : backpackProvider.publicKey.toBase58())
+              : null;
+            
+            // Only update if state actually changed
+            if (isConnected && newPublicKeyStr && newPublicKeyStr !== currentPublicKeyStr) {
               const backpackWallet = createDirectWalletFromProvider('Backpack', backpackProvider);
-              setWallet(backpackWallet);
-              setPublicKey(backpackWallet.publicKey);
-              setConnected(true);
-            } else {
+              const newPublicKey = backpackWallet.publicKey;
+              if (newPublicKey) {
+                setWallet(backpackWallet);
+                setPublicKey(newPublicKey);
+                setConnected(true);
+                connectedRef.current = true;
+                walletRef.current = backpackWallet;
+              }
+            } else if (!isConnected && connectedRef.current) {
               setWallet(null);
               setPublicKey(null);
               setConnected(false);
+              connectedRef.current = false;
+              walletRef.current = null;
             }
           };
           
@@ -135,55 +216,55 @@ export function useWallet(): UseWalletReturn {
     
     checkExistingConnection();
     
-    // Also check periodically in case wallet connects after initial check
+    // Only poll periodically if not already connected (event listeners handle most cases)
+    // Use a longer interval (5 seconds) and only check when disconnected to reduce overhead
     const interval = setInterval(() => {
+      // Skip polling if already connected (event listeners handle state changes)
+      if (connectedRef.current) {
+        return;
+      }
+
       if (typeof window !== 'undefined') {
-        // Re-check connection status for all wallets
+        // Re-check connection status for all wallets only when disconnected
         if ((window as any).phantom?.solana) {
           const phantomProvider = (window as any).phantom.solana;
           const isConnected = phantomProvider.isConnected && phantomProvider.publicKey;
-          if (isConnected && !connected) {
+          if (isConnected && !connectedRef.current) {
             const phantomWallet = createDirectWalletFromProvider('Phantom', phantomProvider);
             setWallet(phantomWallet);
             setPublicKey(phantomWallet.publicKey);
             setConnected(true);
-          } else if (!isConnected && connected && wallet?.name === 'Phantom') {
-            setWallet(null);
-            setPublicKey(null);
-            setConnected(false);
+            connectedRef.current = true;
+            walletRef.current = phantomWallet;
           }
         } else if ((window as any).solflare) {
           const solflareProvider = (window as any).solflare;
           const isConnected = solflareProvider.isConnected && solflareProvider.publicKey;
-          if (isConnected && !connected) {
+          if (isConnected && !connectedRef.current) {
             const solflareWallet = createDirectWalletFromProvider('Solflare', solflareProvider);
             setWallet(solflareWallet);
             setPublicKey(solflareWallet.publicKey);
             setConnected(true);
-          } else if (!isConnected && connected && wallet?.name === 'Solflare') {
-            setWallet(null);
-            setPublicKey(null);
-            setConnected(false);
+            connectedRef.current = true;
+            walletRef.current = solflareWallet;
           }
         } else if ((window as any).backpack) {
           const backpackProvider = (window as any).backpack;
           const isConnected = backpackProvider.isConnected && backpackProvider.publicKey;
-          if (isConnected && !connected) {
+          if (isConnected && !connectedRef.current) {
             const backpackWallet = createDirectWalletFromProvider('Backpack', backpackProvider);
             setWallet(backpackWallet);
             setPublicKey(backpackWallet.publicKey);
             setConnected(true);
-          } else if (!isConnected && connected && wallet?.name === 'Backpack') {
-            setWallet(null);
-            setPublicKey(null);
-            setConnected(false);
+            connectedRef.current = true;
+            walletRef.current = backpackWallet;
           }
         }
       }
-    }, 500); // Check every 500ms
+    }, 5000); // Check every 5 seconds instead of 500ms, and only when disconnected
     
     return () => clearInterval(interval);
-  }, [connected, wallet]);
+  }, []); // Empty dependency array - refs handle state tracking
 
   const connect = useCallback(async (walletName?: string) => {
     setConnecting(true);
@@ -211,6 +292,8 @@ export function useWallet(): UseWalletReturn {
       setWallet(selectedWallet);
       setPublicKey(selectedWallet.publicKey);
       setConnected(selectedWallet.connected);
+      connectedRef.current = selectedWallet.connected;
+      walletRef.current = selectedWallet;
     } catch (error) {
       console.error('Failed to connect wallet:', error);
       throw error;
@@ -226,6 +309,8 @@ export function useWallet(): UseWalletReturn {
         setWallet(null);
         setPublicKey(null);
         setConnected(false);
+        connectedRef.current = false;
+        walletRef.current = null;
       } catch (error) {
         console.error('Failed to disconnect wallet:', error);
         throw error;

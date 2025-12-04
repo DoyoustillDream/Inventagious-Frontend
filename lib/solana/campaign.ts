@@ -10,8 +10,7 @@ import {
   deriveCampaignConfigPda,
 } from './pda';
 import { loadIdl } from './idl-loader';
-
-const MIN_CONTRIBUTION = 0.1 * LAMPORTS_PER_SOL; // 0.1 SOL
+import { getMinContributionAmount } from '@/lib/api/payment-settings';
 
 /**
  * Hook to interact with the Campaign program
@@ -337,10 +336,12 @@ export async function contributeTransaction(
   }
 
   // Validate minimum contribution
+  const minContributionSol = await getMinContributionAmount();
+  const minContributionLamports = Math.floor(minContributionSol * LAMPORTS_PER_SOL);
   const amountLamports = Math.floor(amount * LAMPORTS_PER_SOL);
-  if (amountLamports < MIN_CONTRIBUTION) {
+  if (amountLamports < minContributionLamports) {
     throw new Error(
-      `Minimum contribution is ${MIN_CONTRIBUTION / LAMPORTS_PER_SOL} SOL`,
+      `Minimum contribution is ${minContributionSol} SOL`,
     );
   }
 

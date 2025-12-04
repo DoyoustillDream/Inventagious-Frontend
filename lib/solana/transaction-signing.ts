@@ -89,6 +89,8 @@ export async function signTransactionWithRetry(
 
   // Attempt signing with retry logic
   let lastError: any = null;
+  let signedTransaction: Transaction | VersionedTransaction | null = null;
+  
   for (let attempt = 0; attempt <= finalConfig.maxRetries; attempt++) {
     try {
       // Don't retry if user rejected
@@ -97,7 +99,7 @@ export async function signTransactionWithRetry(
       }
 
       // Sign the transaction
-      const signedTransaction = await wallet.signTransaction(preparedTransaction);
+      signedTransaction = await wallet.signTransaction(preparedTransaction);
 
       // Verify the signed transaction
       if (!signedTransaction) {
@@ -116,6 +118,7 @@ export async function signTransactionWithRetry(
         );
       }
 
+      // Successfully signed - return immediately, don't retry or refresh blockhash
       return signedTransaction;
     } catch (error: any) {
       lastError = error;
@@ -125,7 +128,7 @@ export async function signTransactionWithRetry(
         throw createTransactionError(error);
       }
 
-      // Check if we should retry
+      // Check if we should retry (only if signing failed, not after successful sign)
       if (attempt < finalConfig.maxRetries && isRetryableError(error)) {
         const delay = finalConfig.retryDelay * Math.pow(2, attempt); // Exponential backoff
         console.warn(
@@ -134,11 +137,20 @@ export async function signTransactionWithRetry(
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
 
-        // Refresh blockhash before retry (it might have expired)
+        // Only refresh blockhash if we're retrying due to a failure
+        // Create a NEW transaction for retry to avoid signing an already-signed transaction
         if (finalConfig.prepareBeforeSign && preparedTransaction instanceof Transaction) {
           try {
             const { blockhash } = await connection.getLatestBlockhash(finalConfig.commitment);
-            preparedTransaction.recentBlockhash = blockhash;
+            // Create a fresh transaction copy for retry (don't modify the original)
+            const retryTransaction = new Transaction();
+            retryTransaction.recentBlockhash = blockhash;
+            retryTransaction.feePayer = preparedTransaction.feePayer;
+            // Copy instructions
+            preparedTransaction.instructions.forEach(ix => {
+              retryTransaction.add(ix);
+            });
+            preparedTransaction = retryTransaction;
           } catch (refreshError) {
             console.warn('Could not refresh blockhash before retry:', refreshError);
           }

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useCampaign } from '@/lib/solana/hooks/useCampaign';
-import { usdToSol } from '@/lib/solana/price';
+import { usdToSol, solToUsd } from '@/lib/solana/price';
 import { useWallet } from '@/hooks/useWallet';
 import { useToast } from '@/components/shared/Toast';
+import { usePaymentSettings } from '@/hooks/usePaymentSettings';
 
 interface ContributeModalProps {
   projectId: string;
@@ -25,51 +26,64 @@ export default function ContributeModal({
   onClose,
   onSuccess,
 }: ContributeModalProps) {
-  const [usdAmount, setUsdAmount] = useState('');
+  const [inputCurrency, setInputCurrency] = useState<'USD' | 'SOL'>('USD');
+  const [inputAmount, setInputAmount] = useState('');
   const [solAmount, setSolAmount] = useState<number>(0);
+  const [usdAmount, setUsdAmount] = useState<number>(0);
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
   const { contribute, isLoading, error } = useCampaign();
   const { connected, publicKey, isLoading: walletLoading } = useWallet();
   const { showError, showWarning, showSuccess } = useToast();
+  const { settings: paymentSettings, isLoading: isLoadingPaymentSettings } = usePaymentSettings();
+  const isSubmittingRef = useRef(false); // Guard to prevent multiple simultaneous submissions
 
-  // Debug: Log wallet connection status
+  // Convert between USD and SOL when input amount changes
   useEffect(() => {
-    if (isOpen) {
-      console.log('ContributeModal - Wallet status:', { connected, publicKey: publicKey?.toBase58(), walletLoading });
-    }
-  }, [isOpen, connected, publicKey, walletLoading]);
-
-  // Convert USD to SOL when USD amount changes
-  useEffect(() => {
-    const convertUsdToSol = async () => {
-      const usd = parseFloat(usdAmount);
-      if (isNaN(usd) || usd <= 0) {
+    const convertAmount = async () => {
+      const amount = parseFloat(inputAmount);
+      if (isNaN(amount) || amount <= 0) {
         setSolAmount(0);
+        setUsdAmount(0);
         return;
       }
 
       setIsLoadingPrice(true);
       setPriceError(null);
       try {
-        const sol = await usdToSol(usd);
-        setSolAmount(sol);
+        if (inputCurrency === 'USD') {
+          // Input is USD, convert to SOL
+          const sol = await usdToSol(amount);
+          setSolAmount(sol);
+          setUsdAmount(amount);
+        } else {
+          // Input is SOL, convert to USD
+          const usd = await solToUsd(amount);
+          setSolAmount(amount);
+          setUsdAmount(usd);
+        }
       } catch (error: any) {
-        setPriceError(error.message || 'Failed to convert USD to SOL');
+        setPriceError(error.message || `Failed to convert ${inputCurrency}`);
         setSolAmount(0);
+        setUsdAmount(0);
       } finally {
         setIsLoadingPrice(false);
       }
     };
 
-    convertUsdToSol();
-  }, [usdAmount]);
+    convertAmount();
+  }, [inputAmount, inputCurrency]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
+    // Prevent multiple simultaneous submissions
+    if (isSubmittingRef.current || isLoading) {
+      return;
+    }
+
     if (!connected) {
       showWarning('Please connect your wallet to contribute');
       return;
@@ -82,30 +96,40 @@ export default function ContributeModal({
     }
 
     if (solAmount <= 0 || priceError) {
-      showWarning('Please enter a valid USD amount');
+      showWarning(`Please enter a valid ${inputCurrency === 'USD' ? 'USD' : 'SOL'} amount`);
       return;
     }
 
-    if (solAmount < 0.1) {
-      showWarning('Minimum contribution is 0.1 SOL');
+    const minContribution = paymentSettings?.minContributionAmountSol ?? 0.1;
+    if (solAmount < minContribution) {
+      showWarning(`Minimum contribution is ${minContribution} SOL`);
       return;
     }
+
+    // Set submitting flag
+    isSubmittingRef.current = true;
 
     try {
       await contribute(projectId, campaignPda || undefined, solAmount, isOnChain);
-      setUsdAmount('');
+      setInputAmount('');
       setSolAmount(0);
+      setUsdAmount(0);
       showSuccess('Contribution successful!');
       onSuccess();
       onClose();
     } catch (err: any) {
       console.error('Contribution failed:', err);
       showError(err.message || 'Failed to contribute');
+    } finally {
+      // Always reset the flag, even on error
+      isSubmittingRef.current = false;
     }
   };
 
-  const platformFee = solAmount * 0.019; // 1.9% flat rate
+  const feePercentage = paymentSettings?.feePercentage ?? 0.019;
+  const platformFee = solAmount * feePercentage;
   const netAmount = solAmount - platformFee;
+  const feePercentageDisplay = (feePercentage * 100).toFixed(1);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -130,26 +154,78 @@ export default function ContributeModal({
         <div className="p-6">
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block text-sm font-bold text-black mb-2">
-                Amount ($)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                min="0.01"
-                value={usdAmount}
-                onChange={(e) => setUsdAmount(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-black rounded-lg hand-drawn text-black bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                placeholder="0.00"
-                required
-                disabled={isLoading || isLoadingPrice}
-              />
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-bold text-black">
+                  Amount
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInputCurrency('USD');
+                      setInputAmount('');
+                    }}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg border-2 transition ${
+                      inputCurrency === 'USD'
+                        ? 'bg-yellow-400 border-black text-black'
+                        : 'bg-white border-gray-300 text-gray-600 hover:border-black'
+                    }`}
+                  >
+                    USD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInputCurrency('SOL');
+                      setInputAmount('');
+                    }}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg border-2 transition ${
+                      inputCurrency === 'SOL'
+                        ? 'bg-yellow-400 border-black text-black'
+                        : 'bg-white border-gray-300 text-gray-600 hover:border-black'
+                    }`}
+                  >
+                    SOL
+                  </button>
+                </div>
+              </div>
+              <div className="relative">
+                {inputCurrency === 'USD' ? (
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black font-semibold">
+                    $
+                  </span>
+                ) : (
+                  <img
+                    src="/svg/solanaLogoMark.svg"
+                    alt="SOL"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-auto"
+                    style={{ objectFit: 'contain' }}
+                  />
+                )}
+                <input
+                  type="number"
+                  step={inputCurrency === 'USD' ? '0.01' : '0.0001'}
+                  min={inputCurrency === 'USD' ? '0.01' : '0.0001'}
+                  value={inputAmount}
+                  onChange={(e) => setInputAmount(e.target.value)}
+                  className={`w-full pr-4 py-2 border-2 border-black rounded-lg hand-drawn text-black bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                    inputCurrency === 'USD' ? 'pl-8' : 'pl-10'
+                  }`}
+                  placeholder="0.00"
+                  required
+                  disabled={isLoading || isLoadingPrice}
+                />
+              </div>
               {isLoadingPrice && (
-                <p className="mt-2 text-xs text-gray-700">Converting to SOL...</p>
+                <p className="mt-2 text-xs text-gray-700">Converting...</p>
               )}
-              {!isLoadingPrice && solAmount > 0 && (
+              {!isLoadingPrice && inputAmount && solAmount > 0 && (
                 <p className="mt-2 text-xs text-gray-800">
-                  ≈ {solAmount.toFixed(4)} SOL
+                  {inputCurrency === 'USD' ? (
+                    <>≈ {solAmount.toFixed(4)} SOL</>
+                  ) : (
+                    <>≈ ${usdAmount.toFixed(2)} USD</>
+                  )}
                 </p>
               )}
               {priceError && (
@@ -165,7 +241,7 @@ export default function ContributeModal({
                     <span className="text-black">{solAmount.toFixed(4)} SOL</span>
                   </div>
                   <div className="flex justify-between text-gray-800">
-                    <span>Platform Fee (1.9%):</span>
+                    <span>Platform Fee ({feePercentageDisplay}%):</span>
                     <span>-{platformFee.toFixed(4)} SOL</span>
                   </div>
                   <div className="flex justify-between font-bold border-t-2 border-black pt-2 text-black">

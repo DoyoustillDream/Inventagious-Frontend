@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Project } from '@/lib/api/projects';
 import CircularProgress from './CircularProgress';
 import DonationsList from './DonationsList';
@@ -18,10 +18,17 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
   const [usdGoal, setUsdGoal] = useState<number | null>(null);
   const { showSuccess } = useToast();
   const progress = (project.amountRaised / project.fundingGoal) * 100;
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Convert SOL to USD for display
+  // Convert SOL to USD for display with debouncing to prevent excessive API calls
   useEffect(() => {
-    const convertAmounts = async () => {
+    // Clear any existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Debounce the conversion to avoid excessive API calls
+    debounceTimerRef.current = setTimeout(async () => {
       try {
         const raised = await solToUsd(project.amountRaised);
         const goal = await solToUsd(project.fundingGoal);
@@ -30,9 +37,13 @@ export default function ProjectSidebar({ project }: ProjectSidebarProps) {
       } catch (error) {
         console.warn('Failed to convert SOL to USD for display:', error);
       }
-    };
+    }, 300); // 300ms debounce
 
-    convertAmounts();
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [project.amountRaised, project.fundingGoal]);
 
   const handleContribute = () => {

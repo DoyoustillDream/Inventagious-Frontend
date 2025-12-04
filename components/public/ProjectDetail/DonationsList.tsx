@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { projectsApi, type Donation } from '@/lib/api/projects';
+import { useDonations } from '@/hooks/useDonations';
+import type { Donation } from '@/lib/api/projects';
 
 interface DonationsListProps {
   projectId: string;
@@ -16,25 +16,7 @@ function formatWalletAddress(address: string): string {
 }
 
 export default function DonationsList({ projectId, compact = false }: DonationsListProps) {
-  const [donations, setDonations] = useState<Donation[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDonations = async () => {
-      try {
-        setIsLoading(true);
-        const project = await projectsApi.getById(projectId);
-        setDonations(project.donations || []);
-      } catch (error) {
-        console.error('Failed to fetch donations:', error);
-        setDonations([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDonations();
-  }, [projectId]);
+  const { donations, isLoading } = useDonations(projectId);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

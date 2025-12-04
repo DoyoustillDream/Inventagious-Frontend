@@ -10,7 +10,20 @@ import {
 } from '@solana/web3.js';
 
 /**
+ * Check if a transaction is already signed
+ */
+function isTransactionSigned(transaction: Transaction): boolean {
+  // Check if transaction has signatures
+  if (transaction.signatures && transaction.signatures.length > 0) {
+    // Check if any signature is not null (null means not signed)
+    return transaction.signatures.some(sig => sig.signature !== null);
+  }
+  return false;
+}
+
+/**
  * Prepare a Transaction for signing by ensuring blockhash and fee payer are set
+ * WARNING: Do not call this on an already-signed transaction as it will invalidate the signature
  */
 export async function prepareTransaction(
   transaction: Transaction,
@@ -18,6 +31,12 @@ export async function prepareTransaction(
   feePayer: PublicKey,
   commitment: 'processed' | 'confirmed' | 'finalized' = 'confirmed',
 ): Promise<Transaction> {
+  // Don't prepare already-signed transactions - modifying them would invalidate the signature
+  if (isTransactionSigned(transaction)) {
+    console.warn('Attempted to prepare an already-signed transaction. Returning as-is.');
+    return transaction;
+  }
+
   // Ensure fee payer is set
   if (!transaction.feePayer) {
     transaction.feePayer = feePayer;
