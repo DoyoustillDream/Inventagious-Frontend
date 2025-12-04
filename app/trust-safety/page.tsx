@@ -32,6 +32,7 @@ export const metadata: Metadata = {
       'Learn about Inventagious Trust & Safety guarantee: full refund protection for up to a year, fraud prevention, secure transactions on Solana blockchain.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

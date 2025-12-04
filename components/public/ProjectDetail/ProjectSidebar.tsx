@@ -79,6 +79,13 @@ export default function ProjectSidebar({ project: initialProject }: ProjectSideb
     }
   };
 
+  const getShareUrl = () => {
+    if (typeof window !== 'undefined') {
+      return window.location.href;
+    }
+    return '';
+  };
+
   return (
     <div className="browser-window sticky top-4">
       <div className="browser-header">
@@ -134,6 +141,22 @@ export default function ProjectSidebar({ project: initialProject }: ProjectSideb
           >
             Share
           </button>
+          <a
+            href={`https://x.com/intent/tweet?text=${encodeURIComponent(projectData.title)}&url=${encodeURIComponent(getShareUrl())}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hand-drawn w-full rounded-lg border-4 border-black bg-black px-6 py-3 text-base font-bold text-white transition-all duration-300 hover:bg-gray-800 hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+            Share on X
+          </a>
           {projectData.status === 'funded' || projectData.amountRaised >= projectData.fundingGoal ? (
             <div className="hand-drawn w-full rounded-lg border-4 border-green-600 bg-green-100 px-6 py-3 text-base font-bold text-green-800 text-center">
               ✓ Funding Goal Reached!

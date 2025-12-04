@@ -36,6 +36,7 @@ export const metadata: Metadata = {
       'Find projects by name, location, title, or keyword. Discover innovative crowdfunding and private funding projects.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

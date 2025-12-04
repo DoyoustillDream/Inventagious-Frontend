@@ -35,6 +35,7 @@ export const metadata: Metadata = {
     description: 'Explore innovative crowdfunding and private funding projects on Inventagious.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

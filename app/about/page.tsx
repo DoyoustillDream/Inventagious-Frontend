@@ -38,6 +38,7 @@ export const metadata: Metadata = {
       'Learn about Inventagious - a crowdfunding and private fundraising platform for inventors and innovators. Built on Solana for instant payments and zero equity requirements.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

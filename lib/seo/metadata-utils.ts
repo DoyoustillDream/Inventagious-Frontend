@@ -78,6 +78,7 @@ export function generatePageMetadata(options: PageMetadataOptions): Metadata {
       description,
       images: [ogImageUrl],
       creator: siteConfig.twitterHandle,
+      site: siteConfig.twitterHandle,
     },
     robots: {
       index: !noindex,
@@ -160,6 +161,7 @@ export function generateArticleMetadata(options: {
       description,
       images: [ogImageUrl],
       creator: siteConfig.twitterHandle,
+      site: siteConfig.twitterHandle,
     },
   };
 }

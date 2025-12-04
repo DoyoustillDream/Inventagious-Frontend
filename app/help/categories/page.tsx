@@ -29,6 +29,7 @@ export const metadata: Metadata = {
     description: 'Learn about all project categories on Inventagious.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

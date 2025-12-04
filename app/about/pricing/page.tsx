@@ -32,6 +32,7 @@ export const metadata: Metadata = {
       'Transparent pricing for Inventagious. 1.9% platform fee, zero equity required, no hidden fees.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

@@ -155,6 +155,28 @@ export default function HeaderMobileMenu({ isOpen, onClose }: HeaderMobileMenuPr
               <WalletConnect />
             </div>
           </div>
+
+          {/* Social Links */}
+          <div className="pt-4 border-t-4 border-black">
+            <h3 className="text-lg font-bold text-black mb-3">Follow Us</h3>
+            <a
+              href="https://x.com/Inventagiousapp"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClose}
+              className="flex items-center gap-3 p-3 rounded-lg border-4 border-black bg-white hover:bg-yellow-100 transition-all"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              <span className="font-bold">Follow on X (Twitter)</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

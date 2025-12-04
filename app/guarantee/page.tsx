@@ -32,6 +32,7 @@ export const metadata: Metadata = {
       'Learn about Inventagious platform guarantee: fund protection through Solana escrow, 100% ownership protection, blockchain transparency, and enterprise-grade security.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

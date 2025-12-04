@@ -41,6 +41,7 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

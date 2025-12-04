@@ -34,6 +34,7 @@ export const metadata: Metadata = {
     description: 'Discover trending and featured projects on Inventagious.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

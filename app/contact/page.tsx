@@ -32,6 +32,7 @@ export const metadata: Metadata = {
       'Contact Inventagious support team. Get help with your projects, campaigns, or questions.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

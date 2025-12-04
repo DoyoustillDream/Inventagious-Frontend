@@ -33,6 +33,13 @@ export default function CreateCampaignForm() {
     deadline: '',
     solanaAddress: '',
     isPublic: true,
+    websiteUrl: '',
+    twitterUrl: '',
+    facebookUrl: '',
+    instagramUrl: '',
+    linkedinUrl: '',
+    youtubeUrl: '',
+    tiktokUrl: '',
   });
 
   const validateStep = (step: number): boolean => {
@@ -130,6 +137,13 @@ export default function CreateCampaignForm() {
         deadline: formData.deadline || undefined,
         solanaAddress: publicKey?.toBase58() || '',
         isPublic: formData.isPublic ?? true,
+        websiteUrl: formData.websiteUrl?.trim() || undefined,
+        twitterUrl: formData.twitterUrl?.trim() || undefined,
+        facebookUrl: formData.facebookUrl?.trim() || undefined,
+        instagramUrl: formData.instagramUrl?.trim() || undefined,
+        linkedinUrl: formData.linkedinUrl?.trim() || undefined,
+        youtubeUrl: formData.youtubeUrl?.trim() || undefined,
+        tiktokUrl: formData.tiktokUrl?.trim() || undefined,
       };
 
       // Step 1: Create project in database first
@@ -294,6 +308,13 @@ export default function CreateCampaignForm() {
               title={formData.title}
               description={formData.description || ''}
               category={formData.category || ''}
+              websiteUrl={formData.websiteUrl || ''}
+              twitterUrl={formData.twitterUrl || ''}
+              facebookUrl={formData.facebookUrl || ''}
+              instagramUrl={formData.instagramUrl || ''}
+              linkedinUrl={formData.linkedinUrl || ''}
+              youtubeUrl={formData.youtubeUrl || ''}
+              tiktokUrl={formData.tiktokUrl || ''}
               onUpdate={updateField}
             />
           )}

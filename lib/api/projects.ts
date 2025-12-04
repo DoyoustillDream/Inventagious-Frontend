@@ -32,6 +32,13 @@ export interface Project {
   solanaAddress?: string;
   isOnChain?: boolean;
   campaignWalletAddress?: string; // Unique wallet for this campaign
+  websiteUrl?: string;
+  twitterUrl?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
   donations?: Donation[];
   contributions?: Contribution[];
   createdAt: string;
@@ -50,6 +57,13 @@ export interface CreateProjectData {
   solanaAddress?: string;
   isPublic?: boolean;
   isFeatured?: boolean;
+  websiteUrl?: string;
+  twitterUrl?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
 }
 
 export interface Milestone {

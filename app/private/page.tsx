@@ -29,6 +29,7 @@ export const metadata: Metadata = {
     description: 'Explore private funding options on Inventagious.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

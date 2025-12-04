@@ -29,6 +29,7 @@ export const metadata: Metadata = {
     description: 'Learn proven tips and strategies for successful fundraising on Inventagious.',
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
 };
 

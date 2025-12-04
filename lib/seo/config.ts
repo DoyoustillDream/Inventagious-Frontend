@@ -42,7 +42,8 @@ export const siteConfig = {
   locale: "en_US",
   type: "website",
   siteName: "Inventagious",
-  twitterHandle: "@inventagious",
+  twitterHandle: "@Inventagiousapp",
+  twitterUrl: "https://x.com/Inventagiousapp",
   facebookAppId: "",
   googleSiteVerification: "",
   bingSiteVerification: "",
@@ -89,6 +90,7 @@ export const defaultMetadata = {
     description: siteConfig.description,
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
+    site: siteConfig.twitterHandle,
   },
   robots: {
     index: true,

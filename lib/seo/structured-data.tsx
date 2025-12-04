@@ -14,10 +14,7 @@ export function OrganizationSchema() {
     "logo": siteConfig.logo,
     "description": siteConfig.description,
     "sameAs": [
-      // Add social media links here when available
-      // "https://twitter.com/inventagious",
-      // "https://www.facebook.com/inventagious",
-      // "https://www.linkedin.com/company/inventagious",
+      "https://x.com/Inventagiousapp",
     ],
     "contactPoint": {
       "@type": "ContactPoint",
