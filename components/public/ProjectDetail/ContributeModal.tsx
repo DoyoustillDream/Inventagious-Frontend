@@ -7,6 +7,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { useToast } from '@/components/shared/Toast';
 import { usePaymentSettings } from '@/hooks/usePaymentSettings';
 import { useProject } from '@/hooks/useProject';
+import { clearDonationsCache } from '@/hooks/useDonations';
 
 interface ContributeModalProps {
   projectId: string;
@@ -101,8 +102,8 @@ export default function ContributeModal({
       return;
     }
 
-    // Check if campaign has reached its goal
-    if (status === 'funded' || amountRaised >= fundingGoal) {
+    // Check if campaign has reached its goal (use real-time data)
+    if (currentStatus === 'funded' || currentAmountRaised >= currentFundingGoal) {
       showError('This campaign has already reached its funding goal. Contributions are no longer accepted.');
       return;
     }
@@ -129,21 +130,21 @@ export default function ContributeModal({
       return;
     }
 
-    // Validate that contribution won't exceed funding goal
+    // Validate that contribution won't exceed funding goal (use real-time data)
     const feePercentage = paymentSettings?.feePercentage ?? 0.019;
     const netAmount = solAmount * (1 - feePercentage);
-    const newAmountRaised = amountRaised + netAmount;
+    const newAmountRaised = currentAmountRaised + netAmount;
     
     // Allow small tolerance for rounding (0.00001 SOL) to allow exact goal completion
     const roundingTolerance = 0.00001;
 
-    if (newAmountRaised > fundingGoal + roundingTolerance) {
-      const remainingToGoal = fundingGoal - amountRaised;
+    if (newAmountRaised > currentFundingGoal + roundingTolerance) {
+      const remainingToGoal = currentFundingGoal - currentAmountRaised;
       const maxAllowedGross = remainingToGoal / (1 - feePercentage);
       showError(
         `This contribution would exceed the funding goal. ` +
         `Maximum contribution allowed: ${maxAllowedGross.toFixed(4)} SOL ` +
-        `(would result in ${fundingGoal.toFixed(4)} SOL total after fees).`
+        `(would result in ${currentFundingGoal.toFixed(4)} SOL total after fees).`
       );
       return;
     }
@@ -159,6 +160,8 @@ export default function ContributeModal({
       setInputAmount('');
       setSolAmount(0);
       setUsdAmount(0);
+      // Clear donations cache to force refresh
+      clearDonationsCache(projectId);
       showSuccess('Contribution successful!');
       onSuccess();
       onClose();
@@ -175,18 +178,31 @@ export default function ContributeModal({
   const platformFee = solAmount * feePercentage;
   const netAmount = solAmount - platformFee;
   const feePercentageDisplay = (feePercentage * 100).toFixed(1);
-  const isFunded = status === 'funded' || amountRaised >= fundingGoal;
-  const remainingToGoal = Math.max(0, fundingGoal - amountRaised);
+  const isFunded = currentStatus === 'funded' || currentAmountRaised >= currentFundingGoal;
+  const remainingToGoal = Math.max(0, currentFundingGoal - currentAmountRaised);
   
   // Calculate gross amount needed to reach exactly 100% (accounting for fees)
   // If remaining is 0.0001 SOL net, we need: 0.0001 / (1 - 0.019) = 0.0001019 SOL gross
-  const grossAmountNeededToComplete = remainingToGoal > 0 
+  // We need to ensure the calculated amount, when rounded to 4 decimals, won't exceed the goal
+  const grossAmountNeededToCompleteRaw = remainingToGoal > 0 
     ? remainingToGoal / (1 - feePercentage)
+    : 0;
+  
+  // Round down to 4 decimal places to ensure we don't exceed the goal due to rounding
+  // This prevents the "would exceed funding goal" error
+  // The backend has a tolerance of 0.00001 SOL, so rounding down slightly is safe
+  const grossAmountNeededToComplete = grossAmountNeededToCompleteRaw > 0
+    ? Math.floor(grossAmountNeededToCompleteRaw * 10000) / 10000
     : 0;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="browser-window max-w-md w-full mx-4">
+    <div 
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="browser-window max-w-md w-full shadow-2xl">
         <div className="browser-header">
           <div className="browser-controls">
             <div className="browser-dot red" />
@@ -198,67 +214,92 @@ export default function ContributeModal({
           <div className="flex-1" />
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-black text-xl font-bold"
+            className="text-gray-500 hover:text-black text-xl font-bold transition-colors hover:bg-gray-200 rounded px-1 py-0.5"
+            aria-label="Close"
           >
             ×
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 bg-white">
           {/* Funding Goal Status */}
           {isFunded ? (
-            <div className="mb-4 p-4 bg-green-50 border-2 border-green-600 rounded-lg text-center">
-              <div className="text-2xl mb-2 font-bold text-green-700">✓</div>
-              <div className="hand-drawn text-base font-bold text-green-800 mb-1">
+            <div className="mb-6 p-5 bg-gradient-to-br from-green-50 to-green-100 border-3 border-green-600 rounded-xl text-center shadow-sm">
+              <div className="text-3xl mb-3 font-bold text-green-700">✓</div>
+              <div className="hand-drawn text-lg font-bold text-green-800 mb-2">
                 Funding Goal Reached!
               </div>
-              <div className="text-sm text-green-700">
-                This campaign has reached its goal of {fundingGoal.toFixed(4)} SOL.
+              <div className="text-sm text-green-700 leading-relaxed">
+                This campaign has reached its goal of <span className="font-bold">{currentFundingGoal.toFixed(4)} SOL</span>.
                 Contributions are no longer accepted.
               </div>
             </div>
           ) : (
-            <div className="mb-4 p-3 bg-blue-50 border-2 border-blue-500 rounded-lg text-sm">
-              <div className="font-semibold text-blue-800 mb-1">Funding Progress</div>
-              <div className="text-blue-700">
-                <span className="font-bold">{amountRaised.toFixed(4)} SOL</span> raised of{' '}
-                <span className="font-bold">{fundingGoal.toFixed(4)} SOL</span> goal
+            <div className="mb-6 p-5 bg-gradient-to-br from-blue-50 to-blue-100 border-3 border-blue-600 rounded-xl shadow-sm">
+              <div className="font-bold text-blue-900 mb-3 text-base">Funding Progress</div>
+              
+              {/* Progress Bar */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-blue-800">
+                    {((currentAmountRaised / currentFundingGoal) * 100).toFixed(1)}% Complete
+                  </span>
+                  <span className="text-xs text-blue-600">
+                    {currentAmountRaised.toFixed(4)} / {currentFundingGoal.toFixed(4)} SOL
+                  </span>
+                </div>
+                <div className="w-full h-4 bg-blue-200 border-2 border-blue-400 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                    style={{ width: `${Math.min((currentAmountRaised / currentFundingGoal) * 100, 100)}%` }}
+                  />
+                </div>
               </div>
-              <div className="text-blue-600 mt-1">
-                {remainingToGoal > 0 ? (
-                  <>
-                    <div>
-                      Net remaining: <span className="font-bold">{remainingToGoal.toFixed(4)} SOL</span>
-                    </div>
-                    {grossAmountNeededToComplete > remainingToGoal && (
-                      <div className="text-xs mt-1 text-blue-500">
-                        Contribute <span className="font-bold">{grossAmountNeededToComplete.toFixed(4)} SOL</span> to reach 100%
+
+              {/* Remaining Amount */}
+              {remainingToGoal > 0 ? (
+                <div className="bg-white/60 border-2 border-blue-300 rounded-lg p-3 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-semibold text-blue-800">Still Needed:</span>
+                    <span className="font-bold text-base text-blue-900">{remainingToGoal.toFixed(4)} SOL</span>
+                  </div>
+                  {grossAmountNeededToComplete > remainingToGoal && (
+                    <div className="pt-2 border-t-2 border-blue-200">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-blue-700">To complete (including fees):</span>
+                        <span className="text-sm font-bold text-blue-900">{grossAmountNeededToComplete.toFixed(4)} SOL</span>
                       </div>
-                    )}
-                  </>
-                ) : (
-                  <>Goal reached!</>
-                )}
-              </div>
+                      <div className="text-xs text-blue-600 italic">
+                        This amount includes the platform fee
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center font-bold text-blue-800 py-2">
+                  Goal reached! 🎉
+                </div>
+              )}
             </div>
           )}
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-bold text-black">
+          
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-base font-bold text-black hand-drawn">
                   Amount
                 </label>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg border-2 border-gray-300">
                   <button
                     type="button"
                     onClick={() => {
                       setInputCurrency('USD');
                       setInputAmount('');
                     }}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg border-2 transition ${
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border-2 transition-all duration-200 ${
                       inputCurrency === 'USD'
-                        ? 'bg-yellow-400 border-black text-black'
-                        : 'bg-white border-gray-300 text-gray-600 hover:border-black'
+                        ? 'bg-yellow-400 border-black text-black shadow-sm'
+                        : 'bg-white border-transparent text-gray-600 hover:border-gray-400 hover:text-black'
                     }`}
                   >
                     USD
@@ -269,10 +310,10 @@ export default function ContributeModal({
                       setInputCurrency('SOL');
                       setInputAmount('');
                     }}
-                    className={`px-3 py-1 text-xs font-bold rounded-lg border-2 transition ${
+                    className={`px-3 py-1.5 text-xs font-bold rounded-md border-2 transition-all duration-200 ${
                       inputCurrency === 'SOL'
-                        ? 'bg-yellow-400 border-black text-black'
-                        : 'bg-white border-gray-300 text-gray-600 hover:border-black'
+                        ? 'bg-yellow-400 border-black text-black shadow-sm'
+                        : 'bg-white border-transparent text-gray-600 hover:border-gray-400 hover:text-black'
                     }`}
                   >
                     SOL
@@ -281,14 +322,14 @@ export default function ContributeModal({
               </div>
               <div className="relative">
                 {inputCurrency === 'USD' ? (
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black font-semibold">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black font-bold text-lg">
                     $
                   </span>
                 ) : (
                   <img
                     src="/svg/solanaLogoMark.svg"
                     alt="SOL"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-auto"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-auto z-10"
                     style={{ objectFit: 'contain' }}
                   />
                 )}
@@ -298,9 +339,9 @@ export default function ContributeModal({
                   min={inputCurrency === 'USD' ? '0.01' : '0.0001'}
                   value={inputAmount}
                   onChange={(e) => setInputAmount(e.target.value)}
-                  className={`w-full pr-4 py-2 border-2 border-black rounded-lg hand-drawn text-black bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                    inputCurrency === 'USD' ? 'pl-8' : 'pl-10'
-                  }`}
+                  className={`w-full pr-24 py-3 text-lg border-3 border-black rounded-xl hand-drawn text-black bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                    inputCurrency === 'USD' ? 'pl-10' : 'pl-12'
+                  } ${isLoading || isLoadingPrice ? 'opacity-60 cursor-not-allowed' : ''}`}
                   placeholder="0.00"
                   required
                   disabled={isLoading || isLoadingPrice}
@@ -324,7 +365,7 @@ export default function ContributeModal({
                         }
                       }
                     }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold px-2 py-1 bg-yellow-400 border-2 border-black rounded hover:bg-yellow-500 transition"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold px-3 py-1.5 bg-yellow-400 border-2 border-black rounded-lg hover:bg-yellow-500 hover:shadow-sm transition-all duration-200 active:scale-95"
                     title="Fill exact amount to reach 100%"
                   >
                     Fill to 100%
@@ -332,10 +373,10 @@ export default function ContributeModal({
                 )}
               </div>
               {isLoadingPrice && (
-                <p className="mt-2 text-xs text-gray-700">Converting...</p>
+                <p className="mt-2 text-xs text-gray-600 font-medium">Converting...</p>
               )}
               {!isLoadingPrice && inputAmount && solAmount > 0 && (
-                <p className="mt-2 text-xs text-gray-800">
+                <p className="mt-2 text-sm text-gray-700 font-semibold">
                   {inputCurrency === 'USD' ? (
                     <>≈ {solAmount.toFixed(4)} SOL</>
                   ) : (
@@ -344,58 +385,58 @@ export default function ContributeModal({
                 </p>
               )}
               {priceError && (
-                <p className="mt-2 text-xs text-red-600">{priceError}</p>
+                <p className="mt-2 text-xs text-red-600 font-semibold">{priceError}</p>
               )}
             </div>
 
             {solAmount > 0 && (
-              <div className="mb-4 p-4 bg-gray-50 border-2 border-black rounded-lg">
-                <div className="space-y-2 text-sm text-black">
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-black">Contribution:</span>
-                    <span className="text-black">{solAmount.toFixed(4)} SOL</span>
+              <div className="mb-4 p-5 bg-gradient-to-br from-gray-50 to-gray-100 border-3 border-black rounded-xl shadow-sm">
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-700">Contribution:</span>
+                    <span className="text-black font-bold text-base">{solAmount.toFixed(4)} SOL</span>
                   </div>
-                  <div className="flex justify-between text-gray-800">
+                  <div className="flex justify-between items-center text-gray-700">
                     <span>Platform Fee ({feePercentageDisplay}%):</span>
-                    <span>-{platformFee.toFixed(4)} SOL</span>
+                    <span className="font-semibold">-{platformFee.toFixed(4)} SOL</span>
                   </div>
-                  <div className="flex justify-between font-bold border-t-2 border-black pt-2 text-black">
-                    <span>Net Amount:</span>
-                    <span>{netAmount.toFixed(4)} SOL</span>
+                  <div className="flex justify-between items-center font-bold border-t-3 border-black pt-3 text-black">
+                    <span className="text-base">Net Amount:</span>
+                    <span className="text-lg">{netAmount.toFixed(4)} SOL</span>
                   </div>
                 </div>
               </div>
             )}
 
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border-2 border-red-500 rounded-lg text-sm text-red-700">
+              <div className="p-4 bg-red-50 border-3 border-red-600 rounded-xl text-sm text-red-800 font-semibold shadow-sm">
                 {error}
               </div>
             )}
 
             {!walletLoading && !connected && (
-              <div className="mb-4 p-3 bg-yellow-50 border-2 border-yellow-500 rounded-lg text-sm text-yellow-700">
+              <div className="p-4 bg-yellow-50 border-3 border-yellow-600 rounded-xl text-sm text-yellow-800 font-semibold shadow-sm">
                 Please connect your wallet to contribute
               </div>
             )}
             {walletLoading && (
-              <div className="mb-4 p-3 bg-blue-50 border-2 border-blue-500 rounded-lg text-sm text-blue-700">
+              <div className="p-4 bg-blue-50 border-3 border-blue-600 rounded-xl text-sm text-blue-800 font-semibold shadow-sm">
                 Checking wallet connection...
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 hand-drawn rounded-lg border-4 border-black bg-white px-6 py-3 text-base font-bold text-black transition hover:bg-gray-100"
+                className="flex-1 hand-drawn rounded-xl border-3 border-black bg-white px-6 py-3.5 text-base font-bold text-black transition-all duration-200 hover:bg-gray-100 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 hand-drawn rounded-lg border-4 border-black bg-yellow-400 px-6 py-3 text-base font-bold text-black transition hover:bg-yellow-600 disabled:opacity-50"
+                className="flex-1 hand-drawn rounded-xl border-3 border-black bg-yellow-400 px-6 py-3.5 text-base font-bold text-black transition-all duration-200 hover:bg-yellow-500 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isLoading || isLoadingPrice || !connected || solAmount <= 0 || !!priceError || isFunded}
               >
                 {isLoading ? 'Processing...' : isFunded ? 'Goal Reached' : 'Contribute'}

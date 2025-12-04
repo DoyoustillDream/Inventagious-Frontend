@@ -27,8 +27,21 @@ export default function AIChatWidget() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize or retrieve session ID
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      let storedSessionId = localStorage.getItem('chat_session_id');
+      if (!storedSessionId) {
+        storedSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('chat_session_id', storedSessionId);
+      }
+      setSessionId(storedSessionId);
+    }
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -59,7 +72,7 @@ export default function AIChatWidget() {
     setIsLoading(true);
 
     try {
-      const response = await helpApi.chat(messageText);
+      const response = await helpApi.chat(messageText, sessionId);
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: response.response || 'I am sorry, I could not process that question. Please try rephrasing it.',

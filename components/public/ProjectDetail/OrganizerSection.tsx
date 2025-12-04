@@ -1,6 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Project } from '@/lib/api/projects';
+import { type Profile } from '@/lib/api/profile';
+import { apiClient } from '@/lib/api/client';
 
 interface OrganizerSectionProps {
   project: Project;
@@ -14,6 +18,30 @@ function formatWalletAddress(address: string): string {
 }
 
 export default function OrganizerSection({ project }: OrganizerSectionProps) {
+  const [organizerProfile, setOrganizerProfile] = useState<Profile | null>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+
+  useEffect(() => {
+    const fetchOrganizerProfile = async () => {
+      if (!project.userId) return;
+      
+      setIsLoadingProfile(true);
+      try {
+        // Try to fetch profile by userId (backend supports this)
+        const profile = await apiClient.get<Profile>(`/profile/${project.userId}`).catch(() => null);
+        if (profile) {
+          setOrganizerProfile(profile);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch organizer profile:', error);
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+
+    fetchOrganizerProfile();
+  }, [project.userId]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -24,6 +52,15 @@ export default function OrganizerSection({ project }: OrganizerSectionProps) {
   };
 
   const creatorWalletAddress = project.userId || '';
+  const organizerUsername = organizerProfile?.username;
+  
+  // Create mailto link - use project title in subject
+  const getContactEmail = () => {
+    const subject = encodeURIComponent(`Inquiry about ${project.title}`);
+    const body = encodeURIComponent(`Hello,\n\nI'm interested in learning more about your project: ${project.title}\n\nBest regards`);
+    // For now, we'll use a generic contact email. In the future, this could use organizerProfile data if available
+    return `mailto:contact@inventagious.com?subject=${subject}&body=${body}`;
+  };
 
   return (
     <div className="browser-window mb-6">
@@ -45,20 +82,49 @@ export default function OrganizerSection({ project }: OrganizerSectionProps) {
         
         <div className="flex items-start gap-4 mb-4">
           <div className="h-12 w-12 rounded-full bg-gray-300 border-2 border-black flex items-center justify-center flex-shrink-0">
-            <span className="text-2xl">👤</span>
+            {organizerProfile?.avatarUrl ? (
+              <img
+                src={organizerProfile.avatarUrl}
+                alt={organizerProfile.displayName || organizerProfile.username}
+                className="h-12 w-12 rounded-full border-2 border-black object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent) {
+                    parent.innerHTML = '<span class="text-2xl">👤</span>';
+                  }
+                }}
+              />
+            ) : (
+              <span className="text-2xl">👤</span>
+            )}
           </div>
           <div className="flex-1">
-            <div className="hand-drawn text-base font-bold text-black mb-1" title={creatorWalletAddress}>
-              {creatorWalletAddress ? formatWalletAddress(creatorWalletAddress) : 'Unknown'}
-            </div>
+            {organizerUsername ? (
+              <Link
+                href={`/u/${organizerUsername}`}
+                className="hand-drawn text-base font-bold text-black mb-1 hover:text-yellow-600 transition-colors cursor-pointer block"
+                title={creatorWalletAddress}
+              >
+                {organizerProfile?.displayName || organizerProfile?.username || (creatorWalletAddress ? formatWalletAddress(creatorWalletAddress) : 'Unknown')}
+              </Link>
+            ) : (
+              <div className="hand-drawn text-base font-bold text-black mb-1" title={creatorWalletAddress}>
+                {creatorWalletAddress ? formatWalletAddress(creatorWalletAddress) : 'Unknown'}
+              </div>
+            )}
             <div className="text-sm text-gray-600 mb-1">Creator Wallet Address</div>
             {project.category && (
               <div className="text-sm text-gray-600">{project.category}</div>
             )}
           </div>
-          <button className="hand-drawn rounded-lg border-4 border-black bg-white px-4 py-2 text-sm font-bold text-black transition-all duration-300 hover:bg-gray-100 hover:scale-105 active:scale-95">
+          <a
+            href={getContactEmail()}
+            className="hand-drawn rounded-lg border-4 border-black bg-white px-4 py-2 text-sm font-bold text-black transition-all duration-300 hover:bg-gray-100 hover:scale-105 active:scale-95"
+          >
             Contact
-          </button>
+          </a>
         </div>
 
         <div className="pt-4 border-t-2 border-gray-200">

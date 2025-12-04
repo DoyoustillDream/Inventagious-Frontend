@@ -176,31 +176,13 @@ export default function ProjectSidebar({ project: initialProject }: ProjectSideb
           <DonationsList projectId={projectData.id} compact />
         </div>
 
-        {/* Become Early Supporter */}
-        <div className="mb-6 p-4 bg-gray-50 border-2 border-black rounded-lg">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-full bg-gray-300 border-2 border-black flex items-center justify-center">
-              <span className="text-xl">💡</span>
-            </div>
-            <div>
-              <div className="hand-drawn text-sm font-bold text-black">
-                Become an early supporter
-              </div>
-              <p className="text-xs text-gray-600">Your donation matters</p>
-            </div>
-          </div>
-        </div>
-
         {/* Trust Badge */}
         <div className="p-4 bg-yellow-50 border-2 border-black rounded-lg">
           <h3 className="hand-drawn text-sm font-bold text-black mb-2">
-            Inventagious protects your donation
+            Automatic refund protection
           </h3>
           <p className="text-xs text-gray-700">
-            We guarantee you a full refund for up to a year in the rare case that fraud occurs.{' '}
-            <a href="/trust-safety" className="underline font-semibold">
-              See our Trust & Safety Guarantee.
-            </a>
+            If the campaign expires, your funds will be refunded automatically. No action required on your part.
           </p>
         </div>
       </div>

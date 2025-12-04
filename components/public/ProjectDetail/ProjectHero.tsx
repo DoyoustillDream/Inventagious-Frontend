@@ -20,13 +20,9 @@ export default function ProjectHero({ project }: ProjectHeroProps) {
           <div className="browser-dot green" />
         </div>
         <div className="flex-1" />
-        <div className="yellow-highlight hand-drawn text-xs font-bold text-center px-4">
-          PROJECT HERO
-        </div>
-        <div className="flex-1" />
       </div>
 
-      <ImageSlideshow images={images} alt={project.title} />
+      <ImageSlideshow images={images} videoUrl={project.videoUrl} alt={project.title} />
 
       <div className="p-6">
         <h1 className="hand-drawn text-3xl md:text-4xl font-bold text-black mb-4">

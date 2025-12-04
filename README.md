@@ -1,8 +1,8 @@
 # Inventagious Frontend
 
-A modern, feature-rich Next.js frontend application for the Inventagious crowdfunding platform, featuring Solana blockchain integration, wallet authentication, comprehensive SEO optimization, and a beautiful user experience.
+A modern, feature-rich Next.js frontend application for the Inventagious crowdfunding platform, featuring Solana blockchain integration, wallet authentication, comprehensive SEO optimization, and a professional user experience.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -22,56 +22,81 @@ A modern, feature-rich Next.js frontend application for the Inventagious crowdfu
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 
-## 🎯 Overview
+## Overview
 
 The Inventagious Frontend is a cutting-edge web application built with Next.js 16 and React 19. It provides a seamless experience for inventors, innovators, and investors to discover, fund, and manage crowdfunding projects on the Solana blockchain. The platform features wallet-based authentication, real-time blockchain interactions, comprehensive SEO optimization, and a responsive, modern UI.
 
-## ✨ Features
+## Features
 
 ### Core Functionality
-- **Home Page**: Beautiful landing page with hero section, featured projects, and platform information
+
+- **Home Page**: Professional landing page with hero section, featured projects, platform information, and trust indicators
 - **Project Discovery**: Browse, search, and filter projects by category, status, and funding goals
 - **Campaign Management**: Create and manage crowdfunding campaigns with Solana blockchain integration
 - **Deal Management**: Private funding deals with escrow functionality
-- **User Profiles**: Complete user profile management with wallet integration
-- **Search & Filter**: Advanced search and filtering capabilities
-- **Category Browsing**: Explore projects by category
+- **User Profiles**: Complete user profile management with wallet integration, activity feeds, and social features
+- **Search & Filter**: Advanced search and filtering capabilities across projects, campaigns, and deals
+- **Category Browsing**: Explore projects by category with featured projects and category-specific pages
+- **Explore Page**: Comprehensive discovery interface for browsing all available projects and campaigns
 
 ### Blockchain & Wallet Integration
+
 - **Wallet Authentication**: Connect with Phantom, Solflare, Backpack, Glow, and other Solana wallets
 - **Wallet Standard API**: Modern wallet detection and connection using Wallet Standard API
 - **Smart Contract Integration**: Direct interaction with Solana smart contracts (Campaign, Deal Escrow, Treasury)
 - **Transaction Signing**: Secure transaction signing through user wallets
 - **On-Chain Operations**: Contribute to campaigns, create deals, and manage escrow accounts
 - **Real-Time Updates**: Live blockchain data synchronization
+- **Transaction Validation**: Comprehensive transaction validation and error handling
 
 ### User Experience
+
 - **Responsive Design**: Mobile-first responsive layout for all devices
-- **Modern UI**: Beautiful, intuitive interface with Tailwind CSS
-- **Loading States**: Comprehensive loading and error states
+- **Modern UI**: Professional, intuitive interface with Tailwind CSS
+- **Loading States**: Comprehensive loading and error states throughout the application
 - **Form Validation**: Client-side validation for all forms
 - **Image Optimization**: Next.js Image component with automatic optimization
 - **Accessibility**: WCAG-compliant accessibility features
+- **Toast Notifications**: User-friendly notification system for actions and errors
 
 ### SEO & Performance
+
 - **Comprehensive SEO**: Meta tags, Open Graph, Twitter Cards, structured data (JSON-LD)
 - **Sitemap Generation**: Dynamic sitemap.xml generation
 - **Robots.txt**: Search engine crawler configuration
 - **Performance Optimization**: Image optimization, font preloading, compression
 - **Analytics Integration**: Ready for Google Analytics and other analytics tools
 - **Social Sharing**: Optimized social media sharing with proper meta tags
+- **OG Image Generation**: Dynamic Open Graph image generation
 
 ### Content Management
+
 - **Help Center**: Comprehensive help documentation and guides
-- **About Page**: Platform information and mission
+- **About Page**: Platform information, mission, and technical details
 - **Contact Page**: Contact form and information
 - **Guarantee Page**: Platform guarantees and trust information
 - **Pricing Page**: Platform pricing information
+- **Trust & Safety Page**: Detailed trust and safety information
+- **Support Tickets**: User support ticket system for customer service
 
-## 🛠 Tech Stack
+### Email & Newsletter
 
-- **Framework**: Next.js 16.0.4 (App Router)
-- **React**: React 19.2.0
+- **Newsletter Subscriptions**: Users can subscribe to newsletters
+- **Email Preferences**: Manage email notification preferences
+- **Unsubscribe**: Easy unsubscribe functionality for newsletters and emails
+
+### Profile Features
+
+- **Public Profiles**: User profiles accessible via `/u/[username]`
+- **Profile Management**: Complete profile editing and management
+- **Activity Feeds**: Track user activity and contributions
+- **Social Features**: Social handles, highlights, and causes sections
+- **Privacy Controls**: Privacy banner and profile visibility controls
+
+## Tech Stack
+
+- **Framework**: Next.js 16.0.7 (App Router)
+- **React**: React 19.2.1
 - **Language**: TypeScript 5.x
 - **Styling**: Tailwind CSS 4.x
 - **Blockchain**: 
@@ -83,7 +108,7 @@ The Inventagious Frontend is a cutting-edge web application built with Next.js 1
 - **Build Tool**: Webpack (configured for Solana dependencies)
 - **Package Manager**: npm/yarn (with workspace configuration via .npmrc)
 
-## 📦 Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
@@ -94,7 +119,7 @@ Before you begin, ensure you have the following installed:
 - **Backend API**: The Inventagious backend API should be running (see [Backend README](../backend/README.md))
 - **Solana Validator** (optional): For local development (see [Local Validator Setup](../QUICK_START_LOCAL_VALIDATOR.md))
 
-## 🚀 Installation
+## Installation
 
 ### 1. Clone the Repository
 
@@ -128,7 +153,7 @@ cp .env.example .env  # If you have an example file
 
 See [Environment Setup](#environment-setup) section for detailed configuration.
 
-## ⚙️ Environment Setup
+## Environment Setup
 
 Create a `.env` file in the `frontend` directory with the following variables:
 
@@ -159,18 +184,21 @@ NODE_ENV=development
 ### Configuration Details
 
 #### Backend URL (`BACKEND_URL`)
+
 - **Purpose**: Server-side configuration for Next.js API rewrites
 - **Security**: Never exposed to the client browser
 - **Default**: `http://localhost:3001`
 - **Production**: Set to your production backend URL
 
 #### Public API URL (`NEXT_PUBLIC_API_URL`)
+
 - **Purpose**: Client-side API endpoint
 - **Security**: Should always be `/api` to use the proxy (hides backend identity)
 - **Default**: `/api` (uses Next.js proxy)
 - **Warning**: Never set this to a direct backend URL in production
 
 #### Solana RPC URL (`NEXT_PUBLIC_SOLANA_RPC_URL`)
+
 - **Purpose**: Solana network RPC endpoint
 - **Local Development**: `http://localhost:8899` (requires local validator)
 - **Devnet**: `https://api.devnet.solana.com`
@@ -201,7 +229,7 @@ The frontend includes scripts to easily switch between networks:
 ./switch-to-local.ps1  # Windows PowerShell
 ```
 
-## 🏃 Running the Project
+## Running the Project
 
 ### Development Mode
 
@@ -270,7 +298,7 @@ Or use environment variable:
 PORT=3000 npm run dev
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 frontend/
@@ -281,6 +309,7 @@ frontend/
 │   ├── sitemap.ts            # Dynamic sitemap generation
 │   ├── robots.ts             # Robots.txt generation
 │   ├── manifest.ts           # PWA manifest
+│   ├── global-error.tsx      # Global error boundary
 │   ├── about/                # About page
 │   │   ├── page.tsx
 │   │   └── pricing/
@@ -306,6 +335,14 @@ frontend/
 │   │   └── [id]/
 │   │       ├── page.tsx      # Deal detail
 │   │       └── not-found.tsx
+│   ├── email/                # Email management
+│   │   ├── newsletter/
+│   │   │   └── unsubscribe/
+│   │   │       └── page.tsx
+│   │   ├── preferences/
+│   │   │   └── page.tsx
+│   │   └── unsubscribe/
+│   │       └── page.tsx
 │   ├── explore/              # Explore page
 │   │   └── page.tsx
 │   ├── guarantee/            # Guarantee page
@@ -320,6 +357,8 @@ frontend/
 │   │       └── page.tsx
 │   ├── private/              # Private user area
 │   │   └── page.tsx
+│   ├── profile/              # User profile page
+│   │   └── page.tsx
 │   ├── projects/             # Project pages
 │   │   ├── page.tsx          # Projects listing
 │   │   ├── create/
@@ -329,23 +368,52 @@ frontend/
 │   │   └── [id]/
 │   │       ├── page.tsx      # Project detail
 │   │       └── not-found.tsx
-│   └── search/               # Search page
-│       └── page.tsx
+│   ├── search/               # Search page
+│   │   └── page.tsx
+│   ├── sign-in/              # Sign in page
+│   │   └── page.tsx
+│   ├── support/              # Support pages
+│   │   └── tickets/
+│   │       └── page.tsx
+│   ├── trust-safety/         # Trust & safety page
+│   │   └── page.tsx
+│   └── u/                    # User profile pages
+│       └── [username]/
+│           ├── page.tsx
+│           └── not-found.tsx
 ├── components/               # React components
+│   ├── analytics/           # Analytics components
+│   │   └── AnalyticsInitializer.tsx
 │   ├── auth/                 # Authentication components
 │   │   ├── AuthProvider/     # Auth context provider
 │   │   ├── WalletProvider/   # Wallet context provider
 │   │   ├── WalletConnect/    # Wallet connection UI
-│   │   └── WalletAuthInitializer.tsx
-│   ├── analytics/            # Analytics components
-│   │   └── AnalyticsInitializer.tsx
+│   │   ├── WalletAuthInitializer.tsx
+│   │   ├── WalletAuthProfileForm.tsx
+│   │   └── CompleteProfileForm/
 │   ├── private/              # Private/dashboard components
 │   │   ├── CreateCampaignForm/
 │   │   ├── CreateDealForm/
 │   │   ├── CreateProjectForm/
 │   │   └── DealCard/
+│   ├── profile/              # Profile components
+│   │   ├── ActivityFeed/
+│   │   ├── CausesSection/
+│   │   ├── DiscoverPeopleSection/
+│   │   ├── HighlightsSection/
+│   │   ├── PrivacyBanner/
+│   │   ├── ProfileActions/
+│   │   ├── ProfileBio/
+│   │   ├── ProfileHeader/
+│   │   ├── ProfileHero/
+│   │   ├── ProfilePageContent.tsx
+│   │   ├── ProfileStats/
+│   │   ├── PublicProfileContent.tsx
+│   │   ├── ShareBanner/
+│   │   └── SocialHandlesSection/
 │   ├── public/               # Public-facing components
 │   │   ├── AboutPage/        # About page sections
+│   │   ├── AboutPlatform/    # About platform component
 │   │   ├── CampaignsList/    # Campaign listing components
 │   │   ├── Category/         # Category components
 │   │   ├── Contact/          # Contact page components
@@ -353,18 +421,24 @@ frontend/
 │   │   ├── DonateButton/     # Donation button
 │   │   ├── Explore/          # Explore page components
 │   │   ├── FeaturedProjects/ # Featured projects
+│   │   ├── FeaturedProjectsList/ # Featured projects list
+│   │   ├── FeaturedTopics/   # Featured topics
 │   │   ├── Features/         # Features showcase
+│   │   ├── FundraisingTips/  # Fundraising tips
 │   │   ├── Guarantee/        # Guarantee page components
 │   │   ├── Help/             # Help center components
 │   │   ├── Hero/             # Landing page hero
 │   │   ├── HowItWorks/       # How it works section
+│   │   ├── ModdioTechSection/ # Moddio tech section
 │   │   ├── Pricing/          # Pricing page components
 │   │   ├── PrivateFunding/   # Private funding components
 │   │   ├── ProjectCard/      # Project card component
 │   │   ├── ProjectDetail/    # Project detail components
 │   │   ├── ProjectsList/     # Project listing components
 │   │   ├── Search/           # Search components
-│   │   └── TrustSafety/      # Trust & safety components
+│   │   ├── TrustSafety/      # Trust & safety components
+│   │   ├── TrustSafetyPage/  # Trust & safety page components
+│   │   └── VideoSection/     # Video section component
 │   ├── shared/               # Shared components
 │   │   ├── Header/           # Navigation header
 │   │   ├── Footer/           # Site footer
@@ -372,9 +446,14 @@ frontend/
 │   │   ├── DatePicker/       # Date picker component
 │   │   ├── BrowserWindow/    # Browser window component
 │   │   ├── Decorations/      # Decorative components
-│   │   └── ImageSlideshow/   # Image slideshow
-│   └── solana/               # Solana-specific components
-│       └── ProgramIdsInitializer.tsx
+│   │   ├── ImageSlideshow/   # Image slideshow
+│   │   └── Toast/            # Toast notification component
+│   ├── solana/               # Solana-specific components
+│   │   └── ProgramIdsInitializer.tsx
+│   └── support/              # Support components
+│       ├── CreateTicketForm.tsx
+│       ├── TicketDetail.tsx
+│       └── TicketList.tsx
 ├── hooks/                    # Custom React hooks
 │   ├── useWallet.ts          # Wallet management hook
 │   └── useWalletAuth.ts      # Wallet authentication hook
@@ -387,6 +466,8 @@ frontend/
 │   │   ├── profile.ts        # Profile API
 │   │   ├── help.ts           # Help API
 │   │   ├── solana.ts         # Solana API
+│   │   ├── support.ts        # Support API
+│   │   ├── payment-settings.ts # Payment settings API
 │   │   └── proxy-validator.ts
 │   ├── solana/               # Solana integration
 │   │   ├── anchor-client.ts  # Anchor client setup
@@ -395,11 +476,17 @@ frontend/
 │   │   ├── pda.ts            # PDA derivation utilities
 │   │   ├── campaign.ts       # Campaign program interactions
 │   │   ├── deal.ts           # Deal escrow interactions
+│   │   ├── direct-transfer.ts # Direct transfer utilities
 │   │   ├── price.ts          # SOL price utilities
 │   │   ├── idl-loader.ts     # IDL loading utilities
+│   │   ├── transaction-errors.ts # Transaction error handling
+│   │   ├── transaction-preparation.ts # Transaction preparation
+│   │   ├── transaction-signing.ts # Transaction signing
+│   │   ├── transaction-validation.ts # Transaction validation
 │   │   ├── hooks/            # Solana React hooks
 │   │   │   ├── useCampaign.ts
-│   │   │   └── useDeal.ts
+│   │   │   ├── useDeal.ts
+│   │   │   └── useTransactionSigning.ts
 │   │   └── idls/             # IDL JSON files
 │   ├── seo/                  # SEO utilities
 │   │   ├── config.ts         # SEO configuration
@@ -407,14 +494,17 @@ frontend/
 │   │   ├── metadata-utils.ts
 │   │   ├── analytics.tsx
 │   │   ├── head-components.tsx
-│   │   └── title-utils.ts
+│   │   ├── og-image.ts       # OG image generation
+│   │   ├── title-utils.ts
+│   │   └── README.md
 │   ├── analytics/            # Analytics utilities
 │   │   ├── analytics.service.ts
 │   │   └── analytics-hook.ts
 │   ├── wallet/               # Wallet utilities
 │   │   └── wallet-standard.ts
 │   ├── utils/                # General utilities
-│   │   └── imageUtils.ts
+│   │   ├── imageUtils.ts
+│   │   └── redirect.ts
 │   └── categories.tsx         # Category definitions
 ├── public/                   # Static assets
 │   ├── favicon.png
@@ -431,7 +521,7 @@ frontend/
 └── README.md
 ```
 
-## 📄 Pages & Routes
+## Pages & Routes
 
 ### Public Pages
 
@@ -440,6 +530,7 @@ frontend/
 - `/about/pricing` - Pricing information
 - `/contact` - Contact page with contact form
 - `/guarantee` - Platform guarantees and trust information
+- `/trust-safety` - Trust and safety information
 - `/help` - Help center main page
 - `/help/categories` - Help categories
 - `/help/start-project` - Guide for starting a project
@@ -468,11 +559,24 @@ frontend/
 - `/category` - Browse by category
 - `/category/[id]` - Category detail page
 
-### Private Pages
+### User Pages
 
+- `/profile` - User's own profile page
+- `/u/[username]` - Public user profile page
 - `/private` - Private user dashboard (requires authentication)
+- `/sign-in` - Sign in page
 
-## 🔐 Authentication
+### Email & Newsletter Pages
+
+- `/email/preferences` - Email notification preferences
+- `/email/unsubscribe` - Unsubscribe from emails
+- `/email/newsletter/unsubscribe` - Unsubscribe from newsletter
+
+### Support Pages
+
+- `/support/tickets` - Support ticket management
+
+## Authentication
 
 ### Wallet-Based Authentication
 
@@ -520,7 +624,7 @@ Routes can be protected using:
 - Server-side middleware (if implemented)
 - Backend API authentication checks
 
-## 💼 Wallet Integration
+## Wallet Integration
 
 ### Supported Wallets
 
@@ -582,7 +686,7 @@ import WalletConnect from '@/components/auth/WalletConnect';
 <WalletConnect />
 ```
 
-## ⛓ Solana Smart Contract Integration
+## Solana Smart Contract Integration
 
 ### Overview
 
@@ -685,17 +789,17 @@ The frontend loads IDL (Interface Definition Language) files from:
 
 Program IDs are fetched from the backend at runtime via `/api/solana/program-ids`. The backend is the single source of truth for program IDs.
 
-## 🔌 API Integration
+## API Integration
 
 ### Making API Requests
 
 All API requests should use the `/api` prefix, which is automatically proxied to the backend:
 
 ```typescript
-// ✅ Correct - uses proxy
+// Correct - uses proxy
 const response = await fetch('/api/projects');
 
-// ❌ Incorrect - direct backend URL
+// Incorrect - direct backend URL
 const response = await fetch('http://localhost:3001/projects');
 ```
 
@@ -730,6 +834,7 @@ import { dealsApi } from '@/lib/api/deals';
 import { profileApi } from '@/lib/api/profile';
 import { helpApi } from '@/lib/api/help';
 import { solanaApi } from '@/lib/api/solana';
+import { supportApi } from '@/lib/api/support';
 
 // Use specific APIs
 const projects = await projectsApi.getAll();
@@ -755,19 +860,19 @@ try {
 }
 ```
 
-## 🔍 SEO Implementation
+## SEO Implementation
 
 ### Features
 
 The frontend includes comprehensive SEO optimization:
 
-- ✅ **Meta Tags**: Title, description, keywords, canonical URLs
-- ✅ **Open Graph**: Complete OG tags for social sharing
-- ✅ **Twitter Cards**: Optimized Twitter card support
-- ✅ **Structured Data**: JSON-LD schemas (Organization, Website, SoftwareApplication, FinancialProduct)
-- ✅ **Sitemap**: Dynamic sitemap.xml generation
-- ✅ **Robots.txt**: Search engine crawler configuration
-- ✅ **Performance**: Image optimization, font preloading, compression
+- **Meta Tags**: Title, description, keywords, canonical URLs
+- **Open Graph**: Complete OG tags for social sharing
+- **Twitter Cards**: Optimized Twitter card support
+- **Structured Data**: JSON-LD schemas (Organization, Website, SoftwareApplication, FinancialProduct)
+- **Sitemap**: Dynamic sitemap.xml generation
+- **Robots.txt**: Search engine crawler configuration
+- **Performance**: Image optimization, font preloading, compression
 
 ### Using SEO Utilities
 
@@ -796,7 +901,7 @@ export const metadata = generateArticleMetadata({
 });
 ```
 
-## 🧪 Testing
+## Testing
 
 ### Unit Tests
 
@@ -839,7 +944,7 @@ components/
 │   └── MyComponent.test.tsx
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -931,7 +1036,7 @@ If you encounter issues not covered here:
 2. Check Next.js and React documentation
 3. Open a new issue with detailed error information
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please follow these steps:
 
@@ -972,16 +1077,16 @@ When creating new components:
 - **Reusable Components**: Shared components in the `shared/` directory
 - **API Separation**: API logic separated into dedicated files in `lib/api/`
 
-## 📄 License
+## License
 
 This project is licensed under the ISC License.
 
-## 🔗 Related Documentation
+## Related Documentation
 
 - [Backend API README](../backend/README.md)
 - [Admin Panel README](../admin/README.md)
 
-## 📞 Support
+## Support
 
 For support and questions:
 - Open an issue on GitHub
@@ -990,4 +1095,4 @@ For support and questions:
 
 ---
 
-**Built with ❤️ for the Inventagious platform**
+Built for the Inventagious platform
