@@ -5,6 +5,8 @@ export interface Profile {
   userId: string;
   username: string;
   displayName?: string;
+  email?: string;
+  walletAddress?: string;
   bio?: string;
   avatarUrl?: string;
   coverImageUrl?: string;
@@ -54,6 +56,10 @@ export const profileApi = {
 
   getByUsername: async (username: string): Promise<Profile> => {
     return apiClient.get<Profile>(`/profile/${username}`);
+  },
+
+  getById: async (id: string): Promise<Profile> => {
+    return apiClient.get<Profile>(`/profile/${id}`);
   },
 
   update: async (data: Partial<CreateProfileData>): Promise<Profile> => {
