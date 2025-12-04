@@ -28,9 +28,9 @@ export default function HighlightsSection({
   const hasProjects = projects && projects.length > 0;
 
   return (
-    <div className="px-3 mt-4 pb-4">
-      <div className="flex justify-between items-center mb-1">
-        <h2 className="text-lg font-bold text-black mb-0">Highlights</h2>
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="hand-drawn text-2xl font-bold text-black">Highlights</h2>
         {isOwnProfile && (
           <Link
             href="/profile/edit/highlights"
@@ -91,9 +91,9 @@ export default function HighlightsSection({
           <div className="p-4 bg-white">
             <h3 className="font-bold text-lg mb-1">{pinnedProject.title}</h3>
             {pinnedProject.description && (
-              <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                {pinnedProject.description}
-              </p>
+            <p className="text-sm text-gray-800 mb-2 line-clamp-2 font-semibold">
+              {pinnedProject.description}
+            </p>
             )}
             {pinnedProject.goal && (
               <div className="flex items-center justify-between">
@@ -145,7 +145,7 @@ export default function HighlightsSection({
                 />
               </svg>
             </div>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-sm text-gray-800 font-bold mb-3">
               Highlight a project or campaign by <br /> pinning it here.
             </p>
             {isOwnProfile && (
@@ -200,7 +200,7 @@ export default function HighlightsSection({
                 <div className="flex-1 p-4 bg-white">
                   <h3 className="font-bold text-base mb-1">{project.title}</h3>
                   {project.description && (
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                    <p className="text-sm text-gray-800 mb-2 line-clamp-2 font-semibold">
                       {project.description}
                     </p>
                   )}
@@ -245,7 +245,7 @@ export default function HighlightsSection({
               <div className="w-24 h-16 bg-gray-200 rounded border-2 border-gray-300 ml-8" />
               <div className="w-24 h-16 bg-gray-200 rounded border-2 border-gray-300" />
             </div>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-sm text-gray-800 font-bold mb-3">
               Start adding projects and campaigns that matter to you.
             </p>
             {isOwnProfile && (

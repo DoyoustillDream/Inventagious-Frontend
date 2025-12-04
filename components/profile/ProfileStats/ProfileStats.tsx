@@ -18,19 +18,29 @@ export default function ProfileStats({
   const basePath = isOwnProfile ? '/profile' : `/u/${profileId}`;
 
   return (
-    <div className="flex items-center justify-center gap-4 mt-2">
+    <div className="flex items-center gap-6">
       <Link
         href={`${basePath}/followers`}
-        className="font-bold text-black hover:text-yellow-600 transition-colors underline"
+        className="text-center hover:scale-105 transition-transform"
       >
-        {followersCount} {followersCount === 1 ? 'follower' : 'followers'}
+        <div className="hand-drawn text-2xl md:text-3xl font-bold text-black mb-1">
+          {followersCount.toLocaleString()}
+        </div>
+        <div className="text-xs md:text-sm font-bold text-gray-800">
+          {followersCount === 1 ? 'Follower' : 'Followers'}
+        </div>
       </Link>
-      <div className="w-px h-4 bg-gray-300" />
+      <div className="w-px h-10 bg-gray-400" />
       <Link
         href={`${basePath}/following`}
-        className="font-bold text-black hover:text-yellow-600 transition-colors underline"
+        className="text-center hover:scale-105 transition-transform"
       >
-        {followingCount} following
+        <div className="hand-drawn text-2xl md:text-3xl font-bold text-black mb-1">
+          {followingCount.toLocaleString()}
+        </div>
+        <div className="text-xs md:text-sm font-bold text-gray-800">
+          Following
+        </div>
       </Link>
     </div>
   );

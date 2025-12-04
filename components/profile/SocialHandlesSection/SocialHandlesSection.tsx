@@ -31,7 +31,8 @@ export default function SocialHandlesSection({
   }
 
   return (
-    <section className="mx-3 mt-4">
+    <div>
+      <h2 className="hand-drawn text-2xl font-bold text-black mb-4">Social Links</h2>
       {hasHandles ? (
         <div className="flex flex-wrap gap-3">
           {allHandles.map((handle, index) => (
@@ -108,7 +109,7 @@ export default function SocialHandlesSection({
           )}
         </div>
       )}
-    </section>
+    </div>
   );
 }
 

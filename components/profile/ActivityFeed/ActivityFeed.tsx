@@ -23,8 +23,8 @@ export default function ActivityFeed({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-center px-3 mb-4">
-        <h2 className="text-lg font-bold text-black mb-0">Your activity</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="hand-drawn text-2xl font-bold text-black">Your Activity</h2>
         <button
           className="ml-2 p-1 border-2 border-black rounded-full hover:bg-yellow-200 transition-colors"
           aria-label="Activity information"
@@ -47,7 +47,7 @@ export default function ActivityFeed({
       </div>
 
       {hasActivities ? (
-        <div className="px-3 space-y-4">
+        <div className="space-y-4">
           {activities.map((activity) => (
             <div
               key={activity.id}
@@ -104,16 +104,16 @@ export default function ActivityFeed({
                 <div className="flex-1">
                   <h3 className="font-bold text-sm mb-1">{activity.title}</h3>
                   {activity.description && (
-                    <p className="text-sm text-gray-600 mb-1">
+                    <p className="text-sm text-gray-800 mb-1">
                       {activity.description}
                     </p>
                   )}
                   {activity.projectTitle && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-700 font-semibold">
                       Project: {activity.projectTitle}
                     </p>
                   )}
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-700 mt-1 font-bold">
                     {new Date(activity.timestamp).toLocaleDateString()}
                   </p>
                 </div>
@@ -122,8 +122,8 @@ export default function ActivityFeed({
           ))}
         </div>
       ) : (
-        <div className="px-3">
-          <p className="text-center text-gray-500 my-0 py-4">
+        <div>
+          <p className="text-center text-gray-800 font-bold py-8">
             No recent activity to display.
           </p>
         </div>

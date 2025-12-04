@@ -12,24 +12,54 @@ export default function ProfileBio({ profile, isOwnProfile = false }: ProfileBio
   const hasBio = profile.bio && profile.bio.trim().length > 0;
 
   return (
-    <div className="px-4 mt-2 w-full">
-      <div className="flex flex-col items-center">
+    <div className="browser-window">
+      <div className="browser-header">
+        <div className="browser-controls">
+          <div className="browser-dot red" />
+          <div className="browser-dot yellow" />
+          <div className="browser-dot green" />
+        </div>
+      </div>
+      <div className="p-6">
         {hasBio ? (
-          <p className="text-gray-700 text-center mb-0 max-w-2xl">
-            {profile.bio}
-          </p>
+          <div className="text-center">
+            <p className="text-base md:text-lg text-black leading-relaxed max-w-3xl mx-auto font-bold">
+              {profile.bio}
+            </p>
+            {isOwnProfile && (
+              <Link
+                href="/profile/edit"
+                className="mt-4 inline-flex items-center px-4 py-2 border-3 border-black bg-white hover:bg-yellow-200 transition-all rounded-lg font-bold text-sm hover:scale-105 active:scale-95"
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                Edit Bio
+              </Link>
+            )}
+          </div>
         ) : (
-          <>
-            <p className="text-gray-500 text-center mb-2">
+          <div className="text-center py-4">
+            <p className="text-gray-800 font-bold mb-4">
               Tell others what you care about.
             </p>
             {isOwnProfile && (
               <Link
                 href="/profile/edit"
-                className="mt-1 inline-flex items-center px-3 py-1.5 border-2 border-black bg-white hover:bg-yellow-200 transition-colors rounded-md font-bold text-sm"
+                className="hand-drawn inline-flex items-center px-6 py-3 border-4 border-black bg-white hover:bg-yellow-200 transition-all rounded-lg font-bold text-base hover:scale-105 active:scale-95"
               >
                 <svg
-                  className="w-4 h-4 mr-1"
+                  className="w-5 h-5 mr-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -41,10 +71,10 @@ export default function ProfileBio({ profile, isOwnProfile = false }: ProfileBio
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                Add bio
+                Add Bio
               </Link>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

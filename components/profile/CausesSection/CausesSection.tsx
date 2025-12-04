@@ -24,9 +24,10 @@ export default function CausesSection({
   }
 
   return (
-    <div className="mt-4">
+    <div>
+      <h2 className="hand-drawn text-2xl font-bold text-black mb-4">Causes</h2>
       {hasCauses ? (
-        <div className="px-3">
+        <div>
           <div className="flex flex-wrap gap-2">
             {causes.map((cause) => (
               <span
@@ -39,7 +40,7 @@ export default function CausesSection({
           </div>
         </div>
       ) : (
-        <div className="px-3 flex flex-col items-center py-8">
+        <div className="flex flex-col items-center py-8">
           <div className="w-48 h-24 bg-yellow-100 border-2 border-black rounded-lg flex items-center justify-center mb-4">
             <svg
               className="w-12 h-12 text-black"
@@ -55,7 +56,7 @@ export default function CausesSection({
               />
             </svg>
           </div>
-          <p className="text-gray-500 text-center mb-2">
+          <p className="text-gray-800 font-bold text-center mb-2">
             Show the world what you support.
           </p>
           {isOwnProfile && (

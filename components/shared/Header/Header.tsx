@@ -64,7 +64,7 @@ export default function Header() {
                 className="flex items-center"
                 aria-label="Inventagious Home"
               >
-                <Logo variant="main" size="md" className="flex-shrink-0 drop-shadow-lg" />
+                <Logo variant="main" size="md" className="flex-shrink-0 drop-shadow-lg rounded-full overflow-hidden" />
               </Link>
             </div>
 

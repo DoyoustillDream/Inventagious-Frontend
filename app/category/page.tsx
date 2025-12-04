@@ -2,38 +2,14 @@ import type { Metadata } from 'next';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import { CategoryHero, CategoryButtons, CategorySection, FeaturedProjectsByCategory } from '@/components/public/Category';
-import { siteConfig, WebPageSchema, BreadcrumbSchema } from '@/lib/seo';
+import { siteConfig, WebPageSchema, BreadcrumbSchema, generatePageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Categories',
+export const metadata: Metadata = generatePageMetadata({
+  title: 'Categories - Inventagious',
   description: 'Browse innovative projects by category on Inventagious. Discover Web3, Solana, hardware, software, and more groundbreaking projects from inventors and innovators worldwide.',
-  alternates: {
-    canonical: `${siteConfig.url}/category`,
-  },
-  openGraph: {
-    title: 'Categories - Inventagious',
-    description: 'Browse innovative projects by category on Inventagious. Discover Web3, Solana, hardware, software, and more groundbreaking projects from inventors and innovators worldwide.',
-    url: `${siteConfig.url}/category`,
-    type: 'website',
-    siteName: siteConfig.siteName,
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
-        alt: 'Categories - Inventagious',
-      },
-    ],
-    locale: siteConfig.locale,
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Categories - Inventagious',
-    description: 'Browse innovative projects by category on Inventagious. Discover Web3, Solana, hardware, software, and more groundbreaking projects from inventors and innovators worldwide.',
-    images: [siteConfig.twitterImage],
-    creator: siteConfig.twitterHandle,
-  },
-};
+  url: '/category',
+  type: 'website',
+});
 
 export default function CategoryPage() {
   return (

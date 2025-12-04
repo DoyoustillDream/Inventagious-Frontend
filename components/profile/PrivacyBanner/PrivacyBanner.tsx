@@ -32,10 +32,10 @@ export default function PrivacyBanner({
           />
         </svg>
         <div className="flex-1 text-sm">
-          <span>Your profile is private. </span>
+          <span className="text-black font-bold">Your profile is private. </span>
           <Link
             href="/profile/edit/privacy"
-            className="underline font-bold hover:text-yellow-700"
+            className="underline font-bold text-black hover:text-gray-800"
           >
             Change visibility
           </Link>

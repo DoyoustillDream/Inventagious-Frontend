@@ -4,8 +4,9 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import CategoryDetailHero from '@/components/public/Category/CategoryDetailHero';
 import CategoryProjectsList from '@/components/public/Category/CategoryProjectsList';
-import { siteConfig, WebPageSchema, BreadcrumbSchema } from '@/lib/seo';
+import { siteConfig, WebPageSchema, BreadcrumbSchema, generatePageMetadata } from '@/lib/seo';
 import { getCategoryBySlug, getCategoryName, getCategoryDescription } from '@/lib/categories';
+import { generateCategoryOGImageUrl } from '@/lib/seo/og-image';
 
 interface CategoryPageProps {
   params: Promise<{ id: string }>;
@@ -24,24 +25,18 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const title = `${category.name} Projects - Inventagious`;
   const description = `${category.description}. Discover innovative ${category.name.toLowerCase()} projects from inventors and innovators building on Solana blockchain.`;
 
-  return {
+  const ogImageUrl = generateCategoryOGImageUrl({
+    name: category.name,
+    description,
+  });
+
+  return generatePageMetadata({
     title,
     description,
-    alternates: {
-      canonical: `${siteConfig.url}/category/${id}`,
-    },
-    openGraph: {
-      title: `${title} - Inventagious`,
-      description,
-      url: `${siteConfig.url}/category/${id}`,
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${title} - Inventagious`,
-      description,
-    },
-  };
+    url: `/category/${id}`,
+    type: 'website',
+    image: ogImageUrl,
+  });
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {

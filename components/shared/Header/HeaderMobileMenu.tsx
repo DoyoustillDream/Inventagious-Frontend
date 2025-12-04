@@ -68,7 +68,7 @@ export default function HeaderMobileMenu({ isOpen, onClose }: HeaderMobileMenuPr
         <div className="p-4 border-b-4 border-black bg-yellow-400">
           <div className="flex items-center justify-between mb-4">
             <Link href="/" onClick={onClose} className="flex items-center">
-              <Logo variant="main" size="sm" className="flex-shrink-0" />
+              <Logo variant="main" size="sm" className="flex-shrink-0 rounded-full overflow-hidden" />
             </Link>
             <button
               onClick={onClose}

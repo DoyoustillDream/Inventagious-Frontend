@@ -4,38 +4,14 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import DealsList from '@/components/public/DealsList/DealsList';
 import DealsListSkeleton from '@/components/public/DealsList/DealsListSkeleton';
-import { siteConfig, WebPageSchema, BreadcrumbSchema } from '@/lib/seo';
+import { siteConfig, WebPageSchema, BreadcrumbSchema, generatePageMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Private Funding Deals',
+export const metadata: Metadata = generatePageMetadata({
+  title: 'Private Funding Deals - Inventagious',
   description: 'Discover private funding opportunities on Inventagious. Connect inventors with investors for exclusive deals on Solana blockchain.',
-  alternates: {
-    canonical: `${siteConfig.url}/deals`,
-  },
-  openGraph: {
-    title: 'Private Funding Deals - Inventagious',
-    description: 'Discover private funding opportunities on Inventagious. Connect inventors with investors for exclusive deals on Solana blockchain.',
-    url: `${siteConfig.url}/deals`,
-    type: 'website',
-    siteName: siteConfig.siteName,
-    images: [
-      {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
-        alt: 'Private Funding Deals - Inventagious',
-      },
-    ],
-    locale: siteConfig.locale,
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Private Funding Deals - Inventagious',
-    description: 'Discover private funding opportunities on Inventagious.',
-    images: [siteConfig.twitterImage],
-    creator: siteConfig.twitterHandle,
-  },
-};
+  url: '/deals',
+  type: 'website',
+});
 
 export default function DealsPage() {
   return (

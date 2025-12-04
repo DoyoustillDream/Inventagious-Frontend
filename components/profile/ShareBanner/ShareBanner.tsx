@@ -2,19 +2,24 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useToast } from '@/components/shared/Toast';
 
 interface ShareBannerProps {
   profileName?: string;
   avatarUrl?: string;
+  profileUrl?: string;
   onShare?: () => void;
 }
 
 export default function ShareBanner({
   profileName,
   avatarUrl,
+  profileUrl,
   onShare,
 }: ShareBannerProps) {
   const [isSharing, setIsSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const { showSuccess } = useToast();
 
   const handleShare = async () => {
     if (onShare) {
@@ -24,69 +29,91 @@ export default function ShareBanner({
 
     setIsSharing(true);
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `Check out ${profileName || 'this'} on Inventagious`,
-          text: `Check out ${profileName || 'this profile'} on Inventagious and inspire others to help.`,
-          url: window.location.href,
-        });
+      const shareUrl = profileUrl || (typeof window !== 'undefined' ? window.location.href : '');
+      
+      if (navigator.share && navigator.share !== undefined) {
+        try {
+          await navigator.share({
+            title: `${profileName || 'Check out this profile'} on Inventagious`,
+            text: `Check out ${profileName || 'this profile'} on Inventagious and inspire others to help.`,
+            url: shareUrl,
+          });
+          showSuccess('Profile shared successfully!');
+        } catch (shareError: any) {
+          // User cancelled or share failed, fall back to copy
+          if (shareError.name !== 'AbortError') {
+            await handleCopy(shareUrl);
+          }
+        }
       } else {
-        await navigator.clipboard.writeText(window.location.href);
-        alert('Profile link copied to clipboard!');
+        await handleCopy(shareUrl);
       }
     } catch (err) {
       console.error('Error sharing:', err);
+      showSuccess('Failed to share profile. Please try again.');
     } finally {
       setIsSharing(false);
     }
   };
 
+  const handleCopy = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      showSuccess('Profile link copied to clipboard!');
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopied(true);
+        showSuccess('Profile link copied to clipboard!');
+        setTimeout(() => setCopied(false), 2000);
+      } catch (fallbackErr) {
+        console.error('Fallback copy failed:', fallbackErr);
+        showSuccess('Failed to copy link. Please copy manually.');
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
   return (
-    <div className="mt-4 mb-4">
-      <button
-        onClick={handleShare}
-        disabled={isSharing}
-        className="w-full border-2 border-black rounded-lg bg-yellow-200 hover:bg-yellow-300 transition-colors p-4 flex items-center justify-between"
-      >
-        <div className="flex items-center gap-3 flex-1">
-          <div className="text-left">
-            <p className="text-lg font-bold text-black mb-0">
-              <span className="text-yellow-600">Share your profile</span> and inspire
-              others to help.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 border-2 border-black bg-white rounded-md font-bold text-sm">
-            Share profile
-          </span>
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
+    <button
+      onClick={handleShare}
+      disabled={isSharing}
+      className="hand-drawn rounded-lg border-4 border-black bg-white hover:bg-yellow-200 px-6 py-3 text-base font-bold text-black transition hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+    >
+      {isSharing ? (
+        <>
+          <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-        </div>
-        {avatarUrl && (
-          <div className="w-6 h-6 rounded-full border-2 border-black overflow-hidden ml-2 flex-shrink-0">
-            <Image
-              src={avatarUrl}
-              alt={profileName || 'Profile'}
-              width={24}
-              height={24}
-              className="object-cover"
-            />
-          </div>
-        )}
-      </button>
-    </div>
+          Sharing...
+        </>
+      ) : copied ? (
+        <>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          Copied!
+        </>
+      ) : (
+        <>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+          </svg>
+          Share
+        </>
+      )}
+    </button>
   );
 }
 

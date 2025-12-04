@@ -1,4 +1,6 @@
 import { Metadata } from 'next';
+import Header from '@/components/shared/Header';
+import Footer from '@/components/shared/Footer';
 import ProfilePageContent from '@/components/profile/ProfilePageContent';
 
 export const metadata: Metadata = {
@@ -7,6 +9,14 @@ export const metadata: Metadata = {
 };
 
 export default function ProfilePage() {
-  return <ProfilePageContent />;
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1">
+        <ProfilePageContent />
+      </main>
+      <Footer />
+    </div>
+  );
 }
 

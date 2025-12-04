@@ -7,17 +7,14 @@ import { profileApi, Profile } from '@/lib/api/profile';
 import { apiClient } from '@/lib/api/client';
 import { useRouter, usePathname } from 'next/navigation';
 import { setRedirectPath } from '@/lib/utils/redirect';
-import ProfileHero from './ProfileHero';
-import ProfileBio from './ProfileBio';
+import Link from 'next/link';
 import ProfileStats from './ProfileStats';
-import ProfileActions from './ProfileActions';
 import DiscoverPeopleSection from './DiscoverPeopleSection';
 import CausesSection from './CausesSection';
 import HighlightsSection from './HighlightsSection';
 import ActivityFeed from './ActivityFeed';
 import SocialHandlesSection from './SocialHandlesSection';
 import ShareBanner from './ShareBanner';
-import PrivacyBanner from './PrivacyBanner';
 
 export default function ProfilePageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -27,7 +24,7 @@ export default function ProfilePageContent() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const hasRedirectedRef = useRef(false);
+  const hasRedirectedRef = useRef(false); 
   const reAuthPollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const reAuthStartTimeRef = useRef<number | null>(null);
 
@@ -238,68 +235,136 @@ export default function ProfilePageContent() {
   const activities: any[] = [];
   const socialHandles: any[] = [];
 
+  // Generate shareable profile URL
+  const profileUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/u/${displayProfile.username || displayProfile.id}`
+    : '';
+
   return (
-    <main className="min-h-screen bg-white">
-      <div className="w-full">
-        {/* Hero Section */}
-        <ProfileHero profile={displayProfile} isOwnProfile={true} />
+    <div className="flex min-h-screen flex-col bg-gray-50">
+      <main className="flex-1">
+        {/* Hero Section with Cover */}
+        <div className="relative bg-gradient-to-br from-yellow-400 to-yellow-300 halftone-bg">
+          <div className="container mx-auto px-4 py-12 md:py-16">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white bg-white overflow-hidden shadow-2xl">
+                  {displayProfile.avatarUrl ? (
+                    <img
+                      src={displayProfile.avatarUrl}
+                      alt={displayProfile.displayName || displayProfile.username}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-yellow-200 text-5xl md:text-6xl font-bold text-black">
+                      {(displayProfile.displayName || displayProfile.username || 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <Link
+                  href="/profile/edit"
+                  className="absolute bottom-0 right-0 p-2 bg-white border-3 border-black rounded-full hover:bg-yellow-200 transition-all shadow-lg hover:scale-110"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </Link>
+              </div>
 
-        {/* Bio Section */}
-        <ProfileBio profile={displayProfile} isOwnProfile={true} />
+              {/* Profile Info */}
+              <div className="flex-1 text-center md:text-left">
+                <h1 className="hand-drawn text-3xl md:text-4xl font-bold text-black mb-2">
+                  {displayProfile.displayName || displayProfile.username}
+                </h1>
+                {displayProfile.username && (
+                  <p className="text-gray-800 font-bold mb-4">@{displayProfile.username}</p>
+                )}
+                {displayProfile.bio && (
+                  <p className="text-base md:text-lg text-black font-semibold max-w-2xl mb-4">
+                    {displayProfile.bio}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                  <ProfileStats
+                    followersCount={followersCount}
+                    followingCount={followingCount}
+                    profileId={displayProfile.id}
+                    isOwnProfile={true}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        {/* Stats Section */}
-        <ProfileStats
-          followersCount={followersCount}
-          followingCount={followingCount}
-          profileId={displayProfile.id}
-          isOwnProfile={true}
-        />
+        {/* Main Content */}
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          {/* Quick Actions Bar */}
+          <div className="mb-6 flex flex-wrap gap-3">
+            <Link
+              href="/profile/edit"
+              className="hand-drawn px-6 py-3 border-4 border-black bg-white hover:bg-yellow-200 rounded-lg font-bold text-black transition hover:scale-105"
+            >
+              Edit Profile
+            </Link>
+            <Link
+              href="/profile/notifications"
+              className="hand-drawn px-6 py-3 border-4 border-black bg-white hover:bg-yellow-200 rounded-lg font-bold text-black transition hover:scale-105"
+            >
+              Notifications
+            </Link>
+            <ShareBanner
+              profileName={displayProfile.displayName || displayProfile.username}
+              avatarUrl={displayProfile.avatarUrl}
+              profileUrl={profileUrl}
+            />
+          </div>
 
-        {/* Privacy Banner */}
-        <PrivacyBanner isPrivate={isPrivate} isOwnProfile={true} />
+          {/* Grid Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Main Content - 8 columns */}
+            <div className="lg:col-span-8 space-y-6">
+              {/* Highlights/Projects */}
+              <div className="bg-white border-4 border-black rounded-lg p-6 shadow-lg">
+                <HighlightsSection
+                  pinnedProject={pinnedProject}
+                  projects={projects}
+                  isOwnProfile={true}
+                />
+              </div>
 
-        {/* Actions Section */}
-        <ProfileActions isOwnProfile={true} />
+              {/* Activity Feed */}
+              <div className="bg-white border-4 border-black rounded-lg p-6 shadow-lg">
+                <ActivityFeed activities={activities} isOwnProfile={true} />
+              </div>
+            </div>
 
-        {/* Discover People Section */}
-        <DiscoverPeopleSection people={discoverPeople} isOwnProfile={true} />
+            {/* Sidebar - 4 columns */}
+            <div className="lg:col-span-4 space-y-6">
+              {/* Causes */}
+              <div className="bg-white border-4 border-black rounded-lg p-6 shadow-lg">
+                <CausesSection causes={causes} isOwnProfile={true} />
+              </div>
 
-        {/* Causes Section */}
-        <CausesSection causes={causes} isOwnProfile={true} />
+              {/* Social Handles */}
+              <div className="bg-white border-4 border-black rounded-lg p-6 shadow-lg">
+                <SocialHandlesSection
+                  socialHandles={socialHandles}
+                  website={displayProfile.website}
+                  isOwnProfile={true}
+                />
+              </div>
+            </div>
+          </div>
 
-        {/* Divider */}
-        <div className="mx-3 my-0 h-px bg-gray-300" />
-
-        {/* Highlights Section */}
-        <HighlightsSection
-          pinnedProject={pinnedProject}
-          projects={projects}
-          isOwnProfile={true}
-        />
-
-        {/* Divider */}
-        <div className="mx-3 my-4 h-px bg-gray-300" />
-
-        {/* Activity Feed */}
-        <ActivityFeed activities={activities} isOwnProfile={true} />
-
-        {/* Divider */}
-        <div className="mx-0 my-4 h-px bg-gray-300" />
-
-        {/* Social Handles Section */}
-        <SocialHandlesSection
-          socialHandles={socialHandles}
-          website={displayProfile.website}
-          isOwnProfile={true}
-        />
-
-        {/* Share Banner */}
-        <ShareBanner
-          profileName={displayProfile.displayName || displayProfile.username}
-          avatarUrl={displayProfile.avatarUrl}
-        />
-      </div>
-    </main>
+          {/* Discover People - Full Width */}
+          <div className="mt-6">
+            <DiscoverPeopleSection people={discoverPeople} isOwnProfile={true} />
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
 

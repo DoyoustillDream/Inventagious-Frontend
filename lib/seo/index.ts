@@ -14,7 +14,7 @@ export {
   FAQSchema,
   ItemListSchema,
 } from './structured-data';
-export { generatePageMetadata, generateArticleMetadata, generateProjectMetadata } from './metadata-utils';
+export { generatePageMetadata, generateArticleMetadata, generateProjectMetadata, generateProfileMetadata } from './metadata-utils';
 export { generatePageTitle, getHomePageTitle, pageTitles } from './title-utils';
 export {
   GoogleAnalytics,

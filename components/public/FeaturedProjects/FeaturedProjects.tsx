@@ -259,9 +259,9 @@ export default function FeaturedProjects() {
                     </div>
                   </div>
                   <div className="relative h-96 w-full overflow-hidden bg-gradient-to-br from-yellow-400 to-yellow-200">
-                    {featuredProject.imageUrl ? (
+                    {getFirstImage(featuredProject.imageUrl) ? (
                       <Image
-                        src={featuredProject.imageUrl}
+                        src={getFirstImage(featuredProject.imageUrl)!}
                         alt={featuredProject.title}
                         fill
                         className="object-cover"

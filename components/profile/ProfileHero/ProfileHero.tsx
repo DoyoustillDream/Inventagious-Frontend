@@ -11,104 +11,117 @@ interface ProfileHeroProps {
 
 export default function ProfileHero({ profile, isOwnProfile = false }: ProfileHeroProps) {
   return (
-    <div className="relative w-full">
-      {/* Cover Image Section */}
-      <div className="relative w-full h-64 md:h-80 overflow-hidden bg-gradient-to-br from-yellow-200 via-yellow-100 to-yellow-50">
-        {profile.coverImageUrl ? (
-          <Image
-            src={profile.coverImageUrl}
-            alt="Cover"
-            fill
-            className="object-cover"
-            priority
-            unoptimized
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-yellow-200 via-yellow-100 to-yellow-50 halftone-bg" />
-        )}
-        {/* Curved overlay at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-white rounded-t-full transform translate-y-1/2" />
-        
-        {/* Notifications bell (only for own profile) */}
-        {isOwnProfile && (
-          <Link
-            href="/profile/notifications"
-            className="absolute top-4 right-4 p-2 bg-white border-2 border-black rounded-full hover:bg-yellow-200 transition-colors shadow-lg"
-            aria-label="Notifications"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
-          </Link>
-        )}
+    <section className="relative overflow-hidden bg-yellow-400 halftone-bg py-12 md:py-16">
+      <div className="absolute top-4 right-4">
+        <span className="star-decoration" />
       </div>
-
-      {/* Profile Photo Container */}
-      <div className="relative flex justify-center -mt-16 md:-mt-20 mb-4">
-        <div className="relative">
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white bg-white shadow-lg overflow-hidden">
-            {profile.avatarUrl ? (
-              <Image
-                src={profile.avatarUrl}
-                alt={profile.displayName || profile.username}
-                fill
-                className="object-cover"
-                unoptimized
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-yellow-100 text-4xl font-bold text-black">
-                {(profile.displayName || profile.username || 'U')[0].toUpperCase()}
-              </div>
-            )}
+      <div className="absolute bottom-8 left-8">
+        <span className="swirl-decoration" />
+      </div>
+      
+      <div className="container mx-auto relative z-10 px-4">
+        <div className="browser-window max-w-4xl mx-auto">
+          <div className="browser-header">
+            <div className="browser-controls">
+              <div className="browser-dot red" />
+              <div className="browser-dot yellow" />
+              <div className="browser-dot green" />
+            </div>
           </div>
-          {/* Edit button overlay (only for own profile) */}
-          {isOwnProfile && (
-            <Link
-              href="/profile/edit"
-              className="absolute bottom-0 right-0 p-2 bg-white border-2 border-black rounded-full hover:bg-yellow-200 transition-colors shadow-lg"
-              aria-label="Edit profile"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-            </Link>
-          )}
+          
+          <div className="p-6 md:p-10">
+            {/* Profile Header Content */}
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-black bg-white overflow-hidden shadow-lg">
+                  {profile.avatarUrl ? (
+                    <Image
+                      src={profile.avatarUrl}
+                      alt={profile.displayName || profile.username}
+                      width={160}
+                      height={160}
+                      className="object-cover w-full h-full"
+                      unoptimized
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-yellow-100 text-5xl md:text-6xl font-bold text-black">
+                      {(profile.displayName || profile.username || 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                {/* Edit button overlay (only for own profile) */}
+                {isOwnProfile && (
+                  <Link
+                    href="/profile/edit"
+                    className="absolute bottom-0 right-0 p-2 bg-white border-3 border-black rounded-full hover:bg-yellow-200 transition-all shadow-lg hover:scale-110"
+                    aria-label="Edit profile"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </Link>
+                )}
+              </div>
+
+              {/* Profile Info */}
+              <div className="flex-1 text-center md:text-left">
+                <h1 className="hand-drawn text-3xl md:text-4xl font-bold text-black mb-2 break-words">
+                  {profile.displayName || profile.username}
+                </h1>
+                {profile.username && profile.username !== profile.displayName && (
+                  <p className="text-gray-800 font-bold mb-4">@{profile.username}</p>
+                )}
+                
+                {/* Action Buttons */}
+                {isOwnProfile && (
+                  <div className="flex flex-wrap gap-3 justify-center md:justify-start mt-4">
+                    <Link
+                      href="/profile/edit"
+                      className="hand-drawn rounded-lg border-3 border-black bg-white px-6 py-2 text-base font-bold text-black transition hover:bg-yellow-200 hover:scale-105 active:scale-95"
+                    >
+                      Edit Profile
+                    </Link>
+                    <Link
+                      href="/profile/notifications"
+                      className="hand-drawn rounded-lg border-3 border-black bg-white px-6 py-2 text-base font-bold text-black transition hover:bg-yellow-200 hover:scale-105 active:scale-95 flex items-center gap-2"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                        />
+                      </svg>
+                      Notifications
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Name */}
-      <div className="text-center px-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-black mb-2 break-words">
-          {profile.displayName || profile.username}
-        </h1>
-      </div>
-    </div>
+    </section>
   );
 }
 
