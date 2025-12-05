@@ -52,9 +52,27 @@ export default function FeaturedProjects() {
         const data = await projectsApi.getRecommended(category);
         setProjects(data);
         setCurrentPage(0); // Reset to first page when filter changes
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load projects');
+      } catch (err: any) {
         console.error('Error fetching recommended projects:', err);
+        
+        // Provide user-friendly error messages
+        let errorMessage = 'Failed to load projects';
+        
+        if (err?.status === 0) {
+          // Network error or backend unavailable
+          errorMessage = 'Unable to connect to the server. Please check your connection and try again.';
+        } else if (err?.status === 500) {
+          // Server error
+          errorMessage = 'Server error occurred. Please try again later.';
+        } else if (err?.status === 404) {
+          // Not found
+          errorMessage = 'Projects not found.';
+        } else if (err?.message) {
+          // Use the error message from the API client
+          errorMessage = err.message;
+        }
+        
+        setError(errorMessage);
         setProjects([]);
       } finally {
         setLoading(false);

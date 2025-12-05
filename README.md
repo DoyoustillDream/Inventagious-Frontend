@@ -1085,6 +1085,8 @@ This project is licensed under the ISC License.
 
 - [Backend API README](../backend/README.md)
 - [Admin Panel README](../admin/README.md)
+- [Transaction Signing Documentation](lib/solana/README-SIGNING.md) - Detailed guide on the transaction signing system
+- [SEO Module Documentation](lib/seo/README.md) - SEO utilities and configuration guide
 
 ## Support
 
@@ -1092,6 +1094,10 @@ For support and questions:
 - Open an issue on GitHub
 - Check the documentation files
 - Review the code comments
+
+## Repository
+
+- **GitHub**: https://github.com/konstantinos193/inventagious_test_frontend/
 
 ---
 

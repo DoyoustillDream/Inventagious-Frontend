@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { helpApi } from '@/lib/api/help';
+import { findBestMatch, getContextualSuggestions, type KnowledgeBaseEntry } from '@/lib/help/knowledge-base';
 
 interface Message {
   id: string;
@@ -15,13 +16,25 @@ export default function AIChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Hello! I am here to help you with questions about Inventagious. What would you like to know?',
+      text: `Hello! 👋 I'm your AI assistant for Inventagious, the crowdfunding and private fundraising platform built on Solana.
+
+I can help you with:
+• Starting and managing projects
+• Understanding pricing and fees
+• Payment methods and transactions
+• Platform features and guarantees
+• Security and trust questions
+• And much more!
+
+What would you like to know?`,
       isUser: false,
       suggestions: [
+        'How do I start a project?',
         'How much does it cost?',
         'Do I need to give up equity?',
-        'How do I start a project?',
         'What payment methods are accepted?',
+        'How do I get paid?',
+        'Is Inventagious safe?',
       ],
     },
   ]);
@@ -71,24 +84,81 @@ export default function AIChatWidget() {
     setInput('');
     setIsLoading(true);
 
+    // First, try to find a match in our knowledge base
+    const knowledgeMatch = findBestMatch(messageText);
+    
     try {
+      // Try to get response from backend AI
       const response = await helpApi.chat(messageText, sessionId);
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: response.response || 'I am sorry, I could not process that question. Please try rephrasing it.',
-        isUser: false,
-        suggestions: response.suggestions,
-      };
-      setMessages((prev) => [...prev, botMessage]);
+      
+      // Check if the response is helpful or just a generic fallback
+      const responseText = response.response || '';
+      const isGenericResponse = 
+        responseText.includes('Hello! I am here to help') ||
+        responseText.includes('Financial Overview') ||
+        responseText.includes('Total Raised:') ||
+        responseText.length < 50 ||
+        (!responseText.includes('Inventagious') && !responseText.includes('project') && !responseText.includes('SOL'));
+      
+      // If we have a knowledge base match and the AI response is generic, use knowledge base
+      if (knowledgeMatch && isGenericResponse) {
+        const kbMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: knowledgeMatch.answer,
+          isUser: false,
+          suggestions: knowledgeMatch.suggestions || getContextualSuggestions(messageText),
+        };
+        setMessages((prev) => [...prev, kbMessage]);
+      } else if (responseText && !isGenericResponse) {
+        // Use AI response if it's helpful
+        const botMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: responseText,
+          isUser: false,
+          suggestions: response.suggestions || getContextualSuggestions(messageText),
+        };
+        setMessages((prev) => [...prev, botMessage]);
+      } else if (knowledgeMatch) {
+        // Fallback to knowledge base if AI response is not helpful
+        const kbMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: knowledgeMatch.answer,
+          isUser: false,
+          suggestions: knowledgeMatch.suggestions || getContextualSuggestions(messageText),
+        };
+        setMessages((prev) => [...prev, kbMessage]);
+      } else {
+        // No good match, provide helpful fallback
+        const fallbackMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: `I'm here to help with questions about Inventagious! I can help you with:\n\n• Starting a project\n• Pricing and fees\n• Payment methods\n• Platform features\n• Security and guarantees\n\nTry asking something like "How do I start a project?" or "How much does it cost?"\n\nFor more detailed help, visit our Help Center at /help or contact support@inventagious.com`,
+          isUser: false,
+          suggestions: getContextualSuggestions(messageText),
+        };
+        setMessages((prev) => [...prev, fallbackMessage]);
+      }
     } catch (error) {
       console.error('Chat error:', error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Sorry, I encountered an error. Please try again or contact support@inventagious.com for assistance.',
-        isUser: false,
-        suggestions: ['Try asking again', 'Contact support', 'Browse help guides'],
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      
+      // Use knowledge base as fallback on error
+      if (knowledgeMatch) {
+        const kbMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: knowledgeMatch.answer,
+          isUser: false,
+          suggestions: knowledgeMatch.suggestions || getContextualSuggestions(messageText),
+        };
+        setMessages((prev) => [...prev, kbMessage]);
+      } else {
+        // No knowledge base match, provide helpful error message
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          text: `I'm having trouble connecting right now, but I can still help!\n\nHere are some common questions I can answer:\n\n• "How do I start a project?"\n• "How much does it cost?"\n• "Do I need to give up equity?"\n• "What payment methods are accepted?"\n\nOr visit our Help Center at /help for detailed guides.\n\nFor urgent issues, contact support@inventagious.com`,
+          isUser: false,
+          suggestions: getContextualSuggestions(messageText),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      }
     } finally {
       setIsLoading(false);
     }

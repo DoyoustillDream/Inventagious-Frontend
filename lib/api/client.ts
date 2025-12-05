@@ -204,25 +204,90 @@ class ApiClient {
 
     if (!response.ok) {
       let errorMessage = `API Error: ${response.statusText}`;
+      let errorDetails: any = null;
+      
       try {
-        const errorData = await response.json();
-        if (errorData.message) {
-          errorMessage = Array.isArray(errorData.message)
-            ? errorData.message.join(', ')
-            : errorData.message;
-        } else if (errorData.error) {
-          errorMessage = errorData.error;
+        // Try to get response text first (in case it's not JSON)
+        const responseText = await response.text();
+        
+        // Try to parse as JSON
+        try {
+          errorDetails = JSON.parse(responseText);
+          if (errorDetails.message) {
+            errorMessage = Array.isArray(errorDetails.message)
+              ? errorDetails.message.join(', ')
+              : errorDetails.message;
+          } else if (errorDetails.error) {
+            errorMessage = errorDetails.error;
+          } else if (errorDetails.detail) {
+            errorMessage = errorDetails.detail;
+          } else if (responseText && responseText.length > 0 && responseText.length < 500) {
+            // If we have a short text response that's not JSON, use it
+            errorMessage = responseText;
+          }
+        } catch {
+          // Not JSON, but we have text - use it if it's reasonable length
+          if (responseText && responseText.length > 0 && responseText.length < 500) {
+            errorMessage = responseText;
+          }
         }
-      } catch {
-        // If response is not JSON, use statusText
+      } catch (parseError) {
+        // If we can't read the response at all, use statusText
+        if (typeof window === 'undefined') {
+          console.error(`[ApiClient] Failed to read error response for ${url}:`, parseError);
+        }
       }
+      
+      // Provide more context based on status code
+      const statusMessages: Record<number, string> = {
+        400: 'Invalid request. Please check your input and try again.',
+        401: 'Authentication required. Please sign in and try again.',
+        403: 'You do not have permission to perform this action.',
+        404: 'The requested resource was not found.',
+        500: 'Server error. Please try again later or contact support if the problem persists.',
+        502: 'Bad gateway. The server is temporarily unavailable.',
+        503: 'Service unavailable. Please try again later.',
+        504: 'Gateway timeout. The server took too long to respond.',
+      };
+      
+      const statusMessage = statusMessages[response.status];
+      if (statusMessage && errorMessage === `API Error: ${response.statusText}`) {
+        errorMessage = statusMessage;
+      }
+      
       const error = new Error(errorMessage);
       (error as any).status = response.status;
       (error as any).statusText = response.statusText;
+      (error as any).endpoint = endpoint;
+      (error as any).url = url;
+      if (errorDetails) {
+        (error as any).details = errorDetails;
+      }
       throw error;
     }
 
-    return response.json();
+    // Parse response as JSON, with better error handling
+    try {
+      const text = await response.text();
+      
+      // Handle empty responses
+      if (!text || text.trim().length === 0) {
+        // Return empty array as default (most API responses are arrays)
+        // This is safe because TypeScript will handle type checking
+        return [] as unknown as T;
+      }
+      
+      return JSON.parse(text) as T;
+    } catch (parseError: any) {
+      if (typeof window === 'undefined') {
+        console.error(`[ApiClient] Failed to parse response for ${url}:`, {
+          error: parseError.message,
+          responseLength: response.headers.get('content-length'),
+          contentType: response.headers.get('content-type'),
+        });
+      }
+      throw new Error(`Failed to parse API response: ${parseError.message || 'Invalid JSON'}`);
+    }
   }
 
   get<T>(endpoint: string): Promise<T> {

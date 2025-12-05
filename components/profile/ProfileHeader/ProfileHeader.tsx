@@ -46,7 +46,6 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
 
   const profileMenuItems = [
     { title: 'My Profile', href: '/profile', icon: '👤' },
-    { title: 'Edit Profile', href: '/profile/edit', icon: '✏️' },
     { title: 'My Projects', href: '/profile/projects', icon: '📁' },
     { title: 'Settings', href: '/profile/settings', icon: '⚙️' },
   ];
@@ -218,7 +217,7 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
                       {profile.displayName || profile.username}
                     </p>
                     {profile.username && (
-                      <p className="text-xs text-gray-700 font-semibold">@{profile.username}</p>
+                      <p className="text-xs text-gray-700 font-semibold">{`@${profile.username}`}</p>
                     )}
                   </div>
                 </div>

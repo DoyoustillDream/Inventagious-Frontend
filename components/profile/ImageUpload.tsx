@@ -49,12 +49,16 @@ export default function ImageUpload({
           const img = new Image();
           img.onload = () => {
             // Check dimensions if specified
-            if (maxWidth && img.width > maxWidth) {
-              reject(new Error(`Image width must be less than ${maxWidth}px`));
+            // Allow exactly maxWidth/maxHeight (add small tolerance for floating point precision)
+            const widthTolerance = 0.5; // Allow 0.5px tolerance for precision issues
+            const heightTolerance = 0.5;
+            
+            if (maxWidth && img.width > maxWidth + widthTolerance) {
+              reject(new Error(`Image width must be at most ${maxWidth}px (current: ${Math.round(img.width)}px)`));
               return;
             }
-            if (maxHeight && img.height > maxHeight) {
-              reject(new Error(`Image height must be less than ${maxHeight}px`));
+            if (maxHeight && img.height > maxHeight + heightTolerance) {
+              reject(new Error(`Image height must be at most ${maxHeight}px (current: ${Math.round(img.height)}px)`));
               return;
             }
 

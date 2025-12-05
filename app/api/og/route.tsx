@@ -191,7 +191,7 @@ export async function GET(request: NextRequest) {
                       fontWeight: 600,
                     }}
                   >
-                    @{username}
+                    {`@${username}`}
                   </p>
                 )}
               </div>

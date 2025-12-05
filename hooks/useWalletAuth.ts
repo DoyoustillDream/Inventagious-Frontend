@@ -84,7 +84,33 @@ export function useWalletAuth() {
     try {
       // Step 1: Create authentication message
       const timestamp = Date.now();
-      const message = `Sign this message to authenticate with Inventagious.\n\nWallet: ${walletAddress}\nTimestamp: ${timestamp}`;
+      // Use UTC timezone to ensure consistency between frontend and backend
+      const date = new Date(timestamp).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZoneName: 'short',
+        timeZone: 'UTC'
+      });
+      
+      // Format wallet address for better readability (short version for display)
+      const formattedAddress = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+      
+      const message = `Welcome to Inventagious!
+
+Please sign this message to authenticate your wallet and prove ownership.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Account: ${formattedAddress} (${walletAddress})
+Date: ${date}
+Timestamp: ${timestamp}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This signature is used only for authentication purposes and does not grant any permissions or authorize any transactions.
+
+By signing, you confirm that you are the owner of this wallet address.`;
       const messageBytes = new TextEncoder().encode(message);
 
       // Step 2: Request signature from wallet

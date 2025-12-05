@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { followsApi } from '@/lib/api/follows';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface Person {
   id: string;
@@ -20,7 +22,10 @@ export default function DiscoverPeopleSection({
   people = [],
   isOwnProfile = false,
 }: DiscoverPeopleSectionProps) {
+  const { user, isAuthenticated } = useAuth();
   const [isExpanded, setIsExpanded] = useState(true);
+  const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
 
   if (!isOwnProfile || people.length === 0) {
     return null;
@@ -30,15 +35,15 @@ export default function DiscoverPeopleSection({
     <div className="mb-4">
       <div className="flex justify-between items-center px-3 mb-2">
         <div className="flex-1 mr-2">
-          <h2 className="text-lg font-bold text-black mb-0">Discover more people</h2>
+          <h2 className="text-base sm:text-lg font-bold text-black mb-0">Discover more people</h2>
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="p-2 border-2 border-black rounded-full hover:bg-yellow-200 transition-colors"
+          className="p-1.5 sm:p-2 border-2 border-black rounded-full hover:bg-yellow-200 transition-colors flex-shrink-0"
           aria-label={isExpanded ? 'Hide more people' : 'Show more people'}
         >
           <svg
-            className={`w-5 h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -84,13 +89,37 @@ export default function DiscoverPeopleSection({
                     {person.displayName}
                   </h3>
                   <button
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.preventDefault();
-                      // Handle follow action
+                      if (!isAuthenticated || !user) {
+                        return;
+                      }
+                      if (loadingStates[person.id]) return;
+
+                      setLoadingStates(prev => ({ ...prev, [person.id]: true }));
+                      try {
+                        const isFollowing = followingStates[person.id];
+                        if (isFollowing) {
+                          await followsApi.unfollow(person.id);
+                          setFollowingStates(prev => ({ ...prev, [person.id]: false }));
+                        } else {
+                          await followsApi.follow(person.id);
+                          setFollowingStates(prev => ({ ...prev, [person.id]: true }));
+                        }
+                      } catch (err) {
+                        console.error('Error following/unfollowing:', err);
+                      } finally {
+                        setLoadingStates(prev => ({ ...prev, [person.id]: false }));
+                      }
                     }}
-                    className="w-full px-3 py-1.5 border-2 border-black bg-yellow-200 hover:bg-yellow-300 transition-colors rounded-md font-bold text-xs"
+                    disabled={loadingStates[person.id] || !isAuthenticated}
+                    className={`w-full px-3 py-1.5 border-2 border-black transition-colors rounded-md font-bold text-xs disabled:opacity-50 disabled:cursor-not-allowed ${
+                      followingStates[person.id]
+                        ? 'bg-white hover:bg-gray-100'
+                        : 'bg-yellow-200 hover:bg-yellow-300'
+                    }`}
                   >
-                    Follow
+                    {loadingStates[person.id] ? '...' : followingStates[person.id] ? 'Following' : 'Follow'}
                   </button>
                 </Link>
               </li>

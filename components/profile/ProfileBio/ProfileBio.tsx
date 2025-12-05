@@ -6,9 +6,10 @@ import Link from 'next/link';
 interface ProfileBioProps {
   profile: Profile;
   isOwnProfile?: boolean;
+  onEditClick?: () => void;
 }
 
-export default function ProfileBio({ profile, isOwnProfile = false }: ProfileBioProps) {
+export default function ProfileBio({ profile, isOwnProfile = false, onEditClick }: ProfileBioProps) {
   const hasBio = profile.bio && profile.bio.trim().length > 0;
 
   return (
@@ -26,9 +27,9 @@ export default function ProfileBio({ profile, isOwnProfile = false }: ProfileBio
             <p className="text-base md:text-lg text-black leading-relaxed max-w-3xl mx-auto font-bold">
               {profile.bio}
             </p>
-            {isOwnProfile && (
-              <Link
-                href="/profile/edit"
+            {isOwnProfile && onEditClick && (
+              <button
+                onClick={onEditClick}
                 className="mt-4 inline-flex items-center px-4 py-2 border-3 border-black bg-white hover:bg-yellow-200 transition-all rounded-lg font-bold text-sm hover:scale-105 active:scale-95"
               >
                 <svg
@@ -45,7 +46,7 @@ export default function ProfileBio({ profile, isOwnProfile = false }: ProfileBio
                   />
                 </svg>
                 Edit Bio
-              </Link>
+              </button>
             )}
           </div>
         ) : (
@@ -53,9 +54,9 @@ export default function ProfileBio({ profile, isOwnProfile = false }: ProfileBio
             <p className="text-gray-800 font-bold mb-4">
               Tell others what you care about.
             </p>
-            {isOwnProfile && (
-              <Link
-                href="/profile/edit"
+            {isOwnProfile && onEditClick && (
+              <button
+                onClick={onEditClick}
                 className="hand-drawn inline-flex items-center px-6 py-3 border-4 border-black bg-white hover:bg-yellow-200 transition-all rounded-lg font-bold text-base hover:scale-105 active:scale-95"
               >
                 <svg
@@ -72,7 +73,7 @@ export default function ProfileBio({ profile, isOwnProfile = false }: ProfileBio
                   />
                 </svg>
                 Add Bio
-              </Link>
+              </button>
             )}
           </div>
         )}

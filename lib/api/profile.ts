@@ -1,5 +1,17 @@
 import { apiClient } from './client';
 
+export interface Cause {
+  id: string;
+  name: string;
+  icon?: string;
+}
+
+export interface SocialHandle {
+  platform: 'twitter' | 'instagram' | 'facebook' | 'linkedin' | 'youtube' | 'tiktok' | 'website';
+  url: string;
+  username?: string;
+}
+
 export interface Profile {
   id: string;
   userId: string;
@@ -13,6 +25,8 @@ export interface Profile {
   type?: string;
   website?: string;
   location?: string;
+  socialHandles?: SocialHandle[];
+  causes?: Cause[];
   videos?: Video[];
   createdAt: string;
   updatedAt: string;
@@ -36,6 +50,12 @@ export interface CreateProfileData {
   type?: string;
   website?: string;
   location?: string;
+  twitterUrl?: string;
+  instagramUrl?: string;
+  facebookUrl?: string;
+  linkedinUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
 }
 
 export interface CreateVideoData {
@@ -72,6 +92,18 @@ export const profileApi = {
 
   getVideos: async (username: string): Promise<Video[]> => {
     return apiClient.get<Video[]>(`/profile/${username}/videos`);
+  },
+
+  getAvailableCauses: async (): Promise<Cause[]> => {
+    return apiClient.get<Cause[]>('/profile/causes/available');
+  },
+
+  getUserCauses: async (): Promise<Cause[]> => {
+    return apiClient.get<Cause[]>('/profile/causes');
+  },
+
+  updateUserCauses: async (causeIds: string[]): Promise<Cause[]> => {
+    return apiClient.put<Cause[]>('/profile/causes', { causeIds });
   },
 };
 
