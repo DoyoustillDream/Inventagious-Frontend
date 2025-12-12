@@ -38,8 +38,6 @@ const mobileMenuSections: MobileMenuSection[] = [
     title: 'Moddio',
     items: [
       { title: 'Moddio Overview', href: '/moddio', description: 'Learn about Moddio game engine' },
-      { title: 'Game Engine', href: '/moddio/game-engine', description: 'Explore no-code game engine' },
-      { title: 'Solana Integration', href: '/moddio/solana-integration', description: 'Discover blockchain enhancements' },
     ],
   },
   {

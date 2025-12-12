@@ -132,28 +132,6 @@ const moddioItems = [
     ),
     dataElementId: 'btn_nav_moddio',
   },
-  {
-    title: 'Game Engine',
-    description: 'Explore Moddio\'s no-code game engine',
-    href: '/moddio/game-engine',
-    icon: (
-      <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-      </svg>
-    ),
-    dataElementId: 'btn_nav_moddio_engine',
-  },
-  {
-    title: 'Solana Integration',
-    description: 'Discover blockchain enhancements',
-    href: '/moddio/solana-integration',
-    icon: (
-      <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-    dataElementId: 'btn_nav_moddio_solana',
-  },
 ];
 
 const aboutItems = [

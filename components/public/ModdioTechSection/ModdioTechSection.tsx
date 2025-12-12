@@ -1,7 +1,6 @@
 'use client';
 
 import ModdioHighlight from './ModdioHighlight';
-import SolanaEnhancements from './SolanaEnhancements';
 
 export default function ModdioTechSection() {
   return (
@@ -21,14 +20,6 @@ export default function ModdioTechSection() {
         {/* Moddio Highlight Section */}
         <div className="mb-16">
           <ModdioHighlight />
-        </div>
-
-        {/* Solana Enhancements Section */}
-        <div className="mb-16 relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#282c34] to-[#1a1d24] rounded-2xl blur-2xl opacity-50" />
-          <div className="relative bg-gradient-to-br from-[#282c34] to-[#1f2329] py-12 px-4 md:px-8 rounded-2xl border border-gray-700/50 shadow-2xl">
-            <SolanaEnhancements />
-          </div>
         </div>
       </div>
     </section>
