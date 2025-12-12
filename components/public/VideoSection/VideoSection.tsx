@@ -37,17 +37,30 @@ export default function VideoSection() {
     }
   };
 
-  // Reset video when it ends
+  // Auto-play video on mount with loop
   useEffect(() => {
     const video = videoRef.current;
     if (video) {
-      const handleEnded = () => {
-        setIsPlaying(false);
-        video.currentTime = 0;
+      const playVideo = async () => {
+        try {
+          // Set video to play automatically
+          video.muted = true; // Required for autoplay in most browsers
+          await video.play();
+          setIsPlaying(true);
+        } catch (error) {
+          console.error('Error auto-playing video:', error);
+          // If autoplay fails, show the play button
+          setIsPlaying(false);
+        }
       };
-      video.addEventListener('ended', handleEnded);
+      
+      // Small delay to ensure video element is ready
+      const timer = setTimeout(() => {
+        playVideo();
+      }, 100);
+
       return () => {
-        video.removeEventListener('ended', handleEnded);
+        clearTimeout(timer);
       };
     }
   }, []);
@@ -153,25 +166,26 @@ export default function VideoSection() {
               </button>
             )}
 
-            {/* Video Player (when playing) */}
-            {isPlaying && (
-              <video
-                ref={videoRef}
-                className="absolute inset-0 h-full w-full object-cover z-10"
-                controls
-                autoPlay
-                playsInline
-                onPause={handlePause}
-                onEnded={handlePause}
-                onPlay={() => {
-                  // Ensure state is synced when video plays
-                  setIsPlaying(true);
-                }}
-              >
-                <source src="/videos/Trailers-1.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            )}
+            {/* Video Player */}
+            <video
+              ref={videoRef}
+              className={`absolute inset-0 h-full w-full object-cover ${
+                isPlaying ? 'z-10' : 'z-0 opacity-0'
+              }`}
+              controls
+              autoPlay
+              loop
+              muted
+              playsInline
+              onPause={handlePause}
+              onPlay={() => {
+                // Ensure state is synced when video plays
+                setIsPlaying(true);
+              }}
+            >
+              <source src="/videos/Trailers-1.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           </div>
         </div>
 

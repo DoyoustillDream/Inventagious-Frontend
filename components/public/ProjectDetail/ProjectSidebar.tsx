@@ -6,7 +6,7 @@ import { useProject } from '@/hooks/useProject';
 import CircularProgress from './CircularProgress';
 import DonationsList from './DonationsList';
 import ContributeModal from './ContributeModal';
-import { InterestButton } from '../ProjectInterest';
+import { InterestButton } from '../ProjectInterest/index';
 import LaunchCountdown from './LaunchCountdown';
 import { solToUsd } from '@/lib/solana/price';
 import { useToast } from '@/components/shared/Toast';

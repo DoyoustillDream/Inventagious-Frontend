@@ -39,6 +39,9 @@ export interface Project {
   linkedinUrl?: string;
   youtubeUrl?: string;
   tiktokUrl?: string;
+  scheduledLaunchDate?: string;
+  interestCount?: number;
+  isInterested?: boolean;
   donations?: Donation[];
   contributions?: Contribution[];
   createdAt: string;
@@ -54,6 +57,7 @@ export interface CreateProjectData {
   imageUrl?: string;
   videoUrl?: string;
   deadline?: string;
+  scheduledLaunchDate?: string;
   solanaAddress?: string;
   isPublic?: boolean;
   isFeatured?: boolean;
@@ -175,11 +179,13 @@ export const projectsApi = {
     amount: number,
     contributorWalletAddress?: string,
     transactionSignature?: string,
+    paymentMethod?: 'solana_direct' | 'solana_usdc' | 'on_chain_smart_contract',
   ): Promise<Project> => {
     return apiClient.post<Project>(`/projects/${id}/contribute`, {
       amount,
       contributorWalletAddress,
       transactionSignature,
+      paymentMethod,
     });
   },
 
@@ -265,6 +271,14 @@ export const projectsApi = {
 
   deleteCampaignUpdate: async (projectId: string, updateId: string): Promise<void> => {
     return apiClient.delete<void>(`/projects/${projectId}/updates/${updateId}`);
+  },
+
+  getUpcoming: async (limit?: number, category?: string): Promise<Project[]> => {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit.toString());
+    if (category) params.append('category', category);
+    const query = params.toString();
+    return apiClient.get<Project[]>(`/projects/upcoming${query ? `?${query}` : ''}`);
   },
 };
 

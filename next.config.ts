@@ -81,7 +81,7 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
-    // Allow images from Supabase Storage, Moddio, and Solana
+    // Allow images from Supabase Storage, Moddio, Solana, and YouTube
     remotePatterns: [
       {
         protocol: 'https',
@@ -97,6 +97,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'solana.com',
         pathname: '/_next/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/vi/**',
       },
     ],
   },
@@ -145,6 +150,7 @@ const nextConfig: NextConfig = {
 
   // API Proxy - Rewrite API requests to backend
   // SECURITY: This hides the backend URL from clients by proxying all /api/* requests
+  // NOTE: /api/auth/wallet/* routes are handled by Next.js API route handlers (not rewritten)
   async rewrites() {
     // Use server-side env var (BACKEND_URL) - this should NEVER be exposed to client
     // NEXT_PUBLIC_API_URL should only be '/api' (the proxy path)
@@ -160,6 +166,9 @@ const nextConfig: NextConfig = {
       );
     }
     
+    // Next.js API routes take precedence over rewrites
+    // So /api/auth/wallet/* routes will be handled by API route handlers first
+    // Only routes that don't match API route handlers will be rewritten
     return [
       {
         source: '/api/:path*',

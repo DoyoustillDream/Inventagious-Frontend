@@ -24,6 +24,7 @@ export default function CreateProjectForm() {
     imageUrl: '',
     videoUrl: '',
     deadline: '',
+    scheduledLaunchDate: '',
     solanaAddress: '',
     isPublic: true,
   });
@@ -120,6 +121,7 @@ export default function CreateProjectForm() {
         imageUrl: formData.imageUrl?.trim() || undefined,
         videoUrl: formData.videoUrl?.trim() || undefined,
         deadline: formData.deadline || undefined,
+        scheduledLaunchDate: formData.scheduledLaunchDate || undefined,
         solanaAddress: formData.solanaAddress?.trim() || undefined,
         isPublic: formData.isPublic ?? true,
       };
@@ -245,6 +247,7 @@ export default function CreateProjectForm() {
             <ProjectFundingInfo
               fundingGoal={formData.fundingGoal}
               deadline={formData.deadline || ''}
+              scheduledLaunchDate={formData.scheduledLaunchDate}
               solanaAddress={formData.solanaAddress || ''}
               isPublic={formData.isPublic ?? true}
               onUpdate={updateField}

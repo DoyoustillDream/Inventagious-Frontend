@@ -104,91 +104,15 @@ export default function FeaturedProjects() {
   };
 
   if (loading) {
-    return (
-      <section className="halftone-gray py-20">
-        <div className="container mx-auto px-4">
-          <div className="mb-8 text-center">
-            <h2 className="hand-drawn mb-4 text-4xl md:text-5xl font-bold text-black">
-              Discover projects inspired by what you care about
-            </h2>
-          </div>
-          <div className="text-center py-12">
-            <p className="hand-drawn text-xl font-bold text-black">Loading projects...</p>
-          </div>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   if (error) {
-    return (
-      <section className="halftone-gray py-20">
-        <div className="container mx-auto px-4">
-          <div className="mb-8 text-center">
-            <h2 className="hand-drawn mb-4 text-4xl md:text-5xl font-bold text-black">
-              Discover projects inspired by what you care about
-            </h2>
-          </div>
-          <div className="text-center py-12">
-            <p className="hand-drawn text-xl font-bold text-red-600">{error}</p>
-          </div>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   if (projects.length === 0) {
-    return (
-      <section className="halftone-gray py-20">
-        <div className="container mx-auto px-4">
-          <div className="mb-8 text-center">
-            <h2 className="hand-drawn mb-4 text-4xl md:text-5xl font-bold text-black">
-              Discover projects inspired by what you care about
-            </h2>
-          </div>
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div className="relative" ref={filterRef}>
-                <button
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="hand-drawn flex items-center gap-2 rounded-lg border-4 border-black bg-white px-6 py-3 text-base font-bold text-black transition hover:bg-yellow-400"
-                  type="button"
-                >
-                  {filterOptions.find((opt) => opt.value === selectedFilter)?.label ||
-                    'All Projects'}
-                  <span className="text-sm">▼</span>
-                </button>
-                {isFilterOpen && (
-                  <div className="absolute left-0 top-full z-20 mt-2 w-64 border-4 border-black bg-white">
-                    {filterOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => {
-                          setSelectedFilter(option.value);
-                          setIsFilterOpen(false);
-                        }}
-                        className={`hand-drawn w-full px-6 py-3 text-left text-base font-bold transition ${
-                          selectedFilter === option.value
-                            ? 'bg-yellow-400 text-black'
-                            : 'text-black hover:bg-gray-100'
-                        }`}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="text-center py-12">
-            <p className="hand-drawn text-xl font-bold text-black">
-              No projects found. Check back later for new projects!
-            </p>
-          </div>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   return (

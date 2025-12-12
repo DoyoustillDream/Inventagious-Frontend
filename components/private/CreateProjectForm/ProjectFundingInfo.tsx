@@ -9,6 +9,7 @@ import { solanaApi } from '@/lib/api/solana';
 interface ProjectFundingInfoProps {
   fundingGoal: number;
   deadline: string;
+  scheduledLaunchDate?: string;
   solanaAddress: string;
   isPublic: boolean;
   onUpdate: <K extends keyof CreateProjectData>(
@@ -20,6 +21,7 @@ interface ProjectFundingInfoProps {
 export default function ProjectFundingInfo({
   fundingGoal,
   deadline,
+  scheduledLaunchDate,
   solanaAddress,
   isPublic,
   onUpdate,
@@ -28,10 +30,40 @@ export default function ProjectFundingInfo({
   const [solAmount, setSolAmount] = useState<number>(0);
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [fundingGoalError, setFundingGoalError] = useState<string | null>(null);
+  const [deadlineError, setDeadlineError] = useState<string | null>(null);
+  const [scheduledLaunchError, setScheduledLaunchError] = useState<string | null>(null);
   const [minFundingGoalUsd, setMinFundingGoalUsd] = useState<number>(5000);
   const [maxFundingGoalUsd, setMaxFundingGoalUsd] = useState<number>(100000);
   const [maxDeadlineDays, setMaxDeadlineDays] = useState<number>(30);
+  
+  // Local state for date and time to prevent input reset issues
+  const [localScheduledDate, setLocalScheduledDate] = useState<string>('');
+  const [localScheduledTime, setLocalScheduledTime] = useState<string>('');
+  
+   // Sync local state with prop when prop changes (but not when we're updating)
+   useEffect(() => {
+     if (scheduledLaunchDate) {
+       // Handle both ISO format (with timezone) and local format (YYYY-MM-DDTHH:mm)
+       let datePart = '';
+       let timePart = '';
+       
+       if (scheduledLaunchDate.includes('T')) {
+         const parts = scheduledLaunchDate.split('T');
+         datePart = parts[0];
+         // Extract time part (before any timezone info like +00:00 or Z)
+         timePart = parts[1].split(/[+\-Z]/)[0].substring(0, 5);
+       } else {
+         datePart = scheduledLaunchDate;
+       }
+       
+       setLocalScheduledDate(datePart);
+       setLocalScheduledTime(timePart);
+     } else {
+       setLocalScheduledDate('');
+       setLocalScheduledTime('');
+     }
+   }, [scheduledLaunchDate]);
   
   // Use ref to store the latest onUpdate callback to avoid dependency issues
   const onUpdateRef = useRef(onUpdate);
@@ -70,7 +102,7 @@ export default function ProjectFundingInfo({
       const usd = parseFloat(usdAmount);
       if (isNaN(usd) || usd <= 0) {
         setSolAmount(0);
-        setValidationError(null);
+        setFundingGoalError(null);
         if (lastUsdAmountRef.current !== 0) {
           lastUsdAmountRef.current = 0;
           onUpdateRef.current('fundingGoal', 0);
@@ -80,18 +112,18 @@ export default function ProjectFundingInfo({
 
       // Validate USD limits
       if (usd < minFundingGoalUsd) {
-        setValidationError(`Minimum funding goal is $${minFundingGoalUsd.toLocaleString()} USD`);
+        setFundingGoalError(`Minimum funding goal is $${minFundingGoalUsd.toLocaleString()} USD`);
         setSolAmount(0);
         return;
       }
 
       if (usd > maxFundingGoalUsd) {
-        setValidationError(`Maximum funding goal is $${maxFundingGoalUsd.toLocaleString()} USD`);
+        setFundingGoalError(`Maximum funding goal is $${maxFundingGoalUsd.toLocaleString()} USD`);
         setSolAmount(0);
         return;
       }
 
-      setValidationError(null);
+      setFundingGoalError(null);
       setIsLoadingPrice(true);
       setPriceError(null);
       try {
@@ -136,20 +168,20 @@ export default function ProjectFundingInfo({
               required
               placeholder="0.00"
               className={`hand-drawn w-full border-4 px-4 py-3 text-base font-bold text-black focus:outline-none focus:ring-4 focus:ring-yellow-400 ${
-                validationError ? 'border-red-500 bg-red-50' : 'border-black bg-white'
+                fundingGoalError ? 'border-red-500 bg-red-50' : 'border-black bg-white'
               }`}
             />
-            {validationError && (
+            {fundingGoalError && (
               <p className="hand-drawn mt-2 text-sm font-semibold text-red-600">
-                {validationError}
+                {fundingGoalError}
               </p>
             )}
-            {isLoadingPrice && !validationError && (
+            {isLoadingPrice && !fundingGoalError && (
               <p className="hand-drawn mt-2 text-sm font-semibold text-gray-500">
                 Converting to SOL...
               </p>
             )}
-            {!isLoadingPrice && solAmount > 0 && !validationError && (
+            {!isLoadingPrice && solAmount > 0 && !fundingGoalError && (
               <p className="hand-drawn mt-2 text-sm font-semibold text-gray-700">
                 ≈ {solAmount.toFixed(4)} SOL
               </p>
@@ -182,25 +214,142 @@ export default function ProjectFundingInfo({
                   maxDate.setDate(maxDate.getDate() + maxDeadlineDays);
                   
                   if (selectedDate <= now) {
-                    setValidationError('Deadline must be in the future');
+                    setDeadlineError('Deadline must be in the future');
                     return;
                   }
                   
                   if (selectedDate > maxDate) {
-                    setValidationError(`Deadline cannot be more than ${maxDeadlineDays} days from now`);
+                    setDeadlineError(`Deadline cannot be more than ${maxDeadlineDays} days from now`);
                     return;
                   }
-                  setValidationError(null);
+                  setDeadlineError(null);
                 } else {
-                  setValidationError(null);
+                  setDeadlineError(null);
                 }
                 onUpdate('deadline', date);
               }}
               minDate={new Date().toISOString().split('T')[0]}
               placeholder={`Select deadline date (max ${maxDeadlineDays} days from now)`}
             />
+            {deadlineError && (
+              <p className="hand-drawn mt-2 text-sm font-semibold text-red-600">
+                {deadlineError}
+              </p>
+            )}
             <p className="hand-drawn mt-2 text-sm font-semibold text-gray-700">
               When should your funding campaign end? Maximum duration is {maxDeadlineDays} days from today.
+            </p>
+          </div>
+
+          <div>
+            <label className="hand-drawn block text-base font-bold mb-3 text-black">
+              Scheduled Launch Date & Time (Optional)
+            </label>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1">
+                 <DatePicker
+                   value={localScheduledDate}
+                  onChange={(date) => {
+                    setScheduledLaunchError(null);
+                    setLocalScheduledDate(date);
+                    
+                    if (date) {
+                      // Use existing time or default to current time + 1 hour
+                      let timeToUse = localScheduledTime;
+                      if (!timeToUse) {
+                        const now = new Date();
+                        now.setHours(now.getHours() + 1);
+                        timeToUse = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                        setLocalScheduledTime(timeToUse);
+                      }
+                      
+                      // Combine date and time as local datetime string
+                      const localDateTimeString = `${date}T${timeToUse}`;
+                      
+                      // Create date object from local string to validate
+                      const selectedDateTime = new Date(localDateTimeString);
+                      const now = new Date();
+                      
+                      // Validate it's in the future
+                      if (selectedDateTime <= now) {
+                        setScheduledLaunchError('Scheduled launch date and time must be in the future');
+                        return;
+                      }
+                      
+                      // Convert to ISO string for backend (includes timezone)
+                      // This ensures the backend receives a proper ISO 8601 date string
+                      const isoString = selectedDateTime.toISOString();
+                      onUpdate('scheduledLaunchDate', isoString);
+                    } else {
+                      // Date cleared, clear everything
+                      setLocalScheduledTime('');
+                      onUpdate('scheduledLaunchDate', '');
+                    }
+                  }}
+                   minDate={new Date().toISOString().split('T')[0]}
+                   placeholder="Select date"
+                 />
+              </div>
+               <div className="flex-1">
+                 <input
+                   type="time"
+                   value={localScheduledTime}
+                  onChange={(e) => {
+                    const time = e.target.value;
+                    setScheduledLaunchError(null);
+                    setLocalScheduledTime(time);
+                    
+                    if (time) {
+                      // Use existing date or default to today
+                      let dateToUse = localScheduledDate;
+                      if (!dateToUse) {
+                        dateToUse = new Date().toISOString().split('T')[0];
+                        setLocalScheduledDate(dateToUse);
+                      }
+                      
+                      // Combine date and time as local datetime string
+                      const localDateTimeString = `${dateToUse}T${time}`;
+                      
+                      // Create date object from local string to validate
+                      const selectedDateTime = new Date(localDateTimeString);
+                      const now = new Date();
+                      
+                      // Validate it's in the future
+                      if (selectedDateTime <= now) {
+                        setScheduledLaunchError('Scheduled launch date and time must be in the future');
+                        return;
+                      }
+                      
+                      // Convert to ISO string for backend (includes timezone)
+                      // This ensures the backend receives a proper ISO 8601 date string
+                      const isoString = selectedDateTime.toISOString();
+                      onUpdate('scheduledLaunchDate', isoString);
+                    } else {
+                      // Time cleared
+                      if (localScheduledDate) {
+                        // Keep date but set time to 00:00, convert to ISO
+                        const dateOnly = new Date(`${localScheduledDate}T00:00`);
+                        onUpdate('scheduledLaunchDate', dateOnly.toISOString());
+                      } else {
+                        // No date either, clear everything
+                        onUpdate('scheduledLaunchDate', '');
+                      }
+                    }
+                  }}
+                   className="hand-drawn w-full border-4 border-black bg-white px-4 py-3 text-base font-bold text-black focus:outline-none focus:ring-4 focus:ring-yellow-400"
+                 />
+               </div>
+             </div>
+             {scheduledLaunchError && (
+               <p className="hand-drawn mt-2 text-sm font-semibold text-red-600">
+                 {scheduledLaunchError}
+               </p>
+             )}
+             <p className="hand-drawn mt-2 text-sm font-semibold text-gray-700">
+              Set a future date and time when your project will go live. Leave empty to launch immediately when published.
+            </p>
+            <p className="hand-drawn mt-1 text-xs font-semibold text-gray-600">
+              Note: Date and time will be based on your local timezone.
             </p>
           </div>
 

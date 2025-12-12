@@ -3,6 +3,7 @@
 import { Project } from '@/lib/api/projects';
 import ImageSlideshow from '@/components/shared/ImageSlideshow/ImageSlideshow';
 import { parseImages } from '@/lib/utils/imageUtils';
+import LaunchCountdown from './LaunchCountdown';
 
 interface ProjectHeroProps {
   project: Project;
@@ -10,6 +11,7 @@ interface ProjectHeroProps {
 
 export default function ProjectHero({ project }: ProjectHeroProps) {
   const images = parseImages(project.imageUrl);
+  const isUpcoming = project.status === 'draft' && project.scheduledLaunchDate;
 
   return (
     <div className="browser-window mb-6">
@@ -25,6 +27,22 @@ export default function ProjectHero({ project }: ProjectHeroProps) {
       <ImageSlideshow images={images} videoUrl={project.videoUrl} alt={project.title} />
 
       <div className="p-6">
+        {project.scheduledLaunchDate && (() => {
+          const launchDate = new Date(project.scheduledLaunchDate);
+          const now = new Date();
+          // Show countdown if launch date is in the future
+          if (launchDate > now) {
+            return (
+              <div className="mb-4 space-y-3">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-400 border-4 border-black rounded-lg">
+                  <span className="hand-drawn font-bold text-black">Coming Soon</span>
+                </div>
+                <LaunchCountdown launchDate={project.scheduledLaunchDate} />
+              </div>
+            );
+          }
+          return null;
+        })()}
         <h1 className="hand-drawn text-3xl md:text-4xl font-bold text-black mb-4">
           {project.title}
         </h1>

@@ -21,16 +21,22 @@ export default function Footer() {
                   Crowdfunding
                 </Link>
               </li>
-              <li>
+              {/* COMMENTED OUT: Private Funding */}
+              {/* <li>
                 <Link href="/private" className="text-white hover:underline">
                   Private Funding
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
           <div>
             <h4 className="hand-drawn mb-4 text-base font-bold text-white">Resources</h4>
             <ul className="space-y-2 text-sm font-semibold">
+              <li>
+                <Link href="/moddio" className="text-white hover:underline">
+                  Moddio
+                </Link>
+              </li>
               <li>
                 <Link href="/about" className="text-white hover:underline">
                   About

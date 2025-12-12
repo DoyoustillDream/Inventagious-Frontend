@@ -34,9 +34,11 @@ export const metadata: Metadata = {
 };
 
 export default function PrivateFundingPage() {
+  // COMMENTED OUT: Private Funding Page Content
   return (
     <>
-      <WebPageSchema
+      {/* COMMENTED OUT: Private Funding Page */}
+      {/* <WebPageSchema
         title="Private Funding - Exclusive Investment Opportunities | Inventagious"
         description="Explore private funding options on Inventagious. Connect with accredited investors, secure exclusive deals, and access milestone-based funding with escrow protection."
         url={`${siteConfig.url}/private`}
@@ -45,6 +47,22 @@ export default function PrivateFundingPage() {
         <Header />
         <main id="main-content" className="flex-1 halftone-gray py-12 md:py-16">
           <PrivateFundingGuide />
+        </main>
+        <Footer />
+      </div> */}
+      
+      {/* Placeholder: Page disabled */}
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main id="main-content" className="flex-1 halftone-gray py-12 md:py-16">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="hand-drawn mb-4 text-4xl md:text-5xl lg:text-6xl font-bold text-black">
+              Page Unavailable
+            </h1>
+            <p className="hand-drawn text-lg md:text-xl font-bold text-gray-800 mb-4">
+              This page is currently unavailable.
+            </p>
+          </div>
         </main>
         <Footer />
       </div>

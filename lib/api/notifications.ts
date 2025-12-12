@@ -3,12 +3,16 @@ import { apiClient } from './client';
 export interface Notification {
   id: string;
   userId: string;
-  type: 'project_update' | 'donation' | 'comment' | 'follow' | 'milestone' | 'deal_update' | 'funding_goal_reached' | 'deadline_reminder' | 'system';
+  type: 'project_update' | 'donation' | 'comment' | 'follow' | 'milestone' | 'deal_update' | 'funding_goal_reached' | 'deadline_reminder' | 'system' | 'upcoming_project' | 'project_launched';
   title: string;
   message: string;
   link?: string;
   read: boolean;
-  metadata?: any;
+  metadata?: {
+    project_id?: string;
+    project_slug?: string;
+    scheduled_launch_date?: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

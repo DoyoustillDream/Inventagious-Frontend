@@ -25,17 +25,18 @@ const discoverItems = [
     ),
     dataElementId: 'btn_nav_campaigns',
   },
-  {
-    title: 'Private Funding',
-    description: 'Explore private funding opportunities',
-    href: '/deals',
-    icon: (
-      <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-      </svg>
-    ),
-    dataElementId: 'btn_nav_deals',
-  },
+  // COMMENTED OUT: Private Funding
+  // {
+  //   title: 'Private Funding',
+  //   description: 'Explore private funding opportunities',
+  //   href: '/deals',
+  //   icon: (
+  //     <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+  //     </svg>
+  //   ),
+  //   dataElementId: 'btn_nav_deals',
+  // },
   {
     title: 'Featured Projects',
     description: 'Discover trending projects',
@@ -46,6 +47,17 @@ const discoverItems = [
       </svg>
     ),
     dataElementId: 'btn_nav_featured',
+  },
+  {
+    title: 'Upcoming Projects',
+    description: 'Discover projects launching soon',
+    href: '/upcoming',
+    icon: (
+      <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    dataElementId: 'btn_nav_upcoming',
   },
 ];
 
@@ -61,17 +73,18 @@ const fundraiseItems = [
     ),
     dataElementId: 'btn_nav_create_campaign',
   },
-  {
-    title: 'Create Private Funding',
-    description: 'Set up a private funding project',
-    href: '/deals/create',
-    icon: (
-      <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-      </svg>
-    ),
-    dataElementId: 'btn_nav_create_deal',
-  },
+  // COMMENTED OUT: Create Private Funding
+  // {
+  //   title: 'Create Private Funding',
+  //   description: 'Set up a private funding project',
+  //   href: '/deals/create',
+  //   icon: (
+  //     <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+  //     </svg>
+  //   ),
+  //   dataElementId: 'btn_nav_create_deal',
+  // },
   {
     title: 'How to start a project',
     description: 'Step-by-step guide to launching your project',
@@ -104,6 +117,42 @@ const fundraiseItems = [
       </svg>
     ),
     dataElementId: 'btn_nav_tips',
+  },
+];
+
+const moddioItems = [
+  {
+    title: 'Moddio Overview',
+    description: 'Learn about Moddio game engine',
+    href: '/moddio',
+    icon: (
+      <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+      </svg>
+    ),
+    dataElementId: 'btn_nav_moddio',
+  },
+  {
+    title: 'Game Engine',
+    description: 'Explore Moddio\'s no-code game engine',
+    href: '/moddio/game-engine',
+    icon: (
+      <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+      </svg>
+    ),
+    dataElementId: 'btn_nav_moddio_engine',
+  },
+  {
+    title: 'Solana Integration',
+    description: 'Discover blockchain enhancements',
+    href: '/moddio/solana-integration',
+    icon: (
+      <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+    dataElementId: 'btn_nav_moddio_solana',
   },
 ];
 
@@ -178,6 +227,17 @@ export default function HeaderNav() {
             </svg>
           }
           description="Start fundraising, tips, and resources"
+          align="left"
+        />
+        <HeaderDropdown
+          title="Moddio"
+          items={moddioItems}
+          icon={
+            <svg className="h-6 w-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          }
+          description="Web3 Native Game Engine"
           align="left"
         />
         <HeaderDropdown

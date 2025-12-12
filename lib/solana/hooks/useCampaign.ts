@@ -213,7 +213,7 @@ export function useCampaign() {
 
   /**
    * Contribute to a campaign
-   * Supports both on-chain smart contract and off-chain direct SOL transfers
+   * Supports both on-chain smart contract and off-chain direct SOL/USDC transfers
    */
   const contribute = useCallback(
     async (
@@ -221,6 +221,7 @@ export function useCampaign() {
       campaignPda: string | undefined,
       amount: number,
       isOnChain: boolean = false,
+      paymentMethod: 'SOL' | 'USDC' = 'SOL',
     ): Promise<string> => {
       if (!connected || !publicKey || !wallet) {
         throw new Error('Wallet not connected');
@@ -303,7 +304,7 @@ export function useCampaign() {
           }
         }
 
-        // Off-chain: Direct SOL transfer flow
+        // Off-chain: Direct SOL or USDC transfer flow
         // Get campaign wallet address from backend (unique wallet for this campaign)
         // REQUIRED: Campaign must have its own wallet (no fallback to platform wallet)
         let recipientWallet: string;
@@ -348,16 +349,31 @@ export function useCampaign() {
           connection = new Connection(fallbackRpc, { commitment: 'confirmed' });
         }
 
-        // Import direct transfer utilities
-        const { createDirectSOLTransfer } = await import('../direct-transfer');
+        let transaction: Transaction;
+        
+        if (paymentMethod === 'USDC') {
+          // Import USDC transfer utilities
+          const { createUSDCTransfer } = await import('../usdc-transfer');
+          
+          // Create USDC token transfer transaction
+          transaction = await createUSDCTransfer(
+            publicKey,
+            new PublicKey(recipientWallet),
+            amount, // Amount in USDC
+            connection,
+          );
+        } else {
+          // Import direct transfer utilities
+          const { createDirectSOLTransfer } = await import('../direct-transfer');
 
-        // Create direct SOL transfer transaction
-        const transaction = await createDirectSOLTransfer(
-          publicKey,
-          new PublicKey(recipientWallet),
-          amount,
-          connection,
-        );
+          // Create direct SOL transfer transaction
+          transaction = await createDirectSOLTransfer(
+            publicKey,
+            new PublicKey(recipientWallet),
+            amount, // Amount in SOL
+            connection,
+          );
+        }
 
         // Sign transaction using optimized signing service
         const signedTransaction = await signTransaction(transaction, connection);
@@ -369,12 +385,13 @@ export function useCampaign() {
         });
         await connection.confirmTransaction(signature, 'confirmed');
 
-        // Notify backend with signature and wallet address
+        // Notify backend with signature, wallet address, and payment method
         await projectsApi.contribute(
           projectId,
           amount,
           publicKey.toBase58(),
           signature,
+          paymentMethod === 'USDC' ? 'solana_usdc' : 'solana_direct',
         );
 
         return signature;

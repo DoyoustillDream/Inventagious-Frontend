@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Hero from '@/components/public/Hero';
-import ModdioTechSection from '@/components/public/ModdioTechSection';
 import HowItWorks from '@/components/public/HowItWorks';
 import FeaturedProjects from '@/components/public/FeaturedProjects';
 import FeaturedTopics from '@/components/public/FeaturedTopics';
@@ -57,7 +56,6 @@ export default function Home() {
         <Header />
         <main id="main-content" className="flex-1">
           <Hero />
-          <ModdioTechSection />
           <HowItWorks />
           <FeaturedProjects />
           <FeaturedTopics />

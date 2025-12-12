@@ -30,7 +30,16 @@ const mobileMenuSections: MobileMenuSection[] = [
       { title: 'How to start a project', href: '/help/start-project', description: 'Step-by-step guide' },
       { title: 'Project categories', href: '/help/categories', description: 'Find the right category' },
       { title: 'Fundraising tips', href: '/help/tips', description: 'Tips and strategies' },
-      { title: 'Private funding', href: '/private', description: 'Explore private funding' },
+      // COMMENTED OUT: Private funding
+      // { title: 'Private funding', href: '/private', description: 'Explore private funding' },
+    ],
+  },
+  {
+    title: 'Moddio',
+    items: [
+      { title: 'Moddio Overview', href: '/moddio', description: 'Learn about Moddio game engine' },
+      { title: 'Game Engine', href: '/moddio/game-engine', description: 'Explore no-code game engine' },
+      { title: 'Solana Integration', href: '/moddio/solana-integration', description: 'Discover blockchain enhancements' },
     ],
   },
   {

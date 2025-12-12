@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import ProjectCarousel from '@/components/public/ProjectCarousel';
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-yellow-400 halftone-bg py-24">
+    <section className="relative overflow-hidden bg-yellow-400 halftone-bg py-16 md:py-24">
       <div className="absolute top-4 right-4">
         <span className="star-decoration" />
       </div>
@@ -11,52 +11,24 @@ export default function Hero() {
         <span className="swirl-decoration" />
       </div>
       <div className="container mx-auto relative z-10 px-4">
-        <div className="browser-window mx-auto max-w-4xl">
-          <div className="browser-header">
-            <div className="browser-controls">
-              <div className="browser-dot red" />
-              <div className="browser-dot yellow" />
-              <div className="browser-dot green" />
+        {/* Hero Content Section */}
+        <div className="max-w-3xl mx-auto text-center mb-8">
+          <h1 className="hand-drawn mb-2 text-2xl md:text-3xl lg:text-4xl font-bold text-black leading-tight">
+            Where Ideas & Innovation Meet
+          </h1>
+          <div className="mb-3 inline-block">
+            <div className="yellow-highlight hand-drawn text-xl md:text-2xl lg:text-3xl font-bold px-4 py-2">
+              INVENTAGIOUS
             </div>
           </div>
-          <div className="text-center p-6 md:p-10 lg:p-12">
-            <div className="mb-6 flex justify-center">
-              <Image
-                src="/logos/logo-animated.gif"
-                alt="Inventagious Logo"
-                width={120}
-                height={120}
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-            <h1 className="hand-drawn mb-6 text-4xl md:text-5xl font-bold text-black leading-tight">
-              Where Ideas & Innovation Meet
-            </h1>
-            <div className="mb-8 inline-block">
-              <div className="yellow-highlight hand-drawn text-4xl md:text-5xl font-bold px-6 py-3">
-                INVENTAGIOUS
-              </div>
-            </div>
-            <p className="mb-8 text-base md:text-lg font-bold text-black max-w-2xl mx-auto leading-relaxed">
-              A crowdfunding & private fundraising platform for Inventors & 
-              Innovators in Web3 & Worldwide using the cryptocurrency Solana
-            </p>
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <Link
-                href="/projects"
-                className="hand-drawn rounded-lg border-4 border-black bg-white px-8 py-4 text-lg font-bold text-black transition hover:bg-gray-100"
-              >
-                Explore Projects
-              </Link>
-              <Link
-                href="/projects/create"
-                className="hand-drawn rounded-lg border-4 border-black bg-black px-8 py-4 text-lg font-bold text-white transition hover:bg-gray-800"
-              >
-                Start Your Project
-              </Link>
-            </div>
-          </div>
+          <p className="mb-4 text-sm md:text-base font-bold text-black leading-relaxed">
+            Crowdfunding & private fundraising for Inventors & Innovators
+          </p>
+        </div>
+
+        {/* Featured Projects Carousel Section */}
+        <div className="max-w-7xl mx-auto">
+          <ProjectCarousel maxProjects={10} />
         </div>
       </div>
     </section>

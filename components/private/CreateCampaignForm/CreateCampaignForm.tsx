@@ -31,6 +31,7 @@ export default function CreateCampaignForm() {
     imageUrl: '',
     videoUrl: '',
     deadline: '',
+    scheduledLaunchDate: '',
     solanaAddress: '',
     isPublic: true,
     websiteUrl: '',
@@ -135,6 +136,7 @@ export default function CreateCampaignForm() {
         imageUrl: formData.imageUrl?.trim() || undefined,
         videoUrl: formData.videoUrl?.trim() || undefined,
         deadline: formData.deadline || undefined,
+        scheduledLaunchDate: formData.scheduledLaunchDate || undefined,
         solanaAddress: publicKey?.toBase58() || '',
         isPublic: formData.isPublic ?? true,
         websiteUrl: formData.websiteUrl?.trim() || undefined,
@@ -153,6 +155,7 @@ export default function CreateCampaignForm() {
       // The backend will handle both on-chain and off-chain logic based on feature flags
       // For off-chain: generates a campaign wallet and publishes without Solana transactions
       // For on-chain: requires wallet connection and creates Solana transactions
+      // Note: Campaigns with scheduled launch dates will still be published but show countdown
       try {
         await projectsApi.publish(
           project.id,
@@ -323,6 +326,7 @@ export default function CreateCampaignForm() {
             <ProjectFundingInfo
               fundingGoal={formData.fundingGoal}
               deadline={formData.deadline || ''}
+              scheduledLaunchDate={formData.scheduledLaunchDate}
               solanaAddress={publicKey?.toBase58() || ''}
               isPublic={formData.isPublic ?? true}
               onUpdate={updateField}
