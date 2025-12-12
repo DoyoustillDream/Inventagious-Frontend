@@ -6,6 +6,8 @@ import { useProject } from '@/hooks/useProject';
 import CircularProgress from './CircularProgress';
 import DonationsList from './DonationsList';
 import ContributeModal from './ContributeModal';
+import { InterestButton } from '../ProjectInterest';
+import LaunchCountdown from './LaunchCountdown';
 import { solToUsd } from '@/lib/solana/price';
 import { useToast } from '@/components/shared/Toast';
 
@@ -102,39 +104,74 @@ export default function ProjectSidebar({ project: initialProject }: ProjectSideb
       </div>
 
       <div className="p-6">
-        {/* Progress Meter */}
-        <div className="mb-6 text-center">
-          <CircularProgress progress={progress} />
-          <div className="mt-4 space-y-2">
-            <div>
-              <div className="hand-drawn text-2xl font-bold text-black">
-                {projectData.amountRaised.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL
+        {/* Countdown for projects with scheduled launch date */}
+        {projectData.scheduledLaunchDate && (() => {
+          const launchDate = new Date(projectData.scheduledLaunchDate);
+          const now = new Date();
+          // Show countdown if launch date is in the future
+          if (launchDate > now) {
+            return (
+              <div className="mb-6">
+                <LaunchCountdown launchDate={projectData.scheduledLaunchDate} />
               </div>
-              {usdRaised !== null && (
-                <div className="text-sm font-semibold text-gray-600 mt-1">
-                  ≈ ${usdRaised.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            );
+          }
+          return null;
+        })()}
+
+        {/* Progress Meter - Only show if campaign has launched */}
+        {(() => {
+          // Check if campaign has launched (no scheduled launch date or launch date has passed)
+          const hasLaunched = !projectData.scheduledLaunchDate || 
+            new Date(projectData.scheduledLaunchDate) <= new Date();
+          
+          if (!hasLaunched) {
+            return null;
+          }
+          
+          return (
+            <div className="mb-6 text-center">
+              <CircularProgress progress={progress} />
+              <div className="mt-4 space-y-2">
+                <div>
+                  <div className="hand-drawn text-2xl font-bold text-black">
+                    {projectData.amountRaised.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL
+                  </div>
+                  {usdRaised !== null && (
+                    <div className="text-sm font-semibold text-gray-600 mt-1">
+                      ≈ ${usdRaised.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </div>
+                  )}
                 </div>
-              )}
+                <div className="text-sm font-semibold text-gray-700">
+                  <span>raised of </span>
+                  <span className="hand-drawn font-bold text-black">
+                    {projectData.fundingGoal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL
+                  </span>
+                  {usdGoal !== null && (
+                    <span className="text-gray-600 ml-1">
+                      (≈ ${usdGoal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+                    </span>
+                  )}
+                </div>
+                <div className="text-sm font-semibold text-gray-600">
+                  {projectData.backersCount} {projectData.backersCount === 1 ? 'backer' : 'backers'}
+                </div>
+              </div>
             </div>
-            <div className="text-sm font-semibold text-gray-700">
-              <span>raised of </span>
-              <span className="hand-drawn font-bold text-black">
-                {projectData.fundingGoal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })} SOL
-              </span>
-              {usdGoal !== null && (
-                <span className="text-gray-600 ml-1">
-                  (≈ ${usdGoal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
-                </span>
-              )}
-            </div>
-            <div className="text-sm font-semibold text-gray-600">
-              {projectData.backersCount} {projectData.backersCount === 1 ? 'backer' : 'backers'}
-            </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Share and Donate Buttons */}
         <div className="mb-6 space-y-3">
+          {(projectData.status === 'draft' && projectData.scheduledLaunchDate) && (
+            <InterestButton
+              projectId={projectData.id}
+              interestCount={projectData.interestCount}
+              showCount={true}
+              className="w-full"
+            />
+          )}
           <button
             onClick={handleShare}
             className="hand-drawn w-full rounded-lg border-4 border-black bg-white px-6 py-3 text-base font-bold text-black transition-all duration-300 hover:bg-gray-100 hover:scale-105 active:scale-95"
@@ -161,14 +198,24 @@ export default function ProjectSidebar({ project: initialProject }: ProjectSideb
             <div className="hand-drawn w-full rounded-lg border-4 border-green-600 bg-green-100 px-6 py-3 text-base font-bold text-green-800 text-center">
               ✓ Funding Goal Reached!
             </div>
-          ) : (
-            <button
-              onClick={handleContribute}
-              className="hand-drawn w-full rounded-lg border-4 border-black bg-yellow-400 px-6 py-3 text-base font-bold text-black transition-all duration-300 hover:bg-yellow-600 hover:scale-105 active:scale-95"
-            >
-              {projectData.type === 'crowdfunding' ? 'Contribute' : 'Donate'} now
-            </button>
-          )}
+          ) : (() => {
+            // Check if campaign has launched (no scheduled launch date or launch date has passed)
+            const hasLaunched = !projectData.scheduledLaunchDate || 
+              new Date(projectData.scheduledLaunchDate) <= new Date();
+            
+            // Show contribute button only if not draft and campaign has launched
+            if (projectData.status !== 'draft' && hasLaunched) {
+              return (
+                <button
+                  onClick={handleContribute}
+                  className="hand-drawn w-full rounded-lg border-4 border-black bg-yellow-400 px-6 py-3 text-base font-bold text-black transition-all duration-300 hover:bg-yellow-600 hover:scale-105 active:scale-95"
+                >
+                  {projectData.type === 'crowdfunding' ? 'Contribute' : 'Donate'} now
+                </button>
+              );
+            }
+            return null;
+          })()}
         </div>
 
         {/* Recent Donations */}

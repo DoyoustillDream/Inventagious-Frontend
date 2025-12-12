@@ -44,7 +44,7 @@ export default function ContributeModal({
   const currentAmountRaised = realTimeProject?.amountRaised ?? amountRaised;
   const currentStatus = realTimeProject?.status ?? status;
   const currentFundingGoal = realTimeProject?.fundingGoal ?? fundingGoal;
-  const [inputCurrency, setInputCurrency] = useState<'USD' | 'SOL'>('USD');
+  const [inputCurrency, setInputCurrency] = useState<'USDC' | 'SOL'>('USDC');
   const [inputAmount, setInputAmount] = useState('');
   const [solAmount, setSolAmount] = useState<number>(0);
   const [usdAmount, setUsdAmount] = useState<number>(0);
@@ -69,8 +69,8 @@ export default function ContributeModal({
       setIsLoadingPrice(true);
       setPriceError(null);
       try {
-        if (inputCurrency === 'USD') {
-          // Input is USD, convert to SOL
+        if (inputCurrency === 'USDC') {
+          // Input is USDC, convert to SOL
           const sol = await usdToSol(amount);
           setSolAmount(sol);
           setUsdAmount(amount);
@@ -108,6 +108,16 @@ export default function ContributeModal({
       return;
     }
 
+    // Check if campaign has launched (scheduledLaunchDate must be in the past or not set)
+    if (realTimeProject?.scheduledLaunchDate) {
+      const launchDate = new Date(realTimeProject.scheduledLaunchDate);
+      const now = new Date();
+      if (launchDate > now) {
+        showError('This campaign has not launched yet. Contributions will be available after the launch date.');
+        return;
+      }
+    }
+
     if (!connected) {
       showWarning('Please connect your wallet to contribute');
       return;
@@ -120,7 +130,7 @@ export default function ContributeModal({
     }
 
     if (solAmount <= 0 || priceError) {
-      showWarning(`Please enter a valid ${inputCurrency === 'USD' ? 'USD' : 'SOL'} amount`);
+      showWarning(`Please enter a valid ${inputCurrency === 'USDC' ? 'USDC' : 'SOL'} amount`);
       return;
     }
 
@@ -156,7 +166,13 @@ export default function ContributeModal({
     isSubmittingRef.current = true;
 
     try {
-      await contribute(projectId, campaignPda || undefined, solAmount, isOnChain);
+      // Determine payment method based on selected currency
+      const paymentMethod: 'SOL' | 'USDC' = inputCurrency === 'USDC' ? 'USDC' : 'SOL';
+      
+      // For USDC, use the USDC amount; for SOL, use the SOL amount
+      const contributionAmount = inputCurrency === 'USDC' ? usdAmount : solAmount;
+      
+      await contribute(projectId, campaignPda || undefined, contributionAmount, isOnChain, paymentMethod);
       setInputAmount('');
       setSolAmount(0);
       setUsdAmount(0);
@@ -179,6 +195,8 @@ export default function ContributeModal({
   const netAmount = solAmount - platformFee;
   const feePercentageDisplay = (feePercentage * 100).toFixed(1);
   const isFunded = currentStatus === 'funded' || currentAmountRaised >= currentFundingGoal;
+  const hasLaunched = !realTimeProject?.scheduledLaunchDate || 
+    new Date(realTimeProject.scheduledLaunchDate) <= new Date();
   const remainingToGoal = Math.max(0, currentFundingGoal - currentAmountRaised);
   
   // Calculate gross amount needed to reach exactly 100% (accounting for fees)
@@ -293,16 +311,16 @@ export default function ContributeModal({
                   <button
                     type="button"
                     onClick={() => {
-                      setInputCurrency('USD');
+                      setInputCurrency('USDC');
                       setInputAmount('');
                     }}
                     className={`px-3 py-1.5 text-xs font-bold rounded-md border-2 transition-all duration-200 ${
-                      inputCurrency === 'USD'
+                      inputCurrency === 'USDC'
                         ? 'bg-yellow-400 border-black text-black shadow-sm'
                         : 'bg-white border-transparent text-gray-600 hover:border-gray-400 hover:text-black'
                     }`}
                   >
-                    USD
+                    USDC
                   </button>
                   <button
                     type="button"
@@ -321,10 +339,13 @@ export default function ContributeModal({
                 </div>
               </div>
               <div className="relative">
-                {inputCurrency === 'USD' ? (
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-black font-bold text-lg">
-                    $
-                  </span>
+                {inputCurrency === 'USDC' ? (
+                  <img
+                    src="/svg/usd-coin-usdc-logo.svg"
+                    alt="USDC"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-auto z-10"
+                    style={{ objectFit: 'contain' }}
+                  />
                 ) : (
                   <img
                     src="/svg/solanaLogoMark.svg"
@@ -335,13 +356,13 @@ export default function ContributeModal({
                 )}
                 <input
                   type="number"
-                  step={inputCurrency === 'USD' ? '0.01' : '0.0001'}
-                  min={inputCurrency === 'USD' ? '0.01' : '0.0001'}
+                  step={inputCurrency === 'USDC' ? '0.01' : '0.0001'}
+                  min={inputCurrency === 'USDC' ? '0.01' : '0.0001'}
                   value={inputAmount}
                   onChange={(e) => setInputAmount(e.target.value)}
-                  className={`w-full pr-24 py-3 text-lg border-3 border-black rounded-xl hand-drawn text-black bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                    inputCurrency === 'USD' ? 'pl-10' : 'pl-12'
-                  } ${isLoading || isLoadingPrice ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  className={`w-full pr-24 py-3 text-lg border-3 border-black rounded-xl hand-drawn text-black bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none pl-12 ${
+                    isLoading || isLoadingPrice ? 'opacity-60 cursor-not-allowed' : ''
+                  }`}
                   placeholder="0.00"
                   required
                   disabled={isLoading || isLoadingPrice}
@@ -353,12 +374,12 @@ export default function ContributeModal({
                       if (inputCurrency === 'SOL') {
                         setInputAmount(grossAmountNeededToComplete.toFixed(4));
                       } else {
-                        // Convert to USD if needed
+                        // Convert to USDC if needed
                         try {
-                          const usd = await solToUsd(grossAmountNeededToComplete);
-                          setInputAmount(usd.toFixed(2));
+                          const usdc = await solToUsd(grossAmountNeededToComplete);
+                          setInputAmount(usdc.toFixed(2));
                         } catch (error) {
-                          console.error('Failed to convert SOL to USD:', error);
+                          console.error('Failed to convert SOL to USDC:', error);
                           // Fallback to SOL amount if conversion fails
                           setInputCurrency('SOL');
                           setInputAmount(grossAmountNeededToComplete.toFixed(4));
@@ -377,10 +398,10 @@ export default function ContributeModal({
               )}
               {!isLoadingPrice && inputAmount && solAmount > 0 && (
                 <p className="mt-2 text-sm text-gray-700 font-semibold">
-                  {inputCurrency === 'USD' ? (
+                  {inputCurrency === 'USDC' ? (
                     <>≈ {solAmount.toFixed(4)} SOL</>
                   ) : (
-                    <>≈ ${usdAmount.toFixed(2)} USD</>
+                    <>≈ ${usdAmount.toFixed(2)} USDC</>
                   )}
                 </p>
               )}
@@ -414,6 +435,11 @@ export default function ContributeModal({
               </div>
             )}
 
+            {!hasLaunched && (
+              <div className="p-4 bg-yellow-50 border-3 border-yellow-600 rounded-xl text-sm text-yellow-800 font-semibold shadow-sm">
+                This campaign has not launched yet. Contributions will be available after the launch date.
+              </div>
+            )}
             {!walletLoading && !connected && (
               <div className="p-4 bg-yellow-50 border-3 border-yellow-600 rounded-xl text-sm text-yellow-800 font-semibold shadow-sm">
                 Please connect your wallet to contribute
@@ -437,9 +463,9 @@ export default function ContributeModal({
               <button
                 type="submit"
                 className="flex-1 hand-drawn rounded-xl border-3 border-black bg-yellow-400 px-6 py-3.5 text-base font-bold text-black transition-all duration-200 hover:bg-yellow-500 hover:shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isLoading || isLoadingPrice || !connected || solAmount <= 0 || !!priceError || isFunded}
+                disabled={isLoading || isLoadingPrice || !connected || solAmount <= 0 || !!priceError || isFunded || !hasLaunched}
               >
-                {isLoading ? 'Processing...' : isFunded ? 'Goal Reached' : 'Contribute'}
+                {isLoading ? 'Processing...' : isFunded ? 'Goal Reached' : !hasLaunched ? 'Not Launched Yet' : 'Contribute'}
               </button>
             </div>
           </form>
