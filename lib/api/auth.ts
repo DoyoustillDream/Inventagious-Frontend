@@ -25,8 +25,8 @@ export interface AuthUser {
 }
 
 export interface AuthResponse {
-  access_token: string;
-  user: AuthUser;
+  access_token?: string;
+  user?: AuthUser;
   requiresProfileCompletion?: boolean;
   walletAddress?: string;
 }
@@ -44,25 +44,34 @@ export interface ProfileStatus {
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
-    apiClient.setToken(response.access_token);
+    if (response.access_token) {
+      apiClient.setToken(response.access_token);
+    }
     return response;
   },
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/auth/register', data);
-    apiClient.setToken(response.access_token);
+    if (response.access_token) {
+      apiClient.setToken(response.access_token);
+    }
     return response;
   },
 
   connectWallet: async (data: WalletConnectData): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/auth/wallet/connect', data);
-    apiClient.setToken(response.access_token);
+    if (response.access_token) {
+      apiClient.setToken(response.access_token);
+    }
     return response;
   },
 
   registerWithWallet: async (data: WalletConnectData): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/auth/wallet/register', data);
-    apiClient.setToken(response.access_token);
+    // Only set token if it exists (user might need to complete profile first)
+    if (response.access_token) {
+      apiClient.setToken(response.access_token);
+    }
     return response;
   },
 
