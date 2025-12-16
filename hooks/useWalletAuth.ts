@@ -161,27 +161,49 @@ By signing, you confirm that you are the owner of this wallet address.`;
       }
 
       // Step 5: Handle response
+      console.log('[useWalletAuth] Auth response received:', {
+        hasUser: !!authResponse.user,
+        userId: authResponse.user?.id,
+        hasToken: !!authResponse.access_token,
+        requiresProfileCompletion: authResponse.requiresProfileCompletion,
+        fullResponse: authResponse,
+      });
+
       if (authResponse.requiresProfileCompletion || !authResponse.user?.id) {
         // Profile completion needed
+        console.log('[useWalletAuth] Profile completion required');
         setPendingWalletAddress(walletAddress);
         setShowProfileForm(true);
         if (authResponse.access_token) {
           apiClient.setToken(authResponse.access_token);
         }
         setIsAuthenticating(false);
+        authAttemptRef.current = null;
         return;
       }
 
       // Step 6: Update auth state
       if (authResponse.user && authResponse.access_token) {
+        console.log('[useWalletAuth] Authentication successful, updating state');
         setUser(authResponse.user);
         // Ensure token is stored
         apiClient.setToken(authResponse.access_token);
+        
+        // Reset authentication state
+        setIsAuthenticating(false);
+        authAttemptRef.current = null;
         
         // Wait a moment for state to update, then redirect
         setTimeout(() => {
           redirectAfterAuth();
         }, 150);
+      } else {
+        // Unexpected response structure - log and handle gracefully
+        console.error('[useWalletAuth] Unexpected response structure:', authResponse);
+        console.error('[useWalletAuth] Missing user or access_token in response');
+        setIsAuthenticating(false);
+        authAttemptRef.current = null;
+        throw new Error('Invalid authentication response: missing user or access token');
       }
     } catch (error) {
       console.error('Authentication error:', error);
