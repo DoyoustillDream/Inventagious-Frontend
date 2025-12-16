@@ -7,6 +7,7 @@ import CategoryProjectsList from '@/components/public/Category/CategoryProjectsL
 import { siteConfig, WebPageSchema, BreadcrumbSchema, generatePageMetadata } from '@/lib/seo';
 import { getCategoryBySlug, getCategoryName, getCategoryDescription } from '@/lib/categories';
 import { generateCategoryOGImageUrl } from '@/lib/seo/og-image';
+import { normalizeUrl } from '@/lib/utils/url';
 
 interface CategoryPageProps {
   params: Promise<{ id: string }>;
@@ -50,7 +51,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const categoryName = getCategoryName(id);
   const categoryDescription = getCategoryDescription(id);
 
-  const categoryUrl = `${siteConfig.url}/category/${id}`;
+  const categoryUrl = normalizeUrl(siteConfig.url, `/category/${id}`);
 
   return (
     <>

@@ -6,6 +6,7 @@ import ProjectDetailContent from '@/components/public/ProjectDetail/ProjectDetai
 import { projectsApi } from '@/lib/api/projects';
 import { siteConfig, generateProjectMetadata, WebPageSchema, ArticleSchema, BreadcrumbSchema } from '@/lib/seo';
 import { getFirstImage } from '@/lib/utils/imageUtils';
+import { normalizeUrl } from '@/lib/utils/url';
 
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
@@ -47,7 +48,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound();
   }
 
-  const projectUrl = `${siteConfig.url}/projects/${id}`;
+  const projectUrl = normalizeUrl(siteConfig.url, `/projects/${id}`);
   const tags = [
     project.type === 'crowdfunding' ? 'crowdfunding' : 'private funding',
     ...(project.category ? [project.category.toLowerCase()] : []),

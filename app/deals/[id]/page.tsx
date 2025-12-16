@@ -6,6 +6,7 @@ import ProjectDetailContent from '@/components/public/ProjectDetail/ProjectDetai
 import { projectsApi } from '@/lib/api/projects';
 import { siteConfig, generateProjectMetadata, WebPageSchema, ArticleSchema, BreadcrumbSchema } from '@/lib/seo';
 import { getFirstImage } from '@/lib/utils/imageUtils';
+import { normalizeUrl } from '@/lib/utils/url';
 
 interface DealPageProps {
   params: Promise<{ id: string }>;
@@ -55,7 +56,7 @@ export default async function DealPage({ params }: DealPageProps) {
     notFound();
   }
 
-  const dealUrl = `${siteConfig.url}/deals/${id}`;
+  const dealUrl = normalizeUrl(siteConfig.url, `/deals/${id}`);
   const tags = [
     'private funding',
     ...(project.category ? [project.category.toLowerCase()] : []),

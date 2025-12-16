@@ -11,6 +11,7 @@ import {
   BreadcrumbSchema,
 } from '@/lib/seo';
 import { getFirstImage } from '@/lib/utils/imageUtils';
+import { normalizeUrl } from '@/lib/utils/url';
 import dynamic from 'next/dynamic';
 
 // Dynamic import to prevent loading client components if project doesn't exist
@@ -183,7 +184,7 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
     const validProject: Project = project;
     
     // Build page data
-    const campaignUrl = `${siteConfig.url}/campaigns/${validProject.slug}`;
+    const campaignUrl = normalizeUrl(siteConfig.url, `/campaigns/${validProject.slug}`);
     const tags = [
       'crowdfunding',
       ...(validProject.category ? [validProject.category.toLowerCase()] : []),
