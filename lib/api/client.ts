@@ -91,6 +91,12 @@ class ApiClient {
     const isServerSide = typeof window === 'undefined';
     const isBackendUrl = process.env.BACKEND_URL && baseUrl === process.env.BACKEND_URL.replace(/\/+$/, '');
     
+    // CRITICAL: Never allow baseUrl to be just '/' or empty - always default to '/api'
+    if (!baseUrl || baseUrl === '/' || baseUrl === '//') {
+      console.warn(`[ApiClient] Invalid baseUrl detected: "${baseUrl}", defaulting to '/api'`);
+      baseUrl = '/api';
+    }
+    
     // Allow BACKEND_URL for server-side calls only (secure - never exposed to client)
     if (isServerSide && isBackendUrl) {
       this.baseUrl = baseUrl;
@@ -106,6 +112,12 @@ class ApiClient {
           'SECURITY ERROR: Client-side API calls cannot use direct backend URLs. ' +
           'All calls must go through the Next.js proxy at "/api"'
         );
+      }
+      
+      // Additional safeguard: ensure client-side baseUrl is '/api'
+      if (baseUrl === '/' || baseUrl === '//' || !baseUrl.startsWith('/api')) {
+        console.warn(`[ApiClient] Invalid client-side baseUrl: "${baseUrl}", forcing to '/api'`);
+        baseUrl = '/api';
       }
     }
     
