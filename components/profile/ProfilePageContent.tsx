@@ -212,6 +212,18 @@ export default function ProfilePageContent() {
       if (err?.status === 401 || err?.status === 403) {
         // Auth error - let the auth provider handle it
         setError('Authentication required. Please sign in again.');
+      } else if (err?.status === 404 && (err?.message?.includes('not found') || err?.message?.includes('User not found'))) {
+        // User not found - likely incomplete profile for new wallet user
+        // Check if user has wallet address (indicating wallet auth)
+        if (user?.walletAddress) {
+          // This is a new wallet user who needs to complete their profile
+          // Redirect to profile edit page to complete profile
+          console.log('[ProfilePageContent] User not found, redirecting to profile completion');
+          router.push('/profile/edit');
+          return;
+        } else {
+          setError('Profile not found. Please complete your profile setup.');
+        }
       } else {
         setError(err?.message || 'Failed to load profile');
       }
