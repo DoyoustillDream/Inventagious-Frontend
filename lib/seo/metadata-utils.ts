@@ -6,6 +6,7 @@
 import { Metadata } from 'next';
 import { siteConfig } from './config';
 import { getFirstImage } from '@/lib/utils/imageUtils';
+import { normalizeUrl, normalizeBaseUrl } from '@/lib/utils/url';
 import {
   generateCampaignOGImageUrl,
   generateProfileOGImageUrl,
@@ -40,8 +41,8 @@ export function generatePageMetadata(options: PageMetadataOptions): Metadata {
   const fullTitle = title || siteConfig.title;
 
   const pageUrl = url 
-    ? `${siteConfig.url}${url.startsWith('/') ? url : `/${url}`}`
-    : siteConfig.url;
+    ? normalizeUrl(siteConfig.url, url)
+    : normalizeBaseUrl(siteConfig.url);
 
   // Use dynamic OG image if no image provided, otherwise use provided image
   const ogImageUrl = image || generateDefaultOGImageUrl({
@@ -119,7 +120,7 @@ export function generateArticleMetadata(options: {
   } = options;
 
   const fullTitle = title;
-  const pageUrl = `${siteConfig.url}${url.startsWith('/') ? url : `/${url}`}`;
+  const pageUrl = normalizeUrl(siteConfig.url, url);
 
   // Use provided image or generate dynamic OG image
   const ogImageUrl = image || generateDefaultOGImageUrl({
@@ -185,7 +186,7 @@ export function generateProjectMetadata(options: {
   url: string;
 }): Metadata {
   const { project, url } = options;
-  const pageUrl = `${siteConfig.url}${url.startsWith('/') ? url : `/${url}`}`;
+  const pageUrl = normalizeUrl(siteConfig.url, url);
   
   const description = project.description || 
     `Support ${project.title} on Inventagious. ${
@@ -237,7 +238,7 @@ export function generateProfileMetadata(options: {
   url: string;
 }): Metadata {
   const { profile, url } = options;
-  const pageUrl = `${siteConfig.url}${url.startsWith('/') ? url : `/${url}`}`;
+  const pageUrl = normalizeUrl(siteConfig.url, url);
   
   const description = profile.bio || `View ${profile.displayName}'s profile on Inventagious`;
 

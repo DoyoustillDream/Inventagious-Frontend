@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next';
 import { siteConfig } from '@/lib/seo';
 import { projectsApi } from '@/lib/api/projects';
+import { normalizeUrl, normalizeBaseUrl, ensureLeadingSlash } from '@/lib/utils/url';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = siteConfig.url;
+  const baseUrl = normalizeBaseUrl(siteConfig.url);
   const currentDate = new Date().toISOString();
 
   // Static routes
@@ -26,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/private',
     '/projects/featured',
   ].map((route) => ({
-    url: `${baseUrl}${route}`,
+    url: normalizeUrl(baseUrl, route || '/'),
     lastModified: currentDate,
     changeFrequency: route === '' ? ('daily' as const) : ('weekly' as const),
     priority: route === '' ? 1 : route.startsWith('/projects') || route.startsWith('/campaigns') || route.startsWith('/deals') ? 0.9 : 0.8,
@@ -41,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     
     // Add project pages
     const projectRoutes = allProjects.map((project) => ({
-      url: `${baseUrl}/projects/${project.id}`,
+      url: normalizeUrl(baseUrl, `/projects/${project.id}`),
       lastModified: project.updatedAt || project.createdAt || currentDate,
       changeFrequency: 'daily' as const,
       priority: 0.9,
@@ -51,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const campaignRoutes = allProjects
       .filter((project) => project.type === 'crowdfunding')
       .map((project) => ({
-        url: `${baseUrl}/campaigns/${project.slug}`,
+        url: normalizeUrl(baseUrl, `/campaigns/${project.slug}`),
         lastModified: project.updatedAt || project.createdAt || currentDate,
         changeFrequency: 'daily' as const,
         priority: 0.9,
@@ -61,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const dealRoutes = allProjects
       .filter((project) => project.type === 'private_funding')
       .map((project) => ({
-        url: `${baseUrl}/deals/${project.id}`,
+        url: normalizeUrl(baseUrl, `/deals/${project.id}`),
         lastModified: project.updatedAt || project.createdAt || currentDate,
         changeFrequency: 'daily' as const,
         priority: 0.9,
@@ -80,7 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       'defi',
       'startup',
     ].map((category) => ({
-      url: `${baseUrl}/category/${category}`,
+      url: normalizeUrl(baseUrl, `/category/${category}`),
       lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.8,

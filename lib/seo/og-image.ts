@@ -4,6 +4,7 @@
  */
 
 import { siteConfig } from './config';
+import { normalizeUrl } from '@/lib/utils/url';
 
 export interface CampaignOGImageParams {
   title: string;
@@ -63,7 +64,7 @@ export function generateCampaignOGImageUrl(params: CampaignOGImageParams): strin
     searchParams.set('fundingGoal', params.fundingGoal.toLocaleString());
   }
 
-  return `${siteConfig.url}/api/og?${searchParams.toString()}`;
+  return normalizeUrl(siteConfig.url, `/api/og?${searchParams.toString()}`);
 }
 
 /**
@@ -86,7 +87,7 @@ export function generateProfileOGImageUrl(params: ProfileOGImageParams): string 
     searchParams.set('image', encodeURIComponent(params.avatarUrl));
   }
 
-  return `${siteConfig.url}/api/og?${searchParams.toString()}`;
+  return normalizeUrl(siteConfig.url, `/api/og?${searchParams.toString()}`);
 }
 
 /**
@@ -108,7 +109,7 @@ export function generateDealOGImageUrl(params: DealOGImageParams): string {
     searchParams.set('category', encodeURIComponent(params.category));
   }
 
-  return `${siteConfig.url}/api/og?${searchParams.toString()}`;
+  return normalizeUrl(siteConfig.url, `/api/og?${searchParams.toString()}`);
 }
 
 /**
@@ -124,7 +125,7 @@ export function generateCategoryOGImageUrl(params: CategoryOGImageParams): strin
     searchParams.set('description', encodeURIComponent(params.description));
   }
 
-  return `${siteConfig.url}/api/og?${searchParams.toString()}`;
+  return normalizeUrl(siteConfig.url, `/api/og?${searchParams.toString()}`);
 }
 
 /**
@@ -140,6 +141,6 @@ export function generateDefaultOGImageUrl(params: DefaultOGImageParams): string 
     searchParams.set('description', encodeURIComponent(params.description));
   }
 
-  return `${siteConfig.url}/api/og?${searchParams.toString()}`;
+  return normalizeUrl(siteConfig.url, `/api/og?${searchParams.toString()}`);
 }
 
