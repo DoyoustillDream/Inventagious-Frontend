@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { normalizeUrl } from '@/lib/utils/url';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
@@ -6,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const backendUrl = `${BACKEND_URL}/auth/wallet/connect`;
+    const backendUrl = normalizeUrl(BACKEND_URL, '/auth/wallet/connect');
     console.log(`[API Route] Proxying wallet connect to ${backendUrl}`);
     console.log(`[API Route] Request body:`, JSON.stringify(body, null, 2));
     
