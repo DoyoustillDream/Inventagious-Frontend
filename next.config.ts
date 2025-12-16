@@ -154,7 +154,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     // Use server-side env var (BACKEND_URL) - this should NEVER be exposed to client
     // NEXT_PUBLIC_API_URL should only be '/api' (the proxy path)
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    let backendUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+    
+    // Normalize backendUrl: remove trailing slashes to prevent double slashes in destination
+    backendUrl = backendUrl.replace(/\/+$/, '');
     
     // Validate that we're not accidentally using a public env var for backend URL
     if (process.env.NEXT_PUBLIC_API_URL && 
