@@ -13,6 +13,7 @@ import {
   getCampaign,
 } from '../campaign';
 import { projectsApi } from '@/lib/api/projects';
+import { normalizeUrl } from '@/lib/utils/url';
 import { serializeSignedTransaction } from '../transaction-signing';
 
 /**
@@ -309,7 +310,8 @@ export function useCampaign() {
         // REQUIRED: Campaign must have its own wallet (no fallback to platform wallet)
         let recipientWallet: string;
         try {
-          const campaignWalletResponse = await fetch(`/api/solana/campaign-wallet/${projectId}`);
+          const campaignWalletUrl = normalizeUrl('/api/solana/campaign-wallet', `/${projectId}`);
+          const campaignWalletResponse = await fetch(campaignWalletUrl);
           if (!campaignWalletResponse.ok) {
             throw new Error('Campaign wallet not found. Campaign must be published before contributions can be made.');
           }

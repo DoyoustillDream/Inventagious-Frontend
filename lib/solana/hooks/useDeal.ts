@@ -14,6 +14,7 @@ import {
   useDealEscrowProgram,
 } from '../deal';
 import { dealsApi } from '@/lib/api/deals';
+import { normalizeUrl } from '@/lib/utils/url';
 
 /**
  * Hook for deal operations
@@ -154,7 +155,8 @@ export function useDeal() {
         // REQUIRED: Deal must have its own wallet (no fallback to platform wallet)
         let escrowWallet: string;
         try {
-          const dealWalletResponse = await fetch(`/api/solana/deal-wallet/${dealId}`);
+          const dealWalletUrl = normalizeUrl('/api/solana/deal-wallet', `/${dealId}`);
+          const dealWalletResponse = await fetch(dealWalletUrl);
           if (!dealWalletResponse.ok) {
             throw new Error('Deal wallet not found. Deal must be created before funds can be sent.');
           }
