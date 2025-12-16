@@ -10,6 +10,7 @@ import {
 } from "@/lib/seo";
 import WalletProvider from "@/components/auth/WalletProvider";
 import AuthProvider from "@/components/auth/AuthProvider";
+import { WalletAuthProvider } from "@/components/auth/WalletAuthProvider";
 import WalletAuthInitializer from "@/components/auth/WalletAuthInitializer";
 import ProgramIdsInitializer from "@/components/solana/ProgramIdsInitializer";
 import AnalyticsInitializer from "@/components/analytics/AnalyticsInitializer";
@@ -54,16 +55,18 @@ export default function RootLayout({
       >
         <WalletProvider>
           <AuthProvider>
-            <ToastProvider>
-              <AnalyticsInitializer />
-              <WalletAuthInitializer />
-              <ProgramIdsInitializer />
-              <OrganizationSchema />
-              <WebsiteSchema />
-              <SoftwareApplicationSchema />
-              <FinancialProductSchema />
-              {children}
-            </ToastProvider>
+            <WalletAuthProvider>
+              <ToastProvider>
+                <AnalyticsInitializer />
+                <WalletAuthInitializer />
+                <ProgramIdsInitializer />
+                <OrganizationSchema />
+                <WebsiteSchema />
+                <SoftwareApplicationSchema />
+                <FinancialProductSchema />
+                {children}
+              </ToastProvider>
+            </WalletAuthProvider>
           </AuthProvider>
         </WalletProvider>
       </body>

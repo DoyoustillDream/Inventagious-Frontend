@@ -1,24 +1,37 @@
 'use client';
 
-// Re-export from WalletAuthProvider for backward compatibility
-export { useWalletAuth } from '@/components/auth/WalletAuthProvider';
-
-// Keep the old implementation for reference, but it's now in WalletAuthProvider
-/*
-import { useEffect, useRef, useCallback, useState } from 'react';
-import { useWallet } from './useWallet';
+import { createContext, useContext, useState, useCallback, useRef, useEffect, ReactNode } from 'react';
+import { useWallet } from '@/hooks/useWallet';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { authApi } from '@/lib/api/auth';
 import { apiClient } from '@/lib/api/client';
-import { useAuthRedirect } from './useAuthRedirect';
+import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 
-/**
- * Hook to handle wallet authentication
- * Simplified, reliable authentication flow
- * @deprecated Use WalletAuthProvider context instead
- */
-/*
+interface WalletAuthContextType {
+  showProfileForm: boolean;
+  pendingWalletAddress: string | null;
+  isAuthenticating: boolean;
+  authenticateWallet: (force?: boolean) => Promise<void>;
+  handleDisconnect: () => Promise<void>;
+  handleProfileComplete: () => Promise<void>;
+  handleProfileCancel: () => void;
+}
+
+const WalletAuthContext = createContext<WalletAuthContextType | undefined>(undefined);
+
 export function useWalletAuth() {
+  const context = useContext(WalletAuthContext);
+  if (!context) {
+    throw new Error('useWalletAuth must be used within WalletAuthProvider');
+  }
+  return context;
+}
+
+interface WalletAuthProviderProps {
+  children: ReactNode;
+}
+
+export function WalletAuthProvider({ children }: WalletAuthProviderProps) {
   const { publicKey, connected, signMessage } = useWallet();
   const { user, isAuthenticated, setUser, logout: authLogout } = useAuth();
   const { redirectAfterAuth } = useAuthRedirect();
@@ -30,10 +43,6 @@ export function useWalletAuth() {
   // Track current authentication attempt to prevent duplicates
   const authAttemptRef = useRef<string | null>(null);
 
-  /**
-   * Authenticate wallet with backend
-   * Manual authentication only - must be called explicitly by user action
-   */
   const authenticateWallet = useCallback(async (force = false) => {
     // Safety checks
     if (!connected || !publicKey) {
@@ -186,8 +195,8 @@ By signing, you confirm that you are the owner of this wallet address.`;
         // Force a state update by logging after a brief delay
         setTimeout(() => {
           console.log('[useWalletAuth] State after setting:', {
-            pendingWalletAddress,
-            showProfileForm,
+            pendingWalletAddress: walletAddress,
+            showProfileForm: true,
           });
         }, 100);
         if (authResponse.access_token) {
@@ -229,19 +238,8 @@ By signing, you confirm that you are the owner of this wallet address.`;
       // Re-throw to allow caller to handle the error
       throw error;
     }
-  }, [connected, publicKey, signMessage, isAuthenticated, user, setUser, authLogout, redirectAfterAuth]);
+  }, [connected, publicKey, signMessage, isAuthenticated, user, setUser, authLogout, redirectAfterAuth, isAuthenticating]);
 
-  // Reset state when wallet disconnects (manual authentication only - no auto-trigger)
-  useEffect(() => {
-    if (!connected) {
-      // Reset when disconnected
-      authAttemptRef.current = null;
-      setShowProfileForm(false);
-      setPendingWalletAddress(null);
-    }
-  }, [connected]);
-
-  // Handle wallet disconnection
   const handleDisconnect = useCallback(async () => {
     authApi.logout();
     authLogout();
@@ -250,7 +248,6 @@ By signing, you confirm that you are the owner of this wallet address.`;
     setPendingWalletAddress(null);
   }, [authLogout]);
 
-  // Handle profile completion
   const handleProfileComplete = useCallback(async () => {
     setShowProfileForm(false);
     const completedWalletAddress = pendingWalletAddress;
@@ -274,7 +271,6 @@ By signing, you confirm that you are the owner of this wallet address.`;
     }
   }, [connected, publicKey, pendingWalletAddress, authenticateWallet, redirectAfterAuth]);
 
-  // Handle profile cancellation
   const handleProfileCancel = useCallback(() => {
     setShowProfileForm(false);
     setPendingWalletAddress(null);
@@ -283,13 +279,26 @@ By signing, you confirm that you are the owner of this wallet address.`;
     authAttemptRef.current = null;
   }, [authLogout]);
 
-  return {
-    authenticateWallet: () => authenticateWallet(true),
-    handleDisconnect,
+  // Reset state when wallet disconnects
+  useEffect(() => {
+    if (!connected) {
+      // Reset when disconnected
+      authAttemptRef.current = null;
+      setShowProfileForm(false);
+      setPendingWalletAddress(null);
+    }
+  }, [connected]);
+
+  const value: WalletAuthContextType = {
     showProfileForm,
     pendingWalletAddress,
+    isAuthenticating,
+    authenticateWallet: () => authenticateWallet(true),
+    handleDisconnect,
     handleProfileComplete,
     handleProfileCancel,
-    isAuthenticating,
   };
+
+  return <WalletAuthContext.Provider value={value}>{children}</WalletAuthContext.Provider>;
 }
+
