@@ -1,6 +1,7 @@
 // SECURITY: All backend calls MUST go through the Next.js proxy at '/api'
 // This hides the backend URL from the client and prevents direct backend access
 import { validateProxyUrl } from './proxy-validator';
+import { normalizeUrl, normalizeBaseUrl, ensureLeadingSlash } from '@/lib/utils/url';
 
 const TOKEN_STORAGE_KEY = 'inventagious_auth_token';
 
@@ -22,7 +23,27 @@ function getApiBaseUrl(): string {
   }
 
   // Use '/api' proxy path (default or from env if set to '/api')
-  const proxyPath = envApiUrl || '/api';
+  // Normalize: ensure it starts with / and doesn't end with /
+  let proxyPath = envApiUrl || '/api';
+  proxyPath = proxyPath.trim();
+  
+  // If empty or just slashes, default to '/api'
+  if (!proxyPath || proxyPath === '/' || proxyPath === '//') {
+    proxyPath = '/api';
+  }
+  
+  // Ensure it starts with /
+  if (!proxyPath.startsWith('/')) {
+    proxyPath = `/${proxyPath}`;
+  }
+  
+  // Remove trailing slashes (endpoints will start with /)
+  proxyPath = proxyPath.replace(/\/+$/, '');
+  
+  // Final safety check: ensure it's not empty
+  if (!proxyPath || proxyPath === '/') {
+    proxyPath = '/api';
+  }
   
   // On server-side, we need to construct the full URL
   if (typeof window === 'undefined') {
@@ -31,7 +52,7 @@ function getApiBaseUrl(): string {
     const backendUrl = process.env.BACKEND_URL;
     if (backendUrl) {
       // Normalize: remove trailing slash if present (endpoints start with /)
-      const normalizedUrl = backendUrl.replace(/\/+$/, '');
+      const normalizedUrl = normalizeBaseUrl(backendUrl);
       console.log(`[ApiClient] Using BACKEND_URL for server-side calls: ${normalizedUrl}`);
       return normalizedUrl;
     }
@@ -47,12 +68,16 @@ function getApiBaseUrl(): string {
         siteUrl = 'http://localhost:3000';
       }
     }
-    const fullUrl = `${siteUrl}${proxyPath}`;
+    // Normalize siteUrl: remove trailing slash
+    const normalizedSiteUrl = normalizeBaseUrl(siteUrl);
+    const normalizedProxyPath = ensureLeadingSlash(proxyPath);
+    const fullUrl = `${normalizedSiteUrl}${normalizedProxyPath}`;
     console.log(`[ApiClient] Constructed server-side URL (no BACKEND_URL): ${fullUrl}`);
     return fullUrl;
   }
   
   // Client-side: use relative path (works with Next.js rewrites)
+  // Ensure it's always '/api' (normalized)
   return proxyPath;
 }
 
@@ -130,7 +155,7 @@ class ApiClient {
     endpoint: string,
     options: RequestInit = {},
   ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = normalizeUrl(this.baseUrl, endpoint);
     
     // Log request details (server-side only for debugging)
     if (typeof window === 'undefined') {
