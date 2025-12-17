@@ -1,4 +1,4 @@
-import { darkTheme, lightTheme } from "@phantom/react-sdk";
+import { darkTheme, lightTheme, type PhantomTheme } from "@phantom/react-sdk";
 
 /**
  * Custom Phantom theme matching Inventagious brand colors
@@ -15,7 +15,7 @@ export const inventagiousLightTheme = {
   success: "#27c93f",              // Success state color (matches browser green dot)
   borderRadius: "8px",             // Matches app's border radius
   overlay: "rgba(0, 0, 0, 0.6)",   // Semi-transparent overlay
-};
+} as const satisfies Partial<PhantomTheme>;
 
 // Dark theme - matches app's dark mode
 export const inventagiousDarkTheme = {
@@ -27,13 +27,13 @@ export const inventagiousDarkTheme = {
   success: "#27c93f",              // Success state color
   borderRadius: "8px",             // Matches app's border radius
   overlay: "rgba(0, 0, 0, 0.8)",   // Darker overlay for dark mode
-};
+} as const satisfies Partial<PhantomTheme>;
 
 /**
  * Get the appropriate theme based on system preference
  * Falls back to dark theme if unable to detect
  */
-export function getPhantomTheme(): typeof inventagiousLightTheme {
+export function getPhantomTheme(): Partial<PhantomTheme> {
   if (typeof window === "undefined") {
     // Server-side: default to dark
     return inventagiousDarkTheme;
