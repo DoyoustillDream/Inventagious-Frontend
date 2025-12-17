@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { defaultMetadata } from "@/lib/seo";
 import {
@@ -57,7 +58,9 @@ export default function RootLayout({
           <AuthProvider>
             <WalletAuthProvider>
               <ToastProvider>
-                <AnalyticsInitializer />
+                <Suspense fallback={null}>
+                  <AnalyticsInitializer />
+                </Suspense>
                 <WalletAuthInitializer />
                 <ProgramIdsInitializer />
                 <OrganizationSchema />

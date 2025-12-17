@@ -13,6 +13,7 @@ import {
 } from '@/lib/analytics/utils';
 
 let sessionStartTime: number | null = null;
+let sessionStartTimeISO: string | null = null;
 let pageViewCount = 0;
 let actionCount = 0;
 let currentPageStartTime: number | null = null;
@@ -34,6 +35,7 @@ export function useAnalytics() {
     const sessionId = getSessionId();
     sessionIdRef.current = sessionId;
     sessionStartTime = Date.now();
+    sessionStartTimeISO = new Date().toISOString();
     pageViewCount = 0;
     actionCount = 0;
 
@@ -84,11 +86,12 @@ export function useAnalytics() {
 
     // Record session end on page unload
     const handleBeforeUnload = () => {
-      if (sessionIdRef.current && sessionStartTime) {
+      if (sessionIdRef.current && sessionStartTime && sessionStartTimeISO) {
         const duration = Math.floor((Date.now() - sessionStartTime) / 1000);
         analyticsApi.recordSession({
           sessionId: sessionIdRef.current,
           userId: userIdRef.current || undefined,
+          startTime: sessionStartTimeISO,
           endTime: new Date().toISOString(),
           duration,
           pageViews: pageViewCount,
