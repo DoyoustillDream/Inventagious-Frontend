@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { PublicKey, Transaction, VersionedTransaction, Connection } from '@solana/web3.js';
 import * as anchor from '@coral-xyz/anchor';
-import { useWallet } from '@/hooks/useWallet';
+import { usePhantomWallet } from '@/hooks/usePhantomWallet';
 import { useTransactionSigning } from './useTransactionSigning';
 import { getConnection } from '../connection';
 import { getCampaignProgramId, getProgramIds } from '../program-ids';
@@ -20,7 +20,7 @@ import { serializeSignedTransaction } from '../transaction-signing';
  * Hook for campaign operations
  */
 export function useCampaign() {
-  const { publicKey, connected, wallet } = useWallet();
+  const { publicKey, connected, wallet } = usePhantomWallet();
   const { signTransaction, serializeTransaction } = useTransactionSigning();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

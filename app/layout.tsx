@@ -8,7 +8,7 @@ import {
   SoftwareApplicationSchema,
   FinancialProductSchema,
 } from "@/lib/seo";
-import WalletProvider from "@/components/auth/WalletProvider";
+import PhantomProviderWrapper from "@/components/auth/PhantomProviderWrapper";
 import AuthProvider from "@/components/auth/AuthProvider";
 import { WalletAuthProvider } from "@/components/auth/WalletAuthProvider";
 import WalletAuthInitializer from "@/components/auth/WalletAuthInitializer";
@@ -53,7 +53,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <WalletProvider>
+        <PhantomProviderWrapper>
           <AuthProvider>
             <WalletAuthProvider>
               <ToastProvider>
@@ -68,7 +68,7 @@ export default function RootLayout({
               </ToastProvider>
             </WalletAuthProvider>
           </AuthProvider>
-        </WalletProvider>
+        </PhantomProviderWrapper>
       </body>
     </html>
   );

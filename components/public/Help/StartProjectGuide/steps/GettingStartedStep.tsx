@@ -7,19 +7,19 @@ export default function GettingStartedStep() {
       <div className="browser-window bg-yellow-50 border-2 border-black">
         <div className="p-6">
           <h3 className="hand-drawn text-xl font-bold text-black mb-4">
-            Connect Your Solana Wallet
+            Connect Your Wallet
           </h3>
           <p className="text-base font-semibold text-gray-800 mb-4">
-            Inventagious uses Solana wallet authentication. You'll need a Solana wallet to create and manage projects.
+            Inventagious uses Phantom Connect SDK for secure wallet authentication. You can connect using multiple methods - no browser extension required!
           </p>
           <ul className="space-y-3 text-base font-semibold text-gray-800 mb-4">
             <li className="flex items-start gap-3">
               <span className="text-yellow-600 font-bold text-xl">1</span>
-              <span><strong>Install a Solana Wallet:</strong> Download Phantom, Solflare, or another Solana-compatible wallet</span>
+              <span><strong>Click "Connect Wallet":</strong> Use the button in the header to open connection options</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-yellow-600 font-bold text-xl">2</span>
-              <span><strong>Click "Connect Wallet":</strong> Use the button in the header to connect your wallet</span>
+              <span><strong>Choose Your Method:</strong> Sign in with Google/Apple (easiest), use Phantom extension, or connect via mobile app</span>
             </li>
             <li className="flex items-start gap-3">
               <span className="text-yellow-600 font-bold text-xl">3</span>
@@ -30,11 +30,24 @@ export default function GettingStartedStep() {
               <span><strong>You're Ready!</strong> Your account is automatically created when you connect your wallet</span>
             </li>
           </ul>
+          <div className="bg-blue-50 border-2 border-blue-300 p-3 mb-4 rounded">
+            <p className="text-sm font-semibold text-gray-800">
+              <strong>💡 New to crypto?</strong> Use Google or Apple sign-in - a secure wallet is created automatically for you! No extension needed.
+            </p>
+          </div>
           <div className="bg-white border-4 border-black p-4 mt-4">
             <p className="text-sm font-semibold text-gray-800 flex items-start gap-2">
               <IconLightbulb className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
               <span><strong>Tip:</strong> Your wallet address becomes your account identifier. Make sure you have access to your wallet and keep your seed phrase safe!</span>
             </p>
+          </div>
+          <div className="mt-4 text-center">
+            <Link 
+              href="/help/connect-wallet" 
+              className="text-sm font-semibold text-blue-600 hover:text-blue-800 underline"
+            >
+              Need more help? See our detailed wallet connection guide →
+            </Link>
           </div>
         </div>
       </div>

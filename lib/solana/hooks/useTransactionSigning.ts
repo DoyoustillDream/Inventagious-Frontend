@@ -1,26 +1,71 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   Connection,
   Transaction,
   VersionedTransaction,
   PublicKey,
 } from '@solana/web3.js';
-import { useWallet } from '@/hooks/useWallet';
+import { usePhantomWallet } from '@/hooks/usePhantomWallet';
 import { getConnection } from '../connection';
 import {
   signTransactionWithRetry,
   signAllTransactionsWithRetry,
   serializeSignedTransaction,
   SigningConfig,
+  Wallet,
 } from '../transaction-signing';
 
 /**
  * Enhanced hook for transaction signing with retry logic and validation
  */
 export function useTransactionSigning() {
-  const { wallet, publicKey, connected } = useWallet();
+  const { wallet: phantomWallet, publicKey, connected, signTransaction: phantomSignTransaction, signAndSendTransaction } = usePhantomWallet();
+  
+  // Create a Wallet-compatible adapter from Phantom wallet
+  const wallet: Wallet | null = useMemo(() => {
+    if (!phantomWallet || !connected || !publicKey) {
+      return null;
+    }
+    
+    return {
+      name: 'Phantom',
+      icon: undefined,
+      publicKey,
+      connected,
+      connect: async () => {
+        // Connection is handled by Phantom SDK
+      },
+      disconnect: async () => {
+        // Disconnection is handled by Phantom SDK
+      },
+      signTransaction: async (transaction: Transaction | VersionedTransaction) => {
+        // Use Phantom's signTransaction if available, otherwise use signAndSendTransaction
+        // Note: Embedded wallets may not support sign-only, so we'll try signTransaction first
+        try {
+          return await phantomSignTransaction(transaction);
+        } catch (error: any) {
+          // If signTransaction fails (e.g., embedded wallet), we can't use sign-only
+          // The caller will need to handle this or use signAndSendTransaction directly
+          throw error;
+        }
+      },
+      signMessage: async (message: Uint8Array) => {
+        // This should be handled by the hook, but include for completeness
+        throw new Error('Use usePhantomWallet.signMessage directly');
+      },
+      signAllTransactions: phantomWallet.signAllTransactions 
+        ? async (transactions: (Transaction | VersionedTransaction)[]) => {
+            // Phantom SDK may support batch signing
+            if (typeof phantomWallet.signAllTransactions === 'function') {
+              return await phantomWallet.signAllTransactions(transactions);
+            }
+            throw new Error('Batch signing not supported');
+          }
+        : undefined,
+    };
+  }, [phantomWallet, connected, publicKey, phantomSignTransaction]);
 
   /**
    * Sign a transaction with optimized error handling and retry logic

@@ -17,7 +17,7 @@ export const knowledgeBase: KnowledgeBaseEntry[] = [
     question: 'How do I start a project?',
     answer: `Starting a project on Inventagious is easy! Here's how:
 
-1. **Sign in** with your Solana wallet (Phantom, Solflare, etc.)
+1. **Sign in** with your Solana wallet using Phantom Connect SDK
 2. Click **"Start a Project"** in the header or visit /projects/create
 3. Fill out your project details:
    - Title and description
@@ -27,7 +27,6 @@ export const knowledgeBase: KnowledgeBaseEntry[] = [
    - Social media links
 4. Choose your project type:
    - **Crowdfunding**: Public campaign for anyone to contribute
-   - **Private Funding**: Invite-only deals with specific investors
 5. Set your funding goal and deadline
 6. Review and publish your project
 
@@ -94,7 +93,7 @@ You only pay platform fees on successful funding (typically 5-8%), and that's it
     answer: `Inventagious uses **Solana (SOL)** cryptocurrency for all transactions. Here's how it works:
 
 **For Supporters:**
-- Connect your Solana wallet (Phantom, Solflare, etc.)
+- Connect your wallet using Phantom Connect SDK (Google, Apple, or Phantom extension)
 - Contribute using SOL - transactions are instant and secure
 - All contributions are recorded on the blockchain for transparency
 
@@ -110,7 +109,7 @@ You only pay platform fees on successful funding (typically 5-8%), and that's it
 - 🌍 Global accessibility
 - 🔒 Secure blockchain technology
 
-You'll need a Solana wallet to get started. Download Phantom or Solflare - they're free and easy to use!`,
+You'll need a Phantom wallet to get started. Use Google/Apple sign-in (no download needed) or download the Phantom extension - it's free and easy to use!`,
     suggestions: [
       'How do I start a project?',
       'How do I get paid?',
@@ -150,37 +149,38 @@ Ready to start? Create your project and begin receiving funds instantly!`,
       'Do I need to give up equity?',
     ],
   },
-  {
-    keywords: ['crowdfunding', 'campaign', 'public', 'private', 'deal', 'difference'],
-    question: 'What is the difference between crowdfunding and private funding?',
-    answer: `Great question! Inventagious offers two types of fundraising:
-
-**Crowdfunding (Public Campaigns):**
-- Open to everyone - anyone can discover and contribute
-- Perfect for consumer products, creative projects, and community-driven ideas
-- Great for building a community around your project
-- Public project page with updates and milestones
-- Lower minimum contributions
-
-**Private Funding (Deals):**
-- Invite-only funding with specific investors
-- Perfect for B2B products, enterprise solutions, and high-value projects
-- More control over who can invest
-- Negotiable terms and conditions
-- Higher minimum contributions typically
-
-**Which Should You Choose?**
-- **Crowdfunding**: If you want to build a community and reach a wide audience
-- **Private Funding**: If you need specific investors or want more control
-
-You can even run both! Start with a private deal, then open a public campaign.`,
-    suggestions: [
-      'How do I start a project?',
-      'How much does it cost?',
-      'What payment methods are accepted?',
-      'Do I need to give up equity?',
-    ],
-  },
+  // COMMENTED OUT: Private Funding FAQ
+  // {
+  //   keywords: ['crowdfunding', 'campaign', 'public', 'private', 'deal', 'difference'],
+  //   question: 'What is the difference between crowdfunding and private funding?',
+  //   answer: `Great question! Inventagious offers two types of fundraising:
+  //
+  // **Crowdfunding (Public Campaigns):**
+  // - Open to everyone - anyone can discover and contribute
+  // - Perfect for consumer products, creative projects, and community-driven ideas
+  // - Great for building a community around your project
+  // - Public project page with updates and milestones
+  // - Lower minimum contributions
+  //
+  // **Private Funding (Deals):**
+  // - Invite-only funding with specific investors
+  // - Perfect for B2B products, enterprise solutions, and high-value projects
+  // - More control over who can invest
+  // - Negotiable terms and conditions
+  // - Higher minimum contributions typically
+  //
+  // **Which Should You Choose?**
+  // - **Crowdfunding**: If you want to build a community and reach a wide audience
+  // - **Private Funding**: If you need specific investors or want more control
+  //
+  // You can even run both! Start with a private deal, then open a public campaign.`,
+  //   suggestions: [
+  //     'How do I start a project?',
+  //     'How much does it cost?',
+  //     'What payment methods are accepted?',
+  //     'Do I need to give up equity?',
+  //   ],
+  // },
   {
     keywords: ['solana', 'blockchain', 'web3', 'crypto', 'why solana'],
     question: 'Why does Inventagious use Solana?',
@@ -216,7 +216,8 @@ Solana makes fundraising faster, cheaper, and more accessible than traditional m
       'What payment methods are accepted?',
       'How do I start a project?',
       'How do I get paid?',
-      'What is the difference between crowdfunding and private funding?',
+      // COMMENTED OUT: Private Funding
+      // 'What is the difference between crowdfunding and private funding?',
     ],
   },
   {
@@ -260,43 +261,56 @@ We're committed to making Inventagious the safest and most trustworthy fundraisi
     ],
   },
   {
-    keywords: ['wallet', 'phantom', 'solflare', 'connect', 'sign in'],
+    keywords: ['wallet', 'phantom', 'connect', 'sign in', 'google', 'apple', 'oauth'],
     question: 'How do I connect my wallet?',
-    answer: `Connecting your Solana wallet is easy:
+    answer: `Connecting your wallet on Inventagious is easy! We use **Phantom Connect SDK** which offers multiple connection methods:
 
-**Step 1: Install a Wallet**
-- Download **Phantom** (phantom.app) or **Solflare** (solflare.com)
-- Both are free browser extensions
-- Available for Chrome, Firefox, Brave, and Edge
+**Option 1: Sign in with Google or Apple (Recommended for Beginners)**
+- Click "Connect Wallet" on our site
+- Choose "Sign in with Google" or "Sign in with Apple"
+- A secure, non-custodial wallet is automatically created for you
+- You control your keys - no browser extension needed!
+- Perfect if you're new to crypto wallets
 
-**Step 2: Create or Import**
-- Create a new wallet (save your seed phrase securely!)
-- Or import an existing Solana wallet
-
-**Step 3: Connect on Inventagious**
-- Click "Sign In" or "Connect Wallet" on our site
-- Select your wallet from the list
+**Option 2: Use Phantom Browser Extension**
+- Install the Phantom extension (phantom.app) for Chrome, Firefox, Brave, or Edge
+- Click "Connect Wallet" and select "Phantom Extension"
 - Approve the connection request
-- Sign a message to authenticate (this proves you own the wallet)
+- Sign a message to authenticate
 
-**That's it!** You're now signed in and can:
-- Create projects
-- Contribute to campaigns
-- Manage your profile
-- View your activity
+**Option 3: Connect via Phantom Mobile App**
+- Have the Phantom mobile app installed
+- Click "Connect Wallet" and select "Phantom Mobile"
+- Scan the QR code with your phone
+- Approve the connection
+
+**After Connecting:**
+- Sign a message to authenticate (proves you own the wallet)
+- Your account is automatically created
+- You can now create projects, contribute to campaigns, and manage your profile
 
 **Security Tips:**
-- Never share your seed phrase
+- Never share your seed phrase or private keys
 - Only connect to trusted sites
 - Keep your wallet software updated
-- Use hardware wallets for large amounts
+- For Google/Apple wallets: Your keys are securely managed by Phantom
+- For extension wallets: Use hardware wallets for large amounts
 
-Need help? Contact support@inventagious.com`,
+**Which Method Should I Choose?**
+- **New to crypto?** → Use Google or Apple sign-in (easiest)
+- **Already have Phantom?** → Use browser extension or mobile app
+- **Want full control?** → Use browser extension with your own wallet
+
+Need help? Contact inventagioushelp@gmail.com or visit /help/connect-wallet`,
     suggestions: [
       'How do I start a project?',
       'What payment methods are accepted?',
       'Is Inventagious safe and secure?',
       'How do I get paid?',
+    ],
+    relatedLinks: [
+      { text: 'Wallet Connection Guide', url: '/help/connect-wallet' },
+      { text: 'Start a Project', url: '/help/start-project' },
     ],
   },
   {
@@ -315,7 +329,7 @@ Need help? Contact support@inventagious.com`,
 - FAQ section with detailed answers
 
 **Contact Support:**
-- Email: support@inventagious.com
+- Email: inventagioushelp@gmail.com
 - Create a support ticket for complex issues
 - We typically respond within 24 hours
 

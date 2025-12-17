@@ -8,11 +8,11 @@ import { siteConfig } from '@/lib/seo/config';
 export const metadata: Metadata = {
   title: 'Contact Us - Get Support | Inventagious',
   description:
-    'Contact Inventagious support team. Get help with your projects, campaigns, or questions. Email support@inventagious.com or visit our help center.',
+    'Contact Inventagious support team. Get help with your projects, campaigns, or questions. Email inventagioushelp@gmail.com or visit our help center.',
   openGraph: {
     title: 'Contact Us - Get Support | Inventagious',
     description:
-      'Contact Inventagious support team. Get help with your projects, campaigns, or questions. Email support@inventagious.com or visit our help center.',
+      'Contact Inventagious support team. Get help with your projects, campaigns, or questions. Email inventagioushelp@gmail.com or visit our help center.',
     url: `${siteConfig.url}/contact`,
     siteName: siteConfig.siteName,
     images: [
@@ -41,7 +41,7 @@ export default function ContactPage() {
     <>
       <WebPageSchema
         title="Contact Us - Get Support | Inventagious"
-        description="Contact Inventagious support team. Get help with your projects, campaigns, or questions. Email support@inventagious.com or visit our help center."
+        description="Contact Inventagious support team. Get help with your projects, campaigns, or questions. Email inventagioushelp@gmail.com or visit our help center."
         url={`${siteConfig.url}/contact`}
       />
       <div className="flex min-h-screen flex-col">

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { useWalletModal } from '@solana/wallet-adapter-react-ui';
+import { usePhantomWallet } from '@/hooks/usePhantomWallet';
+import { useModal } from '@phantom/react-sdk';
 import { useDeal } from '@/lib/solana/hooks/useDeal';
 import { Deal } from '@/lib/api/deals';
 import { projectsApi } from '@/lib/api/projects';
@@ -22,15 +22,15 @@ export default function DealCardWithIntegration({
   const [error, setError] = useState<string | null>(null);
   const { acceptDeal, rejectDeal, cancelDeal, completeDeal, isLoading } =
     useDeal();
-  const { publicKey, connected } = useWallet();
-  const { setVisible } = useWalletModal();
+  const { publicKey, connected } = usePhantomWallet();
+  const { open: openModal } = useModal();
 
   // Get project to find inventor wallet address
   const [project, setProject] = useState<any>(null);
 
   const handleAccept = async () => {
     if (!connected) {
-      setVisible(true);
+      openModal();
       return;
     }
 
@@ -66,7 +66,7 @@ export default function DealCardWithIntegration({
 
   const handleReject = async () => {
     if (!connected) {
-      setVisible(true);
+      openModal();
       return;
     }
 
@@ -90,7 +90,7 @@ export default function DealCardWithIntegration({
 
   const handleCancel = async () => {
     if (!connected) {
-      setVisible(true);
+      openModal();
       return;
     }
 
@@ -114,7 +114,7 @@ export default function DealCardWithIntegration({
 
   const handleComplete = async () => {
     if (!connected) {
-      setVisible(true);
+      openModal();
       return;
     }
 

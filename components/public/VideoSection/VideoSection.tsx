@@ -11,18 +11,10 @@ export default function VideoSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handlePlay = async () => {
-    setIsPlaying(true);
-    // Small delay to ensure video element is rendered
-    await new Promise(resolve => setTimeout(resolve, 50));
-    // Play the video when button is clicked
     if (videoRef.current) {
       try {
         await videoRef.current.play();
-        // Ensure video is actually playing
-        if (videoRef.current.paused) {
-          // If still paused, try again
-          await videoRef.current.play();
-        }
+        setIsPlaying(true);
       } catch (error) {
         console.error('Error playing video:', error);
         setIsPlaying(false);
@@ -37,48 +29,55 @@ export default function VideoSection() {
     }
   };
 
-  // Auto-play video on mount with loop
+  // Auto-play video on mount with optimized loading
   useEffect(() => {
     const video = videoRef.current;
-    if (video) {
-      const playVideo = async () => {
-        try {
-          // Set video to play automatically
-          video.muted = true; // Required for autoplay in most browsers
-          await video.play();
-          setIsPlaying(true);
-        } catch (error) {
-          console.error('Error auto-playing video:', error);
-          // If autoplay fails, show the play button
-          setIsPlaying(false);
-        }
-      };
+    if (!video) return;
+
+    let mounted = true;
+
+    const playVideo = async () => {
+      if (!mounted) return;
       
-      // Small delay to ensure video element is ready
-      const timer = setTimeout(() => {
-        playVideo();
-      }, 100);
-
-      return () => {
-        clearTimeout(timer);
-      };
-    }
-  }, []);
-
-  // Ensure video plays when isPlaying becomes true
-  useEffect(() => {
-    if (isPlaying && videoRef.current) {
-      const playVideo = async () => {
-        try {
-          await videoRef.current?.play();
-        } catch (error) {
-          console.error('Error auto-playing video:', error);
-          setIsPlaying(false);
+      try {
+        // Ensure video is muted for autoplay
+        video.muted = true;
+        
+        // Wait for video to be ready (HAVE_CURRENT_DATA or higher)
+        if (video.readyState >= 2) {
+          await video.play();
+          if (mounted) setIsPlaying(true);
+        } else {
+          // Wait for loadedmetadata event
+          const handleLoadedMetadata = async () => {
+            if (!mounted) return;
+            try {
+              await video.play();
+              if (mounted) setIsPlaying(true);
+            } catch (error) {
+              console.error('Error auto-playing video:', error);
+              if (mounted) setIsPlaying(false);
+            }
+            video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+          };
+          video.addEventListener('loadedmetadata', handleLoadedMetadata);
         }
-      };
+      } catch (error) {
+        console.error('Error auto-playing video:', error);
+        if (mounted) setIsPlaying(false);
+      }
+    };
+
+    // Try to play after a short delay to ensure DOM is ready
+    const timer = setTimeout(() => {
       playVideo();
-    }
-  }, [isPlaying]);
+    }, 100);
+
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
+  }, []);
 
   return (
     <section className="bg-white py-20">
@@ -169,18 +168,27 @@ export default function VideoSection() {
             {/* Video Player */}
             <video
               ref={videoRef}
-              className={`absolute inset-0 h-full w-full object-cover ${
-                isPlaying ? 'z-10' : 'z-0 opacity-0'
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
+                isPlaying ? 'z-10 opacity-100' : 'z-0 opacity-0 pointer-events-none'
               }`}
+              style={{
+                willChange: 'opacity',
+                transform: 'translateZ(0)',
+                backfaceVisibility: 'hidden',
+              }}
               controls
               autoPlay
               loop
               muted
               playsInline
+              preload="metadata"
               onPause={handlePause}
               onPlay={() => {
-                // Ensure state is synced when video plays
                 setIsPlaying(true);
+              }}
+              onLoadedMetadata={() => {
+                // Video metadata loaded - autoplay will be handled by useEffect
+                // This handler is mainly for ensuring smooth loading
               }}
             >
               <source src="/videos/Trailers-1.mp4" type="video/mp4" />

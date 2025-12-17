@@ -41,7 +41,7 @@ The Inventagious Frontend is a cutting-edge web application built with Next.js 1
 
 ### Blockchain & Wallet Integration
 
-- **Wallet Authentication**: Connect with Phantom, Solflare, Backpack, Glow, and other Solana wallets
+- **Wallet Authentication**: Connect with Phantom using Phantom Connect SDK (Google, Apple, or browser extension)
 - **Wallet Standard API**: Modern wallet detection and connection using Wallet Standard API
 - **Smart Contract Integration**: Direct interaction with Solana smart contracts (Campaign, Deal Escrow, Treasury)
 - **Transaction Signing**: Secure transaction signing through user wallets
@@ -115,7 +115,7 @@ Before you begin, ensure you have the following installed:
 - **Node.js**: v18.x or higher ([Download](https://nodejs.org/))
 - **npm** or **yarn**: Package manager
 - **Git**: Version control
-- **Solana Wallet**: Phantom, Solflare, or another Solana wallet extension
+- **Phantom Wallet**: Use Google/Apple sign-in (no extension needed) or install Phantom browser extension
 - **Backend API**: The Inventagious backend API should be running (see [Backend README](../backend/README.md))
 - **Solana Validator** (optional): For local development (see [Local Validator Setup](../QUICK_START_LOCAL_VALIDATOR.md))
 
@@ -582,7 +582,7 @@ frontend/
 
 The frontend uses Solana wallet-based authentication:
 
-1. User connects their wallet (Phantom, Solflare, etc.)
+1. User connects their wallet using Phantom Connect SDK (Google, Apple, or Phantom extension)
 2. User signs an authentication message
 3. Backend verifies the signature and issues a JWT token
 4. Token is stored and used for authenticated requests
@@ -592,9 +592,9 @@ The frontend uses Solana wallet-based authentication:
 ```
 1. User clicks "Connect Wallet"
    ↓
-2. Wallet extension opens (Phantom, Solflare, etc.)
+2. Phantom Connect modal opens (Google, Apple, Extension, or Mobile options)
    ↓
-3. User approves connection
+3. User selects connection method and approves connection
    ↓
 4. Frontend requests message signature
    ↓
@@ -628,12 +628,11 @@ Routes can be protected using:
 
 ### Supported Wallets
 
-The frontend supports:
-- **Phantom** (via Wallet Standard or direct)
-- **Solflare** (via Wallet Standard or direct)
-- **Backpack** (via Wallet Standard or direct)
-- **Glow** (via Wallet Standard or direct)
-- **Any wallet supporting Wallet Standard API**
+The frontend uses **Phantom Connect SDK** which supports:
+- **Google OAuth** - Sign in with Google (creates embedded wallet)
+- **Apple ID** - Sign in with Apple (creates embedded wallet)
+- **Phantom Browser Extension** - Connect with installed Phantom extension
+- **Phantom Mobile App** - Connect via QR code with mobile app
 
 ### Wallet Detection
 
@@ -983,7 +982,7 @@ components/
 2. Check wallet network matches `NEXT_PUBLIC_SOLANA_RPC_URL`
 3. Verify wallet supports message signing
 4. Check browser console for detailed errors
-5. Try a different wallet (Phantom, Solflare, etc.)
+5. Try a different connection method (Google, Apple, or Phantom extension)
 
 #### Solana RPC Issues
 

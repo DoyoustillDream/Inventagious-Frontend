@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { PublicKey, Transaction } from '@solana/web3.js';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { usePhantomWallet } from '@/hooks/usePhantomWallet';
+import { getConnection } from '../connection';
 import {
   createDealTransaction,
   acceptDealTransaction,
@@ -20,8 +21,7 @@ import { normalizeUrl } from '@/lib/utils/url';
  * Hook for deal operations
  */
 export function useDeal() {
-  const { connection } = useConnection();
-  const wallet = useWallet();
+  const { publicKey, connected, signAndSendTransaction } = usePhantomWallet();
   const { program } = useDealEscrowProgram();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export function useDeal() {
       proposedDeadline: number,
       termsHash?: string,
     ): Promise<{ signature: string; dealPda: string }> => {
-      if (!wallet.publicKey || !wallet.sendTransaction) {
+      if (!connected || !publicKey) {
         throw new Error('Wallet not connected');
       }
 
@@ -45,11 +45,12 @@ export function useDeal() {
       setError(null);
 
       try {
+        const connection = await getConnection();
         const inventorPubkey = new PublicKey(inventorWalletAddress);
 
         // Build transaction
         const { transaction, dealPda } = await createDealTransaction(
-          wallet.publicKey,
+          publicKey,
           inventorPubkey,
           projectId, // Using projectId as dealId
           amount,
@@ -59,8 +60,9 @@ export function useDeal() {
           connection,
         );
 
-        // Send transaction
-        const signature = await wallet.sendTransaction(transaction, connection);
+        // Send transaction using Phantom SDK
+        const result = await signAndSendTransaction(transaction);
+        const signature = result.hash;
 
         // Wait for confirmation
         await connection.confirmTransaction(signature, 'confirmed');
@@ -70,7 +72,7 @@ export function useDeal() {
           projectId,
           amount,
           proposedDeadline: new Date(proposedDeadline * 1000).toISOString(),
-          investorWalletAddress: wallet.publicKey.toBase58(),
+          investorWalletAddress: publicKey.toBase58(),
           transactionSignature: signature,
         });
 
@@ -86,7 +88,7 @@ export function useDeal() {
         setIsLoading(false);
       }
     },
-    [wallet, connection, program],
+    [connected, publicKey, signAndSendTransaction, program],
   );
 
   /**
@@ -100,7 +102,7 @@ export function useDeal() {
       inventorWalletAddress: string,
       dealAmount?: number, // Required for off-chain deals
     ): Promise<string> => {
-      if (!wallet.publicKey || !wallet.sendTransaction) {
+      if (!connected || !publicKey) {
         throw new Error('Wallet not connected');
       }
 
@@ -108,6 +110,7 @@ export function useDeal() {
       setError(null);
 
       try {
+        const connection = await getConnection();
         // Check if deal uses on-chain smart contracts
         const useOnChain = dealPda && dealPda.length > 0 && program;
 
@@ -118,21 +121,22 @@ export function useDeal() {
             const inventorPubkey = new PublicKey(inventorWalletAddress);
 
             const transaction = await acceptDealTransaction(
-              wallet.publicKey,
+              publicKey,
               inventorPubkey,
               dealPubkey,
               program,
               connection,
             );
 
-            const signature = await wallet.sendTransaction(transaction, connection);
+            const result = await signAndSendTransaction(transaction);
+            const signature = result.hash;
             await connection.confirmTransaction(signature, 'confirmed');
 
             await dealsApi.update(
               dealId,
               {
                 status: 'accepted',
-                walletAddress: wallet.publicKey.toBase58(),
+                walletAddress: publicKey.toBase58(),
                 transactionSignature: signature,
               },
               'inventor',
@@ -171,14 +175,15 @@ export function useDeal() {
 
         // Create direct SOL transfer to escrow wallet
         const transaction = await createDirectSOLTransfer(
-          wallet.publicKey,
+          publicKey,
           new PublicKey(escrowWallet),
           dealAmount,
           connection,
         );
 
-        // Sign and send transaction
-        const signature = await wallet.sendTransaction(transaction, connection);
+        // Sign and send transaction using Phantom SDK
+        const result = await signAndSendTransaction(transaction);
+        const signature = result.hash;
         await connection.confirmTransaction(signature, 'confirmed');
 
         // Notify backend with signature
@@ -186,7 +191,7 @@ export function useDeal() {
           dealId,
           {
             status: 'accepted',
-            walletAddress: wallet.publicKey.toBase58(),
+            walletAddress: publicKey.toBase58(),
             transactionSignature: signature,
           },
           'inventor',
@@ -201,7 +206,7 @@ export function useDeal() {
         setIsLoading(false);
       }
     },
-    [wallet, connection, program],
+    [connected, publicKey, signAndSendTransaction, program],
   );
 
   /**
@@ -209,7 +214,7 @@ export function useDeal() {
    */
   const rejectDeal = useCallback(
     async (dealId: string, dealPda: string): Promise<string> => {
-      if (!wallet.publicKey || !wallet.sendTransaction) {
+      if (!connected || !publicKey) {
         throw new Error('Wallet not connected');
       }
 
@@ -217,18 +222,20 @@ export function useDeal() {
       setError(null);
 
       try {
+        const connection = await getConnection();
         const dealPubkey = new PublicKey(dealPda);
 
         // Build transaction
         const transaction = await rejectDealTransaction(
-          wallet.publicKey,
+          publicKey,
           dealPubkey,
           program,
           connection,
         );
 
-        // Send transaction
-        const signature = await wallet.sendTransaction(transaction, connection);
+        // Send transaction using Phantom SDK
+        const result = await signAndSendTransaction(transaction);
+        const signature = result.hash;
 
         // Wait for confirmation
         await connection.confirmTransaction(signature, 'confirmed');
@@ -238,7 +245,7 @@ export function useDeal() {
           dealId,
           {
             status: 'rejected',
-            walletAddress: wallet.publicKey.toBase58(),
+            walletAddress: publicKey.toBase58(),
             transactionSignature: signature,
           },
           'inventor',
@@ -253,7 +260,7 @@ export function useDeal() {
         setIsLoading(false);
       }
     },
-    [wallet, connection, program],
+    [connected, publicKey, signAndSendTransaction, program],
   );
 
   /**
@@ -261,7 +268,7 @@ export function useDeal() {
    */
   const cancelDeal = useCallback(
     async (dealId: string, dealPda: string): Promise<string> => {
-      if (!wallet.publicKey || !wallet.sendTransaction) {
+      if (!connected || !publicKey) {
         throw new Error('Wallet not connected');
       }
 
@@ -269,18 +276,20 @@ export function useDeal() {
       setError(null);
 
       try {
+        const connection = await getConnection();
         const dealPubkey = new PublicKey(dealPda);
 
         // Build transaction
         const transaction = await cancelDealTransaction(
-          wallet.publicKey,
+          publicKey,
           dealPubkey,
           program,
           connection,
         );
 
-        // Send transaction
-        const signature = await wallet.sendTransaction(transaction, connection);
+        // Send transaction using Phantom SDK
+        const result = await signAndSendTransaction(transaction);
+        const signature = result.hash;
 
         // Wait for confirmation
         await connection.confirmTransaction(signature, 'confirmed');
@@ -290,7 +299,7 @@ export function useDeal() {
           dealId,
           {
             status: 'cancelled',
-            walletAddress: wallet.publicKey.toBase58(),
+            walletAddress: publicKey.toBase58(),
             transactionSignature: signature,
           },
           'investor',
@@ -305,7 +314,7 @@ export function useDeal() {
         setIsLoading(false);
       }
     },
-    [wallet, connection, program],
+    [connected, publicKey, signAndSendTransaction, program],
   );
 
   /**
@@ -345,7 +354,7 @@ export function useDeal() {
    */
   const completeDeal = useCallback(
     async (dealId: string, dealPda: string): Promise<string> => {
-      if (!wallet.publicKey || !wallet.sendTransaction) {
+      if (!connected || !publicKey) {
         throw new Error('Wallet not connected');
       }
 
@@ -353,18 +362,20 @@ export function useDeal() {
       setError(null);
 
       try {
+        const connection = await getConnection();
         const dealPubkey = new PublicKey(dealPda);
 
         // Build transaction
         const transaction = await completeDealTransaction(
-          wallet.publicKey,
+          publicKey,
           dealPubkey,
           program,
           connection,
         );
 
-        // Send transaction
-        const signature = await wallet.sendTransaction(transaction, connection);
+        // Send transaction using Phantom SDK
+        const result = await signAndSendTransaction(transaction);
+        const signature = result.hash;
 
         // Wait for confirmation
         await connection.confirmTransaction(signature, 'confirmed');
@@ -373,7 +384,7 @@ export function useDeal() {
         await dealsApi.complete(
           dealId,
           'inventor',
-          wallet.publicKey.toBase58(),
+          publicKey.toBase58(),
           signature,
         );
 
@@ -386,7 +397,7 @@ export function useDeal() {
         setIsLoading(false);
       }
     },
-    [wallet, connection, program],
+    [connected, publicKey, signAndSendTransaction, program],
   );
 
   /**
@@ -399,13 +410,14 @@ export function useDeal() {
       }
 
       try {
+        const connection = await getConnection();
         const dealPubkey = new PublicKey(dealPda);
         return await getDeal(dealPubkey, connection, program);
       } catch (err: any) {
         throw new Error(err.message || 'Failed to fetch deal');
       }
     },
-    [connection, program],
+    [program],
   );
 
   return {

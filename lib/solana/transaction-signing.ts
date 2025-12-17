@@ -7,6 +7,9 @@ import {
   PublicKey,
 } from '@solana/web3.js';
 import { Wallet } from '@/lib/wallet/wallet-standard';
+
+// Re-export Wallet interface for use in other modules
+export { type Wallet };
 import { validateAnyTransaction } from './transaction-validation';
 import { prepareAnyTransaction } from './transaction-preparation';
 import {

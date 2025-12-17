@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect, useId } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/components/auth/AuthProvider';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface UserMenuProps {
   walletAddress: string;
@@ -16,6 +18,7 @@ export default function UserMenu({ walletAddress, shortAddress, onDisconnect }: 
   const dropdownId = `user-menu-${baseId}`;
   const menuRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated } = useAuth();
+  const { profile } = useUserProfile();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -45,25 +48,39 @@ export default function UserMenu({ walletAddress, shortAddress, onDisconnect }: 
         aria-label="User menu"
       >
         <div className="relative flex-shrink-0">
-          <svg
-            className="h-6 w-6 text-black"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2.5}
-              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-            />
-          </svg>
+          {profile?.avatarUrl ? (
+            <div className="w-6 h-6 rounded-full border-2 border-black overflow-hidden bg-white">
+              <Image
+                src={profile.avatarUrl}
+                alt={profile.displayName || profile.username || 'Profile'}
+                width={24}
+                height={24}
+                className="object-cover w-full h-full"
+              />
+            </div>
+          ) : (
+            <svg
+              className="h-6 w-6 text-black"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+              />
+            </svg>
+          )}
           <div className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 border-2 border-white shadow-sm"></div>
         </div>
 
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-base font-bold text-black whitespace-nowrap">{shortAddress}</span>
+          <span className="text-base font-bold text-black whitespace-nowrap">
+            {profile?.displayName || profile?.username || shortAddress}
+          </span>
         </div>
 
         <div className="h-6 w-0.5 bg-black flex-shrink-0"></div>

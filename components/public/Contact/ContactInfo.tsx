@@ -61,7 +61,7 @@ const contactOptions = [
   {
     title: 'Email Support',
     description: "Send us an email and we'll get back to you within 24 hours",
-    email: 'support@inventagious.com',
+    email: 'inventagioushelp@gmail.com',
     icon: <IconEmail />,
   },
   {
@@ -167,7 +167,7 @@ export default function ContactInfo() {
               </p>
               <div className="border-4 border-black bg-yellow-50 p-6">
                 <p className="hand-drawn text-lg font-bold text-black mb-2">
-                  Email: support@inventagious.com
+                  Email: inventagioushelp@gmail.com
                 </p>
                 <p className="text-sm font-semibold text-gray-700 mb-4">
                   We typically respond within 24 hours during business days.

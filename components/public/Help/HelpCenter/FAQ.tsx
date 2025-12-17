@@ -15,13 +15,18 @@ const faqs = [
     question: 'What payment methods are accepted?',
     answer: 'We accept SOL and USDC through our Helio Payments integration. All transactions are processed on the Solana blockchain for instant, low-cost transfers.',
   },
-  {
-    question: 'Can I run both crowdfunding and private funding?',
-    answer: 'Yes! You can run a public crowdfunding campaign and also work with private investors simultaneously. The platform supports both funding methods.',
-  },
+  // COMMENTED OUT: Private Funding FAQ
+  // {
+  //   question: 'Can I run both crowdfunding and private funding?',
+  //   answer: 'Yes! You can run a public crowdfunding campaign and also work with private investors simultaneously. The platform supports both funding methods.',
+  // },
   {
     question: 'What happens if I do not reach my funding goal?',
     answer: 'You keep all funds raised, even if you do not reach your goal. There are no penalties or requirements to return funds if your goal is not met.',
+  },
+  {
+    question: 'How do I connect my wallet?',
+    answer: 'We use Phantom Connect SDK which offers multiple ways to connect:\n\n1) Sign in with Google or Apple (creates a secure embedded wallet automatically)\n2) Use your Phantom browser extension if you have it installed\n3) Connect via Phantom mobile app\n\nClick "Connect Wallet" in the header to see all options. No wallet extension required for Google/Apple sign-in!',
   },
 ];
 
@@ -57,7 +62,7 @@ export default function FAQ() {
                 <h3 className="hand-drawn text-lg font-bold text-black mb-3">
                   {faq.question}
                 </h3>
-                <p className="hand-drawn text-sm font-bold text-black leading-relaxed">
+                <p className="hand-drawn text-sm font-bold text-black leading-relaxed whitespace-pre-line">
                   {faq.answer}
                 </p>
               </div>

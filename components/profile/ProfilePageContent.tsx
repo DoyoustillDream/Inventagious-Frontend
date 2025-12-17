@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { useWallet } from '@/hooks/useWallet';
+import { usePhantomWallet } from '@/hooks/usePhantomWallet';
 import { profileApi, Profile } from '@/lib/api/profile';
 import { apiClient } from '@/lib/api/client';
 import { useRouter, usePathname } from 'next/navigation';
@@ -21,7 +21,7 @@ import { projectsApi, Project } from '@/lib/api/projects';
 
 export default function ProfilePageContent() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { connected: walletConnected, isLoading: walletLoading } = useWallet();
+  const { connected: walletConnected, isLoading: walletLoading } = usePhantomWallet();
   const router = useRouter();
   const pathname = usePathname();
   const [profile, setProfile] = useState<Profile | null>(null);

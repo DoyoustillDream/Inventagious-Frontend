@@ -101,15 +101,7 @@ export default function SignInPage() {
                   >
                     Install Phantom
                   </a>
-                  {' '}or{' '}
-                  <a
-                    href="https://solflare.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-black underline hover:text-gray-700"
-                  >
-                    Solflare
-                  </a>
+                  {' '}or use Google/Apple sign-in (no download needed)
                 </p>
               </div>
             </div>

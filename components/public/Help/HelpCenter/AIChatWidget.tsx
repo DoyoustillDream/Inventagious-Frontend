@@ -131,7 +131,7 @@ What would you like to know?`,
         // No good match, provide helpful fallback
         const fallbackMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: `I'm here to help with questions about Inventagious! I can help you with:\n\n• Starting a project\n• Pricing and fees\n• Payment methods\n• Platform features\n• Security and guarantees\n\nTry asking something like "How do I start a project?" or "How much does it cost?"\n\nFor more detailed help, visit our Help Center at /help or contact support@inventagious.com`,
+          text: `I'm here to help with questions about Inventagious! I can help you with:\n\n• Starting a project\n• Pricing and fees\n• Payment methods\n• Platform features\n• Security and guarantees\n\nTry asking something like "How do I start a project?" or "How much does it cost?"\n\nFor more detailed help, visit our Help Center at /help or contact inventagioushelp@gmail.com`,
           isUser: false,
           suggestions: getContextualSuggestions(messageText),
         };
@@ -153,7 +153,7 @@ What would you like to know?`,
         // No knowledge base match, provide helpful error message
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: `I'm having trouble connecting right now, but I can still help!\n\nHere are some common questions I can answer:\n\n• "How do I start a project?"\n• "How much does it cost?"\n• "Do I need to give up equity?"\n• "What payment methods are accepted?"\n\nOr visit our Help Center at /help for detailed guides.\n\nFor urgent issues, contact support@inventagious.com`,
+          text: `I'm having trouble connecting right now, but I can still help!\n\nHere are some common questions I can answer:\n\n• "How do I start a project?"\n• "How much does it cost?"\n• "Do I need to give up equity?"\n• "What payment methods are accepted?"\n\nOr visit our Help Center at /help for detailed guides.\n\nFor urgent issues, contact inventagioushelp@gmail.com`,
           isUser: false,
           suggestions: getContextualSuggestions(messageText),
         };

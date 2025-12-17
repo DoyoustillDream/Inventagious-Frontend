@@ -8,11 +8,11 @@ import { siteConfig } from '@/lib/seo/config';
 export const metadata: Metadata = {
   title: 'Help Center - Get Support & Answers | Inventagious',
   description:
-    'Get support and find answers to common questions about Inventagious. Browse help guides, FAQs, and learn how to use our crowdfunding and private funding platform.',
+    'Get support and find answers to common questions about Inventagious. Browse help guides, FAQs, and learn how to use our crowdfunding platform.',
   openGraph: {
     title: 'Help Center - Get Support & Answers | Inventagious',
     description:
-      'Get support and find answers to common questions about Inventagious. Browse help guides, FAQs, and learn how to use our crowdfunding and private funding platform.',
+      'Get support and find answers to common questions about Inventagious. Browse help guides, FAQs, and learn how to use our crowdfunding platform.',
     url: `${siteConfig.url}/help`,
     siteName: siteConfig.siteName,
     images: [
@@ -41,7 +41,7 @@ export default function HelpPage() {
     <>
       <WebPageSchema
         title="Help Center - Get Support & Answers | Inventagious"
-        description="Get support and find answers to common questions about Inventagious. Browse help guides, FAQs, and learn how to use our crowdfunding and private funding platform."
+        description="Get support and find answers to common questions about Inventagious. Browse help guides, FAQs, and learn how to use our crowdfunding platform."
         url={`${siteConfig.url}/help`}
       />
       <div className="flex min-h-screen flex-col">

@@ -1,23 +1,38 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useWallet } from '@/hooks/useWallet';
+import { usePhantomWallet } from '@/hooks/usePhantomWallet';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useToast } from '@/components/shared/Toast';
+import { useModal } from "@phantom/react-sdk";
 import UserMenu from './UserMenu';
 
 export default function WalletConnect() {
   const [mounted, setMounted] = useState(false);
-  const { publicKey, connected, connecting, connect, disconnect, availableWallets } = useWallet();
+  const { publicKey, connected, connecting, connect, disconnect, addresses, isLoading } = usePhantomWallet();
   const { isAuthenticated } = useAuth();
   const { authenticateWallet, handleDisconnect: handleWalletAuthDisconnect, isAuthenticating } = useWalletAuth();
   const { showError, showWarning } = useToast();
+  const { open: openModal } = useModal();
   
   // Ensure component only renders after client-side mount to prevent hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Debug connection state changes
+  useEffect(() => {
+    if (mounted) {
+      console.log('[WalletConnect] Connection state:', {
+        connected,
+        publicKey: publicKey?.toString(),
+        addresses,
+        isLoading,
+        connecting,
+      });
+    }
+  }, [mounted, connected, publicKey, addresses, isLoading, connecting]);
 
   // Show placeholder during SSR to prevent hydration mismatch
   // Using a simple invisible div to prevent layout shift
@@ -34,20 +49,14 @@ export default function WalletConnect() {
     );
   }
 
-  const handleConnect = async () => {
-    try {
-      // Try to connect - will detect wallets if not already detected
-      await connect();
-    } catch (error: any) {
-      console.error('Failed to connect wallet:', error);
-      // Show user-friendly error message
-      const errorMessage = error?.message || 'Failed to connect wallet';
-      if (errorMessage.includes('No wallet available') || availableWallets.length === 0) {
-        showWarning('No wallet found. Please install a Solana wallet extension like Phantom or Solflare, then refresh the page.');
-      } else {
-        showError(`Failed to connect: ${errorMessage}`);
-      }
-    }
+  const handleConnect = () => {
+    // Option 1: Redirect to dedicated onboarding page for full experience
+    // window.location.href = '/wallet/connect';
+    
+    // Option 2: Open Phantom connection modal directly (current behavior)
+    // Open Phantom connection modal - shows all available connection options
+    // (Google OAuth, Apple ID, Browser Extension, Mobile Deeplink)
+    openModal();
   };
 
   const handleDisconnect = async () => {
@@ -103,7 +112,8 @@ export default function WalletConnect() {
     );
   }
 
-  // Connect button - always clickable, will show error if no wallet found
+  // Custom styled button that opens Phantom connection modal
+  // This matches the app's hand-drawn design aesthetic
   return (
     <button
       onClick={handleConnect}

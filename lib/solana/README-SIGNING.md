@@ -45,7 +45,7 @@ The signing system is split into focused, modular files for better organization 
 - **Transaction Validation**: Validates transactions before signing to catch errors early
 - **Blockhash Management**: Automatically refreshes expired blockhashes
 - **Error Handling**: User-friendly error messages for common issues
-- **Wallet Compatibility**: Works with Phantom, Solflare, Backpack, and other Wallet Standard wallets
+- **Wallet Compatibility**: Works with Phantom Connect SDK (Google, Apple, Extension, and Mobile)
 - **Transaction Size Validation**: Prevents transactions that exceed Solana's 1232 byte limit
 - **Versioned Transaction Support**: Handles both legacy and versioned transactions
 
@@ -124,7 +124,7 @@ The old signing code in `useCampaign.ts` and `useDeal.ts` has been replaced with
 
 When testing the signing system:
 
-1. Test with different wallets (Phantom, Solflare, Backpack)
+1. Test with different connection methods (Google, Apple, Phantom extension, Mobile)
 2. Test network errors (disconnect network, slow connection)
 3. Test user rejection (reject in wallet)
 4. Test with expired blockhashes

@@ -79,6 +79,10 @@ export default function ProfileEditPage() {
       
       setProfile(updatedProfile);
       showSuccess('Profile updated successfully!');
+      // Dispatch event to notify other components (like UserMenu) to refresh
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('profile-updated'));
+      }
       router.push('/profile');
     } catch (err: any) {
       console.error('Error saving profile:', err);

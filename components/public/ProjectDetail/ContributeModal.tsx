@@ -3,7 +3,7 @@
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useCampaign } from '@/lib/solana/hooks/useCampaign';
 import { usdToSol, solToUsd } from '@/lib/solana/price';
-import { useWallet } from '@/hooks/useWallet';
+import { usePhantomWallet } from '@/hooks/usePhantomWallet';
 import { useToast } from '@/components/shared/Toast';
 import { usePaymentSettings } from '@/hooks/usePaymentSettings';
 import { useProject } from '@/hooks/useProject';
@@ -51,7 +51,7 @@ export default function ContributeModal({
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [priceError, setPriceError] = useState<string | null>(null);
   const { contribute, isLoading, error } = useCampaign();
-  const { connected, publicKey, isLoading: walletLoading } = useWallet();
+  const { connected, publicKey, isLoading: walletLoading } = usePhantomWallet();
   const { showError, showWarning, showSuccess } = useToast();
   const { settings: paymentSettings, isLoading: isLoadingPaymentSettings } = usePaymentSettings();
   const isSubmittingRef = useRef(false); // Guard to prevent multiple simultaneous submissions

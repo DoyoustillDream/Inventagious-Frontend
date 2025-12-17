@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useRef, useEffect, ReactNode } from 'react';
-import { useWallet } from '@/hooks/useWallet';
+import { usePhantomWallet } from '@/hooks/usePhantomWallet';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { authApi } from '@/lib/api/auth';
 import { apiClient } from '@/lib/api/client';
@@ -11,6 +11,7 @@ interface WalletAuthContextType {
   showProfileForm: boolean;
   pendingWalletAddress: string | null;
   isAuthenticating: boolean;
+  oauthUser: any | null; // OAuth user info from Phantom (email, name, etc.)
   authenticateWallet: (force?: boolean) => Promise<void>;
   handleDisconnect: () => Promise<void>;
   handleProfileComplete: () => Promise<void>;
@@ -32,7 +33,7 @@ interface WalletAuthProviderProps {
 }
 
 export function WalletAuthProvider({ children }: WalletAuthProviderProps) {
-  const { publicKey, connected, signMessage } = useWallet();
+  const { publicKey, connected, signMessage, user: phantomUser } = usePhantomWallet();
   const { user, isAuthenticated, setUser, logout: authLogout } = useAuth();
   const { redirectAfterAuth } = useAuthRedirect();
   
@@ -42,6 +43,11 @@ export function WalletAuthProvider({ children }: WalletAuthProviderProps) {
   
   // Track current authentication attempt to prevent duplicates
   const authAttemptRef = useRef<string | null>(null);
+
+  // Note: Phantom SDK user object only contains wallet connection info
+  // It does NOT contain OAuth profile data (email/name) - this is by design
+  // The user object has: walletId, addresses, status, authUserId, authProvider, source
+  // OAuth profile data is not exposed for privacy/security reasons
 
   const authenticateWallet = useCallback(async (force = false) => {
     // Safety checks
@@ -293,6 +299,7 @@ By signing, you confirm that you are the owner of this wallet address.`;
     showProfileForm,
     pendingWalletAddress,
     isAuthenticating,
+    oauthUser: phantomUser, // Pass OAuth user info (email, name from Google/Apple)
     authenticateWallet: () => authenticateWallet(true),
     handleDisconnect,
     handleProfileComplete,

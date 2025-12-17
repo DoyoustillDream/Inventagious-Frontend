@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { projectsApi, CreateProjectData } from '@/lib/api/projects';
-import { useWallet } from '@/hooks/useWallet';
+import { usePhantomWallet } from '@/hooks/usePhantomWallet';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useWalletAuth } from '@/hooks/useWalletAuth';
 import CampaignBasicInfo from './CampaignBasicInfo';
@@ -14,7 +14,7 @@ const TOTAL_STEPS = 3;
 
 export default function CreateCampaignForm() {
   const router = useRouter();
-  const { publicKey, connected } = useWallet();
+  const { publicKey, connected } = usePhantomWallet();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { authenticateWallet } = useWalletAuth();
   const [currentStep, setCurrentStep] = useState(1);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { authApi } from '@/lib/api/auth';
 import { useAuth } from '@/components/auth/AuthProvider';
 
@@ -8,18 +8,38 @@ interface CompleteProfileFormProps {
   walletAddress: string;
   onComplete: () => void;
   onCancel?: () => void;
+  oauthUser?: {
+    email?: string;
+    name?: string;
+    fullName?: string;
+  } | null;
 }
 
 export default function CompleteProfileForm({
   walletAddress,
   onComplete,
   onCancel,
+  oauthUser,
 }: CompleteProfileFormProps) {
   const { setUser } = useAuth();
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  // Pre-fill with OAuth data if available
+  const [fullName, setFullName] = useState(oauthUser?.name || oauthUser?.fullName || '');
+  const [email, setEmail] = useState(oauthUser?.email || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Update form fields when OAuth user data becomes available
+  useEffect(() => {
+    if (oauthUser) {
+      console.log('[CompleteProfileForm] OAuth user data received, updating form fields:', oauthUser);
+      if (oauthUser.email && !email) {
+        setEmail(oauthUser.email);
+      }
+      if ((oauthUser.name || oauthUser.fullName) && !fullName) {
+        setFullName(oauthUser.name || oauthUser.fullName || '');
+      }
+    }
+  }, [oauthUser, email, fullName]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -67,7 +87,7 @@ export default function CompleteProfileForm({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="browser-window max-w-md w-full mx-4">
         <div className="browser-header">
           <div className="browser-controls">
@@ -135,7 +155,7 @@ export default function CompleteProfileForm({
                 required
                 disabled={isLoading}
                 className="w-full px-4 py-2 border-2 border-black rounded-lg hand-drawn text-black bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                placeholder="john@example.com"
+                placeholder="your.email@example.com"
               />
             </div>
 
