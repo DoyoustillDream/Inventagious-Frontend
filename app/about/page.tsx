@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   title: 'About Inventagious - Crowdfunding & Private Funding on Solana',
   description:
     'Learn about Inventagious - a crowdfunding and private fundraising platform for inventors and innovators. Built on Solana for instant payments and zero equity requirements.',
+  alternates: {
+    canonical: `${siteConfig.url}/about`,
+  },
   openGraph: {
     title: 'About Inventagious - Crowdfunding & Private Funding on Solana',
     description:

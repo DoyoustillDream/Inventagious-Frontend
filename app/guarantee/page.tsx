@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: 'Platform Guarantee - Fund & Ownership Protection | Inventagious',
   description:
     'Learn about Inventagious platform guarantee: fund protection through Solana escrow, 100% ownership protection, blockchain transparency, and enterprise-grade security.',
+  alternates: {
+    canonical: `${siteConfig.url}/guarantee`,
+  },
   openGraph: {
     title: 'Platform Guarantee - Fund & Ownership Protection | Inventagious',
     description:

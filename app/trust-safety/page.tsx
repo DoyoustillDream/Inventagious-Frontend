@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: 'Trust & Safety - Fraud Protection & Refund Guarantee | Inventagious',
   description:
     'Learn about Inventagious Trust & Safety guarantee: full refund protection for up to a year, fraud prevention, secure transactions on Solana blockchain, and comprehensive safety measures.',
+  alternates: {
+    canonical: `${siteConfig.url}/trust-safety`,
+  },
   openGraph: {
     title: 'Trust & Safety - Fraud Protection & Refund Guarantee | Inventagious',
     description:

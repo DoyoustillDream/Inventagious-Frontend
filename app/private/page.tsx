@@ -8,6 +8,17 @@ import { WebPageSchema } from '@/lib/seo';
 export const metadata: Metadata = {
   title: 'Private Funding - Exclusive Investment Opportunities | Inventagious',
   description: 'Explore private funding options on Inventagious. Connect with accredited investors, secure exclusive deals, and access milestone-based funding with escrow protection.',
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
+  alternates: {
+    canonical: `${siteConfig.url}/private`,
+  },
   openGraph: {
     title: 'Private Funding - Exclusive Investment Opportunities | Inventagious',
     description: 'Explore private funding options on Inventagious. Connect with accredited investors, secure exclusive deals, and access milestone-based funding with escrow protection.',

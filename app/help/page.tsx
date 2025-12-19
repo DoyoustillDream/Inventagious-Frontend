@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: 'Help Center - Get Support & Answers | Inventagious',
   description:
     'Get support and find answers to common questions about Inventagious. Browse help guides, FAQs, and learn how to use our crowdfunding platform.',
+  alternates: {
+    canonical: `${siteConfig.url}/help`,
+  },
   openGraph: {
     title: 'Help Center - Get Support & Answers | Inventagious',
     description:

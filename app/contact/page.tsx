@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: 'Contact Us - Get Support | Inventagious',
   description:
     'Contact Inventagious support team. Get help with your projects, campaigns, or questions. Email inventagioushelp@gmail.com or visit our help center.',
+  alternates: {
+    canonical: `${siteConfig.url}/contact`,
+  },
   openGraph: {
     title: 'Contact Us - Get Support | Inventagious',
     description:
