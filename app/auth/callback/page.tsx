@@ -11,6 +11,7 @@ import Header from "@/components/shared/Header/Header";
 import Footer from "@/components/shared/Footer/Footer";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { analytics } from "@/lib/analytics/analytics.service";
 
 // Inner component that uses Phantom SDK hooks (must be inside PhantomProvider)
 function CallbackContent() {
@@ -29,7 +30,8 @@ function CallbackContent() {
   // Check if OAuth callback was successful via URL parameters (for Google)
   const responseType = searchParams.get('response_type');
   const urlSuccess = responseType === 'success';
-  const urlError = responseType === 'error';
+  // Phantom SDK can send 'failure' or 'error' - handle both
+  const urlError = responseType === 'error' || responseType === 'failure';
   
   // Check if we have a successful connection via SDK state (works for both Google and Apple)
   const hasAddresses = addresses && addresses.length > 0;
@@ -81,6 +83,28 @@ function CallbackContent() {
       </div>
     );
   }
+
+  // Track auth failures when they occur
+  useEffect(() => {
+    if (urlError && responseType) {
+      const sessionId = searchParams.get('session_id');
+      const errorDetails = {
+        responseType,
+        sessionId: sessionId || undefined,
+        url: typeof window !== 'undefined' ? window.location.href : '',
+      };
+      
+      analytics.recordError({
+        errorType: 'wallet',
+        errorMessage: `Wallet authentication failed: ${responseType}`,
+        pagePath: '/auth/callback',
+        userAction: 'wallet_connect_callback',
+      });
+      
+      // Also log to console for debugging
+      console.error('[Auth Callback] Authentication failure detected:', errorDetails);
+    }
+  }, [urlError, responseType, searchParams]);
 
   // Handle error case - show error message
   if (urlError) {

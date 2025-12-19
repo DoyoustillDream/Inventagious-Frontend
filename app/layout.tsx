@@ -8,7 +8,7 @@ import {
   WebsiteSchema,
   SoftwareApplicationSchema,
   FinancialProductSchema,
-} from "@/lib/seo";
+} from "@/lib/seo"; 
 import PhantomProviderWrapper from "@/components/auth/PhantomProviderWrapper";
 import AuthProvider from "@/components/auth/AuthProvider";
 import { WalletAuthProvider } from "@/components/auth/WalletAuthProvider";

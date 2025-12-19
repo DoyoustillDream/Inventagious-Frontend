@@ -123,6 +123,17 @@ async function sendImmediate(event: any) {
   }
 }
 
+/**
+ * Send error immediately to the error endpoint
+ */
+async function sendErrorImmediate(event: any) {
+  try {
+    await apiClient.post('/analytics/error', event);
+  } catch (error) {
+    console.error('Failed to send analytics error:', error);
+  }
+}
+
 export const analytics = {
   /**
    * Initialize analytics (call on app start)
@@ -303,8 +314,8 @@ export const analytics = {
       os: getOS(),
     };
     
-    // Send errors immediately (critical)
-    sendImmediate(event);
+    // Send errors immediately to the correct endpoint (critical)
+    sendErrorImmediate(event);
   },
 
   /**

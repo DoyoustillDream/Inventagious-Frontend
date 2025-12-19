@@ -300,6 +300,29 @@ class ApiClient {
       if (errorDetails) {
         (error as any).details = errorDetails;
       }
+
+      // Send error to analytics for admin notifications
+      if (typeof window !== 'undefined') {
+        try {
+          // Dynamically import analytics to avoid circular dependencies
+          import('@/lib/analytics/analytics.service').then(({ analytics }) => {
+            analytics.recordError({
+              errorType: 'api',
+              errorMessage: `${response.status} ${response.statusText}: ${errorMessage}`,
+              errorStack: errorDetails ? JSON.stringify(errorDetails) : undefined,
+              pagePath: typeof window !== 'undefined' ? window.location.pathname : endpoint,
+              userAction: `API ${options.method || 'GET'} ${endpoint}`,
+            });
+          }).catch((err) => {
+            // Silently fail analytics - don't break the app
+            console.error('Failed to record error to analytics:', err);
+          });
+        } catch (analyticsError) {
+          // Silently fail analytics - don't break the app
+          console.error('Failed to record error to analytics:', analyticsError);
+        }
+      }
+
       throw error;
     }
 
