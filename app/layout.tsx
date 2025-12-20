@@ -13,7 +13,6 @@ import PhantomProviderWrapper from "@/components/auth/PhantomProviderWrapper";
 import AuthProvider from "@/components/auth/AuthProvider";
 import { WalletAuthProvider } from "@/components/auth/WalletAuthProvider";
 import WalletAuthInitializer from "@/components/auth/WalletAuthInitializer";
-import ProgramIdsInitializer from "@/components/solana/ProgramIdsInitializer";
 import AnalyticsInitializer from "@/components/analytics/AnalyticsInitializer";
 import { ToastProvider } from "@/components/shared/Toast";
 
@@ -62,7 +61,6 @@ export default function RootLayout({
                   <AnalyticsInitializer />
                 </Suspense>
                 <WalletAuthInitializer />
-                <ProgramIdsInitializer />
                 <OrganizationSchema />
                 <WebsiteSchema />
                 <SoftwareApplicationSchema />

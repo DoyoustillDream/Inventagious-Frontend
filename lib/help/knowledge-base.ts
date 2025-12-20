@@ -301,7 +301,7 @@ We're committed to making Inventagious the safest and most trustworthy fundraisi
 - **Already have Phantom?** → Use browser extension or mobile app
 - **Want full control?** → Use browser extension with your own wallet
 
-Need help? Contact inventagioushelp@gmail.com or visit /help/connect-wallet`,
+Need help? Contact help@inventagious.com or visit /help/connect-wallet`,
     suggestions: [
       'How do I start a project?',
       'What payment methods are accepted?',
@@ -329,7 +329,7 @@ Need help? Contact inventagioushelp@gmail.com or visit /help/connect-wallet`,
 - FAQ section with detailed answers
 
 **Contact Support:**
-- Email: inventagioushelp@gmail.com
+- Email: help@inventagious.com
 - Create a support ticket for complex issues
 - We typically respond within 24 hours
 

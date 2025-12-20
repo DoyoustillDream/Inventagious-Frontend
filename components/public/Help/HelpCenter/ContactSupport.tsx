@@ -107,7 +107,7 @@ export default function ContactSupport() {
             </p>
             <div className="border-2 border-black bg-yellow-50 p-6">
               <p className="hand-drawn text-sm font-bold text-black mb-2">
-                Email us at: inventagioushelp@gmail.com
+                Email us at: help@inventagious.com
               </p>
               <p className="hand-drawn text-sm font-bold text-black">
                 We typically respond within 24 hours.

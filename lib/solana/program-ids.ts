@@ -140,13 +140,14 @@ export async function getTreasuryProgramId(): Promise<PublicKey> {
   return ids.treasuryProgramId;
 }
 
-// Auto-initialize on client side (browser only)
-if (typeof window !== 'undefined') {
-  // Start initialization immediately but don't block
-  fetchProgramIds().catch((error) => {
-    console.error('Failed to auto-initialize program IDs:', error);
-  });
-}
+
+// NOTE: Auto-initialization removed - Solana features are currently disabled
+// To re-enable, uncomment the code below or add <ProgramIdsInitializer /> to layout.tsx
+// if (typeof window !== 'undefined') {
+//   fetchProgramIds().catch((error) => {
+//     console.error('Failed to auto-initialize program IDs:', error);
+//   });
+// }
 
 // Export the PublicKey instances
 // These will be the dummy values initially, then replaced with real values after fetch

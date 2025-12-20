@@ -60,7 +60,7 @@ export default function OrganizerSection({ project }: OrganizerSectionProps) {
     const subject = encodeURIComponent(`Inquiry about ${project.title}`);
     const body = encodeURIComponent(`Hello,\n\nI'm interested in learning more about your project: ${project.title}\n\nBest regards`);
     // For now, we'll use a generic contact email. In the future, this could use organizerProfile data if available
-    return `mailto:inventagioushelp@gmail.com?subject=${subject}&body=${body}`;
+    return `mailto:help@inventagious.com?subject=${subject}&body=${body}`;
   };
 
   return (
