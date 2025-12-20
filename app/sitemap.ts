@@ -25,6 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/help/start-project',
     '/help/tips',
     '/private',
+    '/polymarketbot',
     '/projects/featured',
     // Programmatic SEO pages
     '/campaigns/active',

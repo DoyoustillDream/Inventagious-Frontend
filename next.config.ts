@@ -145,6 +145,11 @@ const nextConfig: NextConfig = {
         destination: '/',
         permanent: true,
       },
+      {
+        source: '/bot',
+        destination: '/polymarketbot',
+        permanent: true,
+      },
     ];
   },
 

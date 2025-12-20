@@ -33,7 +33,7 @@ export default function BotPage() {
       <WebPageSchema 
         title="Polymarket Bot | Inventagious"
         description="Trade on Polymarket faster and smarter with our Telegram bot."
-        url="/bot"
+        url="/polymarketbot"
       />
       <div className="flex min-h-screen flex-col bg-[#0a0a0a]">
         <Header />
