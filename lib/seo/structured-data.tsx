@@ -315,3 +315,192 @@ export function ItemListSchema({
   );
 }
 
+/**
+ * Product Schema for project/campaign pages
+ * Used for e-commerce style rich snippets
+ */
+export function ProductSchema({
+  name,
+  description,
+  url,
+  image,
+  category,
+  brand,
+  offers,
+}: {
+  name: string;
+  description?: string;
+  url: string;
+  image?: string;
+  category?: string;
+  brand?: string;
+  offers?: {
+    priceCurrency: string;
+    availability: string;
+    price?: number;
+    url?: string;
+  };
+}) {
+  const schema: any = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": name,
+    "description": description || siteConfig.description,
+    "image": image || siteConfig.ogImage,
+    "brand": {
+      "@type": "Brand",
+      "name": brand || siteConfig.name,
+    },
+    "category": category || "Crowdfunding",
+    "url": url,
+  };
+
+  if (offers) {
+    schema.offers = {
+      "@type": "Offer",
+      "priceCurrency": offers.priceCurrency || "SOL",
+      "availability": offers.availability || "https://schema.org/InStock",
+      ...(offers.price !== undefined && { price: offers.price }),
+      ...(offers.url && { url: offers.url }),
+    };
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+/**
+ * CrowdfundingCampaign Schema for campaign pages
+ * Uses Organization + Offer as fallback since CrowdfundingCampaign is not standard Schema.org
+ */
+export function CrowdfundingCampaignSchema({
+  name,
+  description,
+  url,
+  image,
+  fundingGoal,
+  amountRaised,
+  backersCount,
+  deadline,
+  creator,
+  category,
+}: {
+  name: string;
+  description?: string;
+  url: string;
+  image?: string;
+  fundingGoal?: number;
+  amountRaised?: number;
+  backersCount?: number;
+  deadline?: string;
+  creator?: {
+    name: string;
+    url?: string;
+  };
+  category?: string;
+}) {
+  const schema: any = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": name,
+    "description": description || siteConfig.description,
+    "url": url,
+    "image": image || siteConfig.ogImage,
+    ...(category && { "category": category }),
+  };
+
+  // Add Offer for funding details
+  if (fundingGoal !== undefined || amountRaised !== undefined) {
+    schema.makesOffer = {
+      "@type": "Offer",
+      "priceCurrency": "SOL",
+      ...(fundingGoal !== undefined && { "price": fundingGoal }),
+      "availability": "https://schema.org/PreOrder",
+      "url": url,
+    };
+
+    // Add aggregate data
+    if (amountRaised !== undefined || backersCount !== undefined) {
+      schema.aggregateRating = {
+        "@type": "AggregateRating",
+        ...(amountRaised !== undefined && { "ratingValue": amountRaised }),
+        ...(backersCount !== undefined && { "reviewCount": backersCount }),
+      };
+    }
+  }
+
+  if (deadline) {
+    schema.foundingDate = deadline;
+  }
+
+  if (creator) {
+    schema.founder = {
+      "@type": "Person",
+      "name": creator.name,
+      ...(creator.url && { "url": creator.url }),
+    };
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+/**
+ * Person Schema for profile pages
+ * Boosts trust + Knowledge Graph eligibility
+ */
+export function PersonSchema({
+  name,
+  description,
+  url,
+  image,
+  sameAs,
+  jobTitle,
+  worksFor,
+}: {
+  name: string;
+  description?: string;
+  url: string;
+  image?: string;
+  sameAs?: string[];
+  jobTitle?: string;
+  worksFor?: {
+    name: string;
+    url?: string;
+  };
+}) {
+  const schema: any = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": name,
+    "url": url,
+    ...(description && { "description": description }),
+    ...(image && { "image": image }),
+    ...(sameAs && sameAs.length > 0 && { "sameAs": sameAs }),
+    ...(jobTitle && { "jobTitle": jobTitle }),
+  };
+
+  if (worksFor) {
+    schema.worksFor = {
+      "@type": "Organization",
+      "name": worksFor.name,
+      ...(worksFor.url && { "url": worksFor.url }),
+    };
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+

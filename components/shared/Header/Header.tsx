@@ -7,19 +7,15 @@ import HeaderNav from './HeaderNav';
 import HeaderSearch from './HeaderSearch';
 import HeaderAuth from './HeaderAuth';
 import HeaderMobileMenu from './HeaderMobileMenu';
+import { useThrottledScroll } from '@/hooks/useThrottledScroll';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  useThrottledScroll(() => {
+    setIsScrolled(window.scrollY > 10);
+  });
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {

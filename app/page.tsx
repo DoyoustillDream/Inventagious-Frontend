@@ -15,6 +15,7 @@ import { siteConfig, getHomePageTitle } from '@/lib/seo';
 export const metadata: Metadata = {
   title: getHomePageTitle(),
   description: siteConfig.description,
+  keywords: siteConfig.keywords,
   alternates: {
     canonical: siteConfig.url,
   },
@@ -41,6 +42,17 @@ export const metadata: Metadata = {
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,
     site: siteConfig.twitterHandle,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large' as const,
+      'max-snippet': -1,
+    },
   },
 };
 

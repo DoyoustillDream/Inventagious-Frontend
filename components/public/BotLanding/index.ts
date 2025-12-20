@@ -1,5 +1,9 @@
 export { default as BotHero } from './BotHero';
+export { default as BotStats } from './BotStats';
 export { default as BotFeatures } from './BotFeatures';
 export { default as BotAbout } from './BotAbout';
 export { default as BotVisual } from './BotVisual';
-
+export { default as BotGettingStarted } from './BotGettingStarted';
+export { default as BotCommands } from './BotCommands';
+export { default as BotPricing } from './BotPricing';
+export { default as ScrollIndicator } from './ScrollIndicator';

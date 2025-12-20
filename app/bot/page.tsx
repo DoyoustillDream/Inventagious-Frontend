@@ -2,9 +2,14 @@ import type { Metadata } from 'next';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import BotHero from '@/components/public/BotLanding/BotHero';
-import BotFeatures from '@/components/public/BotLanding/BotFeatures';
-import BotAbout from '@/components/public/BotLanding/BotAbout';
+import BotStats from '@/components/public/BotLanding/BotStats';
 import BotVisual from '@/components/public/BotLanding/BotVisual';
+import BotFeatures from '@/components/public/BotLanding/BotFeatures';
+import BotGettingStarted from '@/components/public/BotLanding/BotGettingStarted';
+import BotCommands from '@/components/public/BotLanding/BotCommands';
+import BotPricing from '@/components/public/BotLanding/BotPricing';
+import BotAbout from '@/components/public/BotLanding/BotAbout';
+import ScrollIndicator from '@/components/public/BotLanding/ScrollIndicator';
 import { WebPageSchema } from '@/lib/seo';
 
 export const metadata: Metadata = {
@@ -34,11 +39,16 @@ export default function BotPage() {
         <Header />
         <main id="main-content" className="flex-1">
           <BotHero />
+          <BotStats />
           <BotVisual />
           <BotFeatures />
+          <BotGettingStarted />
+          <BotCommands />
+          <BotPricing />
           <BotAbout />
         </main>
         <Footer />
+        <ScrollIndicator />
       </div>
     </>
   );

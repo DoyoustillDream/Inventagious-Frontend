@@ -4,7 +4,9 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import { profileApi, Profile } from '@/lib/api/profile';
 import PublicProfileContent from '@/components/profile/PublicProfileContent';
-import { generateProfileMetadata } from '@/lib/seo';
+import { generateProfileMetadata, PersonSchema, WebPageSchema, BreadcrumbSchema } from '@/lib/seo';
+import { siteConfig } from '@/lib/seo';
+import { normalizeUrl } from '@/lib/utils/url';
 
 interface PublicProfilePageProps {
   params: Promise<{ username: string }>;
@@ -94,15 +96,47 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
     if (!profile) {
       notFound();
     }
-    
+
+    const profileUrl = normalizeUrl(siteConfig.url, `/u/${profile.username}`);
+    const sameAs = profile.socialHandles?.map(handle => handle.url).filter(Boolean) || [];
+    if (profile.website) {
+      sameAs.push(profile.website);
+    }
+
     return (
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main id="main-content" className="flex-1">
-          <PublicProfileContent profile={profile} />
-        </main>
-        <Footer />
-      </div>
+      <>
+        <WebPageSchema
+          title={`${profile.displayName || profile.username} | Inventagious`}
+          description={profile.bio || `View ${profile.displayName || profile.username}'s profile on Inventagious`}
+          url={profileUrl}
+        />
+        <PersonSchema
+          name={profile.displayName || profile.username}
+          description={profile.bio}
+          url={profileUrl}
+          image={profile.avatarUrl}
+          sameAs={sameAs.length > 0 ? sameAs : undefined}
+          jobTitle={profile.type || 'Inventor'}
+          worksFor={{
+            name: siteConfig.name,
+            url: siteConfig.url,
+          }}
+        />
+        <BreadcrumbSchema
+          items={[
+            { name: 'Home', url: siteConfig.url },
+            { name: 'Profiles', url: `${siteConfig.url}/explore` },
+            { name: profile.displayName || profile.username, url: profileUrl },
+          ]}
+        />
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          <main id="main-content" className="flex-1">
+            <PublicProfileContent profile={profile} />
+          </main>
+          <Footer />
+        </div>
+      </>
     );
   } catch (error) {
     console.error('Error loading public profile:', error);

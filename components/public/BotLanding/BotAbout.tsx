@@ -2,7 +2,7 @@
 
 export default function BotAbout() {
   return (
-    <section className="relative overflow-hidden bg-[#0a0a0a] py-16 md:py-24">
+    <section className="relative overflow-hidden bg-[#0a0a0a] py-20 md:py-28 border-t border-gray-900/50">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-8">

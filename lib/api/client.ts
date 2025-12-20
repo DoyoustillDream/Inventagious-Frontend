@@ -228,14 +228,44 @@ class ApiClient {
       }
       // Handle network errors, timeouts, etc.
       const isTimeout = fetchError.name === 'AbortError' && typeof window === 'undefined';
+      const isConnectionError = 
+        fetchError.message?.includes('ECONNREFUSED') ||
+        fetchError.message?.includes('Connection refused') ||
+        fetchError.message?.includes('Failed to proxy') ||
+        fetchError.code === 'ECONNREFUSED';
+      
       const error = new Error(
         isTimeout
           ? `API request timeout: ${url}`
+          : isConnectionError
+          ? `Backend server is not available. Please ensure the backend is running on ${process.env.BACKEND_URL || 'http://localhost:3001'}`
           : `API request failed: ${fetchError.message || 'Network error'}`
       );
       (error as any).status = 0;
-      (error as any).statusText = isTimeout ? 'Timeout' : (fetchError.name || 'Network Error');
+      (error as any).statusText = isTimeout ? 'Timeout' : (isConnectionError ? 'Connection Refused' : (fetchError.name || 'Network Error'));
       (error as any).originalError = fetchError;
+      (error as any).isConnectionError = isConnectionError;
+      
+      // Don't send connection errors to analytics (prevents circular loops when backend is down)
+      // Only send non-connection errors to analytics
+      if (typeof window !== 'undefined' && !isConnectionError && !endpoint.includes('/analytics/error')) {
+        try {
+          import('@/lib/analytics/analytics.service').then(({ analytics }) => {
+            analytics.recordError({
+              errorType: 'api',
+              errorMessage: `Network error: ${fetchError.message || 'Unknown network error'}`,
+              errorStack: fetchError.stack,
+              pagePath: typeof window !== 'undefined' ? window.location.pathname : endpoint,
+              userAction: `API ${options.method || 'GET'} ${endpoint}`,
+            });
+          }).catch(() => {
+            // Silently fail - don't break the app
+          });
+        } catch {
+          // Silently fail - don't break the app
+        }
+      }
+      
       throw error;
     }
 
@@ -302,7 +332,8 @@ class ApiClient {
       }
 
       // Send error to analytics for admin notifications
-      if (typeof window !== 'undefined') {
+      // Skip if this is an analytics endpoint error to prevent circular loops
+      if (typeof window !== 'undefined' && !endpoint.includes('/analytics/error')) {
         try {
           // Dynamically import analytics to avoid circular dependencies
           import('@/lib/analytics/analytics.service').then(({ analytics }) => {

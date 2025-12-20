@@ -77,6 +77,9 @@ let flushTimer: NodeJS.Timeout | null = null;
 const BATCH_SIZE = 10;
 const FLUSH_INTERVAL = 5000; // 5 seconds
 
+// Flag to prevent recursive analytics calls (circular error loop prevention)
+let isSendingAnalyticsError = false;
+
 /**
  * Flush queued events
  */
@@ -125,12 +128,58 @@ async function sendImmediate(event: any) {
 
 /**
  * Send error immediately to the error endpoint
+ * Prevents circular loops by checking if we're already sending an analytics error
  */
 async function sendErrorImmediate(event: any) {
+  // Prevent recursive calls - if we're already sending an analytics error, don't send another
+  if (isSendingAnalyticsError) {
+    console.warn('[Analytics] Skipping analytics error send - already in progress (preventing circular loop)');
+    return;
+  }
+
+  // Check if this is an analytics-related error - don't send analytics errors about analytics failures
+  const errorMessage = event.errorMessage || '';
+  const isAnalyticsError = 
+    errorMessage.includes('/analytics/error') ||
+    errorMessage.includes('analytics/error') ||
+    errorMessage.includes('Failed to send analytics') ||
+    errorMessage.includes('Failed to proxy') && errorMessage.includes('analytics');
+  
+  if (isAnalyticsError) {
+    console.warn('[Analytics] Skipping analytics error send - error is about analytics itself');
+    return;
+  }
+
+  // Check if this is a connection error - don't spam analytics when backend is down
+  const isConnectionError = 
+    errorMessage.includes('ECONNREFUSED') ||
+    errorMessage.includes('Connection refused') ||
+    errorMessage.includes('Failed to proxy') ||
+    errorMessage.includes('Network error') ||
+    errorMessage.includes('fetch failed');
+  
+  if (isConnectionError) {
+    console.warn('[Analytics] Skipping analytics error send - connection error (backend may be down)');
+    return;
+  }
+
+  isSendingAnalyticsError = true;
   try {
     await apiClient.post('/analytics/error', event);
-  } catch (error) {
-    console.error('Failed to send analytics error:', error);
+  } catch (error: any) {
+    // Don't log connection errors as they're expected when backend is down
+    const errorMsg = error?.message || String(error);
+    const isConnectionErr = 
+      errorMsg.includes('ECONNREFUSED') ||
+      errorMsg.includes('Connection refused') ||
+      errorMsg.includes('Failed to proxy') ||
+      errorMsg.includes('Network error');
+    
+    if (!isConnectionErr) {
+      console.error('Failed to send analytics error:', error);
+    }
+  } finally {
+    isSendingAnalyticsError = false;
   }
 }
 

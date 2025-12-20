@@ -169,6 +169,7 @@ export function generateArticleMetadata(options: {
 
 /**
  * Generate project/campaign metadata from project data
+ * Follows SEO strategy format: {Project Name} – Blockchain Crowdfunding on Solana | Inventagious
  */
 export function generateProjectMetadata(options: {
   project: {
@@ -188,12 +189,15 @@ export function generateProjectMetadata(options: {
   const { project, url } = options;
   const pageUrl = normalizeUrl(siteConfig.url, url);
   
-  const description = project.description || 
-    `Support ${project.title} on Inventagious. ${
-      project.amountRaised && project.fundingGoal
-        ? `${project.amountRaised.toLocaleString()} SOL raised of ${project.fundingGoal.toLocaleString()} SOL goal.`
-        : 'Join the innovation revolution on Solana blockchain.'
-    }`;
+  // SEO Strategy format: Fund {project name}, a {category} innovation raising {amount} on Solana
+  const description = project.description 
+    ? `Fund ${project.title}, a ${project.category || 'blockchain'} innovation${project.fundingGoal ? ` raising ${project.fundingGoal.toLocaleString()} SOL` : ''} on Solana. Transparent blockchain crowdfunding on Inventagious.`
+    : `Fund ${project.title}${project.category ? `, a ${project.category} innovation` : ''}${project.fundingGoal ? ` raising ${project.fundingGoal.toLocaleString()} SOL` : ''} on Solana. Transparent blockchain crowdfunding on Inventagious.`;
+
+  // SEO Strategy format: {Project Name} – Blockchain Crowdfunding on Solana | Inventagious
+  const title = project.type === 'crowdfunding'
+    ? `${project.title} – Blockchain Crowdfunding on Solana | Inventagious`
+    : `${project.title} – Private Funding on Solana | Inventagious`;
 
   const tags = [
     project.type === 'crowdfunding' ? 'crowdfunding' : 'private funding',
@@ -201,6 +205,9 @@ export function generateProjectMetadata(options: {
     'solana',
     'blockchain',
     'web3',
+    'blockchain crowdfunding',
+    'startup funding',
+    'web3 investment',
   ];
 
   // Generate dynamic OG image URL
@@ -214,7 +221,7 @@ export function generateProjectMetadata(options: {
   });
 
   return generateArticleMetadata({
-    title: `${project.title} - Inventagious`,
+    title,
     description,
     publishedTime: project.createdAt,
     modifiedTime: project.updatedAt || project.createdAt,

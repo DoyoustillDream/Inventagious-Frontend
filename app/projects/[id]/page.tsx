@@ -4,7 +4,7 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import ProjectDetailContent from '@/components/public/ProjectDetail/ProjectDetailContent';
 import { projectsApi } from '@/lib/api/projects';
-import { siteConfig, generateProjectMetadata, WebPageSchema, ArticleSchema, BreadcrumbSchema } from '@/lib/seo';
+import { siteConfig, generateProjectMetadata, WebPageSchema, ArticleSchema, BreadcrumbSchema, ProductSchema } from '@/lib/seo';
 import { getFirstImage } from '@/lib/utils/imageUtils';
 import { normalizeUrl } from '@/lib/utils/url';
 
@@ -57,6 +57,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     'web3',
   ];
 
+  const projectImage = getFirstImage(project.imageUrl);
+  const fundingPercentage = project.fundingGoal && project.amountRaised
+    ? Math.round((project.amountRaised / project.fundingGoal) * 100)
+    : 0;
+
   return (
     <>
       <WebPageSchema 
@@ -68,10 +73,24 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         title={project.title}
         description={project.description || `Support ${project.title} on Inventagious`}
         url={projectUrl}
-        image={getFirstImage(project.imageUrl)}
+        image={projectImage}
         publishedTime={project.createdAt}
         modifiedTime={project.updatedAt || project.createdAt}
         tags={tags}
+      />
+      <ProductSchema
+        name={project.title}
+        description={project.description || `Support ${project.title} on Inventagious`}
+        url={projectUrl}
+        image={projectImage}
+        category={project.category}
+        brand="Inventagious"
+        offers={{
+          priceCurrency: 'SOL',
+          availability: project.status === 'active' ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
+          price: project.fundingGoal,
+          url: projectUrl,
+        }}
       />
       <BreadcrumbSchema
         items={[

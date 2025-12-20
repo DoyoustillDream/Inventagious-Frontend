@@ -9,6 +9,8 @@ import {
   WebPageSchema,
   ArticleSchema,
   BreadcrumbSchema,
+  ProductSchema,
+  CrowdfundingCampaignSchema,
 } from '@/lib/seo';
 import { getFirstImage } from '@/lib/utils/imageUtils';
 import { normalizeUrl } from '@/lib/utils/url';
@@ -197,6 +199,8 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
       console.log(`[CampaignPage] Rendering page for project: ${validProject.id} - ${validProject.title}`);
     }
     
+    const campaignImage = getFirstImage(validProject.imageUrl);
+
     return (
       <>
         <WebPageSchema
@@ -208,10 +212,35 @@ export default async function CampaignPage({ params }: CampaignPageProps) {
           title={validProject.title}
           description={validProject.description || `Support ${validProject.title} on Inventagious`}
           url={campaignUrl}
-          image={getFirstImage(validProject.imageUrl)}
+          image={campaignImage}
           publishedTime={validProject.createdAt}
           modifiedTime={validProject.updatedAt || validProject.createdAt}
           tags={tags}
+        />
+        <ProductSchema
+          name={validProject.title}
+          description={validProject.description || `Support ${validProject.title} on Inventagious`}
+          url={campaignUrl}
+          image={campaignImage}
+          category={validProject.category}
+          brand="Inventagious"
+          offers={{
+            priceCurrency: 'SOL',
+            availability: validProject.status === 'active' ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
+            price: validProject.fundingGoal,
+            url: campaignUrl,
+          }}
+        />
+        <CrowdfundingCampaignSchema
+          name={validProject.title}
+          description={validProject.description || `Support ${validProject.title} on Inventagious`}
+          url={campaignUrl}
+          image={campaignImage}
+          fundingGoal={validProject.fundingGoal}
+          amountRaised={validProject.amountRaised}
+          backersCount={validProject.backersCount}
+          deadline={validProject.deadline}
+          category={validProject.category}
         />
         <BreadcrumbSchema
           items={[

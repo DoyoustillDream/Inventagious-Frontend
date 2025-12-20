@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Project } from '@/lib/api/projects';
 import { type Profile } from '@/lib/api/profile';
 import { apiClient } from '@/lib/api/client';
+import { ProfileLink, CategoryLink } from '@/lib/seo';
 
 interface OrganizerSectionProps {
   project: Project;
@@ -102,13 +103,14 @@ export default function OrganizerSection({ project }: OrganizerSectionProps) {
           </div>
           <div className="flex-1">
             {organizerUsername ? (
-              <Link
-                href={`/u/${organizerUsername}`}
+              <ProfileLink
+                username={organizerUsername}
+                displayName={organizerProfile?.displayName || organizerProfile?.username}
                 className="hand-drawn text-base font-bold text-black mb-1 hover:text-yellow-600 transition-colors cursor-pointer block"
                 title={creatorWalletAddress}
               >
                 {organizerProfile?.displayName || organizerProfile?.username || (creatorWalletAddress ? formatWalletAddress(creatorWalletAddress) : 'Unknown')}
-              </Link>
+              </ProfileLink>
             ) : (
               <div className="hand-drawn text-base font-bold text-black mb-1" title={creatorWalletAddress}>
                 {creatorWalletAddress ? formatWalletAddress(creatorWalletAddress) : 'Unknown'}
@@ -136,9 +138,9 @@ export default function OrganizerSection({ project }: OrganizerSectionProps) {
             {project.category && (
               <li>
                 <span className="font-semibold">Category:</span>{' '}
-                <a href={`/projects?category=${project.category}`} className="underline">
-                  {project.category}
-                </a>
+                <CategoryLink category={project.category} className="underline hover:text-yellow-600">
+                  {project.category} blockchain projects
+                </CategoryLink>
               </li>
             )}
             <li>

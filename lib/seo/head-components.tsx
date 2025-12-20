@@ -3,9 +3,14 @@
  * Preconnect, DNS prefetch, and other performance optimizations
  */
 
+import { siteConfig } from './config';
+
 export function SEOHeadComponents() {
   return (
     <>
+      {/* Sitemap reference - helps search engines discover the sitemap */}
+      <link rel="sitemap" type="application/xml" href={`${siteConfig.url}/sitemap.xml`} />
+      
       {/* Preconnect to external domains for performance */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

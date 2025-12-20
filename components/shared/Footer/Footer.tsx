@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Logo from '../Logo';
 import NewsletterSignup from './NewsletterSignup';
+import { CampaignStateLink, InvestorIntentLink } from '@/lib/seo';
 
 export default function Footer() {
   return (
@@ -17,24 +18,53 @@ export default function Footer() {
             <h4 className="hand-drawn mb-4 text-base font-bold text-white">Platform</h4>
             <ul className="space-y-2 text-sm font-semibold">
               <li>
-                <Link href="/projects" className="text-white hover:underline">
-                  Crowdfunding
+                <Link href="/campaigns" className="text-white hover:underline">
+                  All Campaigns
                 </Link>
               </li>
-              {/* COMMENTED OUT: Private Funding */}
-              {/* <li>
-                <Link href="/private" className="text-white hover:underline">
-                  Private Funding
+              <li>
+                <CampaignStateLink state="active" className="text-white hover:underline">
+                  Active Campaigns
+                </CampaignStateLink>
+              </li>
+              <li>
+                <CampaignStateLink state="ending-soon" className="text-white hover:underline">
+                  Ending Soon
+                </CampaignStateLink>
+              </li>
+              <li>
+                <CampaignStateLink state="fully-funded" className="text-white hover:underline">
+                  Fully Funded
+                </CampaignStateLink>
+              </li>
+              <li>
+                <Link href="/projects" className="text-white hover:underline">
+                  All Projects
                 </Link>
-              </li> */}
+              </li>
             </ul>
           </div>
           <div>
             <h4 className="hand-drawn mb-4 text-base font-bold text-white">Resources</h4>
             <ul className="space-y-2 text-sm font-semibold">
               <li>
-                <Link href="/moddio" className="text-white hover:underline">
-                  Moddio
+                <InvestorIntentLink intent="fund-blockchain-startups" className="text-white hover:underline">
+                  Fund Blockchain Startups
+                </InvestorIntentLink>
+              </li>
+              <li>
+                <InvestorIntentLink intent="invest-in-solana-projects" className="text-white hover:underline">
+                  Invest in Solana
+                </InvestorIntentLink>
+              </li>
+              <li>
+                <InvestorIntentLink intent="crowdfund-inventions" className="text-white hover:underline">
+                  Crowdfund Inventions
+                </InvestorIntentLink>
+              </li>
+              <li>
+                <Link href="/blog" className="text-white hover:underline">
+                  Blog
                 </Link>
               </li>
               <li>

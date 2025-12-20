@@ -53,7 +53,7 @@ body {
   background: var(--yellow-light);
   background-image: radial-gradient(circle, rgba(0,0,0,0.15) 1px, transparent 1px);
   box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15);
-  transform: scale(1.05);
+  /* Removed transform to improve scroll performance */
 }
 
 ::-webkit-scrollbar-thumb:active {
@@ -67,10 +67,15 @@ body {
   border-top: 2px solid var(--foreground);
 }
 
-/* Firefox */
+/* Smooth scrolling - only for programmatic scrolling, not native scroll */
 html {
   scrollbar-width: thin;
   scrollbar-color: var(--foreground) var(--yellow-light);
+}
+
+/* Use smooth scroll only when explicitly requested via CSS class */
+html.smooth-scroll {
+  scroll-behavior: smooth;
 }
 
 body {

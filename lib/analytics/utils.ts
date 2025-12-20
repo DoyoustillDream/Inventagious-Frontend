@@ -55,9 +55,19 @@ export function getSessionId(): string {
 
   const stored = sessionStorage.getItem(storageKey);
   if (stored) {
-    const { sessionId, timestamp } = JSON.parse(stored);
-    if (Date.now() - timestamp < sessionExpiry) {
-      return sessionId;
+    try {
+      // Validate that the stored value is valid JSON
+      const parsed = JSON.parse(stored);
+      
+      // Validate the structure of the parsed data
+      if (parsed && typeof parsed === 'object' && parsed.sessionId && typeof parsed.timestamp === 'number') {
+        if (Date.now() - parsed.timestamp < sessionExpiry) {
+          return parsed.sessionId;
+        }
+      }
+    } catch (error) {
+      // If JSON parsing fails or data structure is invalid, clear the corrupted data
+      sessionStorage.removeItem(storageKey);
     }
   }
 

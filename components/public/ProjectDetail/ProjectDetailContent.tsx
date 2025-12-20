@@ -8,6 +8,8 @@ import ProjectDescription from './ProjectDescription';
 import OrganizerSection from './OrganizerSection';
 import DonationsList from './DonationsList';
 import CampaignUpdates from './CampaignUpdates';
+import ProjectFAQ from './ProjectFAQ';
+import ProjectInternalLinks from './ProjectInternalLinks';
 
 interface ProjectDetailContentProps {
   project: Project; // Initial project data from server
@@ -38,6 +40,8 @@ export default function ProjectDetailContent({ project: initialProject }: Projec
           <CampaignUpdates project={projectData} />
           <DonationsList projectId={projectData.id} />
           <OrganizerSection project={projectData} />
+          <ProjectFAQ project={projectData} />
+          <ProjectInternalLinks project={projectData} />
         </div>
       </div>
     </div>

@@ -6,7 +6,7 @@
 export const siteConfig = {
   name: "Inventagious",
   title: "Inventagious",
-  description: "A revolutionary crowdfunding & private fundraising platform for Inventors & Innovators in Web3 & Worldwide using Solana blockchain. Discover innovative projects, invest in groundbreaking ideas, and support the future of innovation.",
+  description: "Crowdfunding & private fundraising platform for Inventors & Innovators using Solana blockchain. Discover innovative projects and invest in groundbreaking ideas.",
   url: "https://inventagious.com",
   domain: "inventagious.com",
   ogImage: "https://inventagious.com/banners/banner-main.jpg",
@@ -66,6 +66,10 @@ export const defaultMetadata = {
     canonical: siteConfig.url,
     languages: {
       'en-US': siteConfig.url,
+    },
+    types: {
+      'application/rss+xml': `${siteConfig.url}/feed.xml`,
+      'application/xml': `${siteConfig.url}/sitemap.xml`,
     },
   },
   openGraph: {

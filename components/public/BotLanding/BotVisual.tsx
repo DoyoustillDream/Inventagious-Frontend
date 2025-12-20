@@ -2,7 +2,7 @@
 
 export default function BotVisual() {
   return (
-    <section className="relative overflow-hidden bg-[#0a0a0a] py-12 md:py-20">
+    <section className="relative overflow-hidden bg-[#0a0a0a] py-20 md:py-28 border-t border-gray-900/50">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Laptop Mockup Container */}

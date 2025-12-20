@@ -26,6 +26,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/help/tips',
     '/private',
     '/projects/featured',
+    // Programmatic SEO pages
+    '/campaigns/active',
+    '/campaigns/ending-soon',
+    '/campaigns/fully-funded',
+    '/fund-blockchain-startups',
+    '/invest-in-solana-projects',
+    '/crowdfund-inventions',
   ].map((route) => ({
     url: normalizeUrl(baseUrl, route || '/'),
     lastModified: currentDate,
@@ -93,6 +100,33 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error fetching dynamic routes for sitemap:', error);
   }
 
-  return [...staticRoutes, ...dynamicRoutes];
+  // Blog posts
+  const blogPosts = [
+    {
+      slug: 'how-blockchain-crowdfunding-works',
+      date: '2024-01-15',
+    },
+    {
+      slug: 'solana-vs-ethereum-for-crowdfunding',
+      date: '2024-01-20',
+    },
+    {
+      slug: 'how-to-fund-an-invention-without-vcs',
+      date: '2024-01-25',
+    },
+    {
+      slug: 'legal-considerations-for-web3-crowdfunding',
+      date: '2024-02-01',
+    },
+  ];
+
+  const blogRoutes = blogPosts.map((post) => ({
+    url: normalizeUrl(baseUrl, `/blog/${post.slug}`),
+    lastModified: post.date,
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
+
+  return [...staticRoutes, ...dynamicRoutes, ...blogRoutes];
 }
 
