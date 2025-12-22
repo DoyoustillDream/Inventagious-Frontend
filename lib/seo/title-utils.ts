@@ -44,7 +44,7 @@ export function generatePageTitle(
  * Get title for home page
  */
 export function getHomePageTitle(): string {
-  return siteConfig.title;
+  return "Blockchain Crowdfunding for Inventors & Innovators | Inventagious";
 }
 
 /**

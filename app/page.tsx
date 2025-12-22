@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     canonical: siteConfig.url,
   },
   openGraph: {
-    title: siteConfig.title,
+    title: getHomePageTitle(),
     description: siteConfig.description,
     url: siteConfig.url,
     type: 'website',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: siteConfig.title,
+    title: getHomePageTitle(),
     description: siteConfig.description,
     images: [siteConfig.twitterImage],
     creator: siteConfig.twitterHandle,

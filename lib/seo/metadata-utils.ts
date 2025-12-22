@@ -241,20 +241,43 @@ export function generateProfileMetadata(options: {
     displayName: string;
     bio?: string;
     avatarUrl?: string;
+    coverImageUrl?: string;
+  };
+  stats?: {
+    followers: number;
+    following: number;
+    projects: number;
   };
   url: string;
 }): Metadata {
-  const { profile, url } = options;
+  const { profile, stats, url } = options;
   const pageUrl = normalizeUrl(siteConfig.url, url);
   
-  const description = profile.bio || `View ${profile.displayName}'s profile on Inventagious`;
+  // Create richer description with stats
+  let description = profile.bio || `View ${profile.displayName}'s profile on Inventagious`;
+  if (stats && (stats.followers > 0 || stats.projects > 0)) {
+    const statsParts = [];
+    if (stats.followers > 0) {
+      statsParts.push(`${stats.followers.toLocaleString()} ${stats.followers === 1 ? 'follower' : 'followers'}`);
+    }
+    if (stats.projects > 0) {
+      statsParts.push(`${stats.projects.toLocaleString()} ${stats.projects === 1 ? 'project' : 'projects'}`);
+    }
+    if (statsParts.length > 0) {
+      description = `${description} • ${statsParts.join(' • ')}`;
+    }
+  }
 
-  // Generate dynamic OG image URL
+  // Generate dynamic OG image URL with stats
   const ogImageUrl = generateProfileOGImageUrl({
     displayName: profile.displayName,
     username: profile.username,
     bio: profile.bio,
     avatarUrl: profile.avatarUrl,
+    coverImageUrl: profile.coverImageUrl,
+    followers: stats?.followers,
+    following: stats?.following,
+    projects: stats?.projects,
   });
 
   return {

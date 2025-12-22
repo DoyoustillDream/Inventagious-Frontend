@@ -115,10 +115,12 @@ export default function TopicsList() {
       {topics.map((topic) => (
         <Link
           key={topic.id}
-          href={topic.href}
-          className="group block h-full transition-all hover:scale-[1.02] hover:shadow-xl"
+          href={`/topics/${topic.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group block h-full transition-all hover:scale-[1.02] hover:shadow-xl cursor-pointer relative"
         >
-          <div className="h-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col">
+          <div className="h-full bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col relative">
             {/* Image Section */}
             <div
               className="relative bg-cover bg-center h-48"

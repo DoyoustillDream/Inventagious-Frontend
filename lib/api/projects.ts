@@ -96,6 +96,7 @@ export interface FeaturedTopic {
   href: string;
   projectCount: number;
   keywords?: string[];
+  imageUrl?: string;
 }
 
 export interface CampaignUpdate {
@@ -206,6 +207,11 @@ export const projectsApi = {
 
   getFeaturedTopics: async (): Promise<FeaturedTopic[]> => {
     return apiClient.get<FeaturedTopic[]>('/projects/topics/featured');
+  },
+
+  getTopicById: async (id: string): Promise<FeaturedTopic | null> => {
+    const topics = await apiClient.get<FeaturedTopic[]>('/projects/topics/featured');
+    return topics.find(topic => topic.id === id) || null;
   },
 
   search: async (query: string, type?: string): Promise<Project[]> => {

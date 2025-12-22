@@ -32,9 +32,12 @@ interface WalletAuthProviderProps {
   children: ReactNode;
 }
 
+const WALLET_ADDRESS_STORAGE_KEY = 'inventagious_wallet_address';
+const LAST_CONNECTION_METHOD_KEY = 'inventagious_last_connection_method';
+
 export function WalletAuthProvider({ children }: WalletAuthProviderProps) {
-  const { publicKey, connected, signMessage, user: phantomUser } = usePhantomWallet();
-  const { user, isAuthenticated, setUser, logout: authLogout } = useAuth();
+  const { publicKey, connected, signMessage, user: phantomUser, connect, isLoading: walletLoading } = usePhantomWallet();
+  const { user, isAuthenticated, setUser, logout: authLogout, isLoading: authLoading } = useAuth();
   const { redirectAfterAuth } = useAuthRedirect();
   
   const [showProfileForm, setShowProfileForm] = useState(false);
@@ -43,6 +46,7 @@ export function WalletAuthProvider({ children }: WalletAuthProviderProps) {
   
   // Track current authentication attempt to prevent duplicates
   const authAttemptRef = useRef<string | null>(null);
+  const autoReconnectAttemptedRef = useRef(false);
 
   // Note: Phantom SDK user object only contains wallet connection info
   // It does NOT contain OAuth profile data (email/name) - this is by design
@@ -220,6 +224,17 @@ By signing, you confirm that you are the owner of this wallet address.`;
         // Ensure token is stored
         apiClient.setToken(authResponse.access_token);
         
+        // Store wallet address for auto-reconnect on refresh
+        if (typeof window !== 'undefined' && walletAddress) {
+          localStorage.setItem(WALLET_ADDRESS_STORAGE_KEY, walletAddress);
+          // Try to detect connection method from Phantom user
+          if (phantomUser) {
+            const userAny = phantomUser as any;
+            const connectionMethod = userAny.authProvider || userAny.source || 'injected';
+            localStorage.setItem(LAST_CONNECTION_METHOD_KEY, connectionMethod);
+          }
+        }
+        
         // Reset authentication state
         setIsAuthenticating(false);
         authAttemptRef.current = null;
@@ -252,6 +267,11 @@ By signing, you confirm that you are the owner of this wallet address.`;
     authAttemptRef.current = null;
     setShowProfileForm(false);
     setPendingWalletAddress(null);
+    // Clear stored wallet address on disconnect
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(WALLET_ADDRESS_STORAGE_KEY);
+      localStorage.removeItem(LAST_CONNECTION_METHOD_KEY);
+    }
   }, [authLogout]);
 
   const handleProfileComplete = useCallback(async () => {
@@ -284,6 +304,128 @@ By signing, you confirm that you are the owner of this wallet address.`;
     authLogout();
     authAttemptRef.current = null;
   }, [authLogout]);
+
+  // Auto-reconnect wallet on page refresh if we have a valid token
+  useEffect(() => {
+    // Only attempt once, after both auth and wallet have finished loading
+    if (autoReconnectAttemptedRef.current || authLoading || walletLoading) {
+      return;
+    }
+
+    const attemptAutoReconnect = async () => {
+      autoReconnectAttemptedRef.current = true;
+
+      // Check if we have a valid token and user
+      const token = apiClient.getToken();
+      if (!token || !isAuthenticated || !user) {
+        return;
+      }
+
+      // Check if wallet is already connected with the correct address
+      if (connected && publicKey) {
+        const walletAddress = publicKey.toString();
+        // Verify wallet matches user's wallet address
+        if (user.walletAddress?.toLowerCase() === walletAddress.toLowerCase()) {
+          // Already connected with correct wallet, nothing to do
+          console.log('[WalletAuthProvider] Wallet already connected with correct address');
+          return;
+        }
+      }
+
+      // Get stored wallet address
+      const storedWalletAddress = typeof window !== 'undefined' 
+        ? localStorage.getItem(WALLET_ADDRESS_STORAGE_KEY)
+        : null;
+
+      // Verify stored wallet matches user's wallet
+      if (!storedWalletAddress || storedWalletAddress.toLowerCase() !== user.walletAddress?.toLowerCase()) {
+        console.log('[WalletAuthProvider] Stored wallet address does not match user wallet');
+        return;
+      }
+
+      // Try to auto-reconnect
+      try {
+        const lastConnectionMethod = typeof window !== 'undefined'
+          ? localStorage.getItem(LAST_CONNECTION_METHOD_KEY) || 'injected'
+          : 'injected';
+
+        // Only try injected method for auto-reconnect (silent, no popup)
+        // Google/Apple require user interaction, so skip those
+        if (lastConnectionMethod === 'injected') {
+          console.log('[WalletAuthProvider] Attempting auto-reconnect with injected wallet');
+          try {
+            await connect('injected');
+            // Give the connection a moment to establish
+            // The connection state will update via the usePhantomWallet hook
+            console.log('[WalletAuthProvider] Auto-reconnect initiated');
+          } catch (connectError) {
+            // Connection failed - this is expected if Phantom extension is not available
+            // or user hasn't approved the connection yet
+            console.log('[WalletAuthProvider] Auto-reconnect not possible (user may need to manually connect)');
+          }
+        } else {
+          // For Google/Apple, we can't auto-reconnect without user interaction
+          console.log('[WalletAuthProvider] Cannot auto-reconnect with', lastConnectionMethod, '- requires user interaction');
+        }
+      } catch (error) {
+        // Auto-reconnect failed - that's okay, user is still authenticated via token
+        // They'll just need to manually reconnect for wallet operations
+        console.log('[WalletAuthProvider] Auto-reconnect failed (this is okay):', error);
+      }
+    };
+
+    // Small delay to ensure everything is initialized
+    const timeoutId = setTimeout(attemptAutoReconnect, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [authLoading, walletLoading, isAuthenticated, user, connected, publicKey, connect]);
+
+  // Auto-verify authentication when wallet reconnects with valid token
+  useEffect(() => {
+    // Skip if already authenticated or if wallet is not connected
+    if (!connected || !publicKey || isAuthenticated || authLoading) {
+      return;
+    }
+
+    // Check if we have a valid token
+    const token = apiClient.getToken();
+    if (!token) {
+      return;
+    }
+
+    // Check if the connected wallet matches the stored wallet address
+    const walletAddress = publicKey.toString();
+    const storedWalletAddress = typeof window !== 'undefined'
+      ? localStorage.getItem(WALLET_ADDRESS_STORAGE_KEY)
+      : null;
+
+    // If we have a token and wallet matches, verify authentication automatically
+    if (storedWalletAddress && storedWalletAddress.toLowerCase() === walletAddress.toLowerCase()) {
+      const verifyAuth = async () => {
+        try {
+          const profile = await authApi.getProfile();
+          if (profile.walletAddress?.toLowerCase() === walletAddress.toLowerCase()) {
+            // Token is valid and wallet matches - restore auth state
+            console.log('[WalletAuthProvider] Auto-verified authentication after wallet reconnect');
+            setUser(profile);
+          } else {
+            // Wallet mismatch - clear token
+            console.log('[WalletAuthProvider] Wallet mismatch, clearing token');
+            apiClient.clearToken();
+            authLogout();
+          }
+        } catch (error) {
+          // Token invalid - clear it
+          console.log('[WalletAuthProvider] Token invalid, clearing');
+          apiClient.clearToken();
+          authLogout();
+        }
+      };
+
+      // Small delay to avoid race conditions
+      const timeoutId = setTimeout(verifyAuth, 300);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [connected, publicKey, isAuthenticated, authLoading, setUser, authLogout]);
 
   // Reset state when wallet disconnects
   useEffect(() => {

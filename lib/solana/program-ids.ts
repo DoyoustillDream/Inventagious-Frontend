@@ -21,13 +21,33 @@ let CAMPAIGN_PROGRAM_ID: PublicKey;
 let DEAL_ESCROW_PROGRAM_ID: PublicKey;
 let TREASURY_PROGRAM_ID: PublicKey;
 
+// Placeholder public key (all 1s) - used to detect off-chain mode
+const PLACEHOLDER_PUBKEY = '11111111111111111111111111111111';
+
 // Initialize with dummy values (will be replaced)
 try {
-  CAMPAIGN_PROGRAM_ID = new PublicKey('11111111111111111111111111111111');
-  DEAL_ESCROW_PROGRAM_ID = new PublicKey('11111111111111111111111111111111');
-  TREASURY_PROGRAM_ID = new PublicKey('11111111111111111111111111111111');
+  CAMPAIGN_PROGRAM_ID = new PublicKey(PLACEHOLDER_PUBKEY);
+  DEAL_ESCROW_PROGRAM_ID = new PublicKey(PLACEHOLDER_PUBKEY);
+  TREASURY_PROGRAM_ID = new PublicKey(PLACEHOLDER_PUBKEY);
 } catch {
   // Fallback if PublicKey constructor fails
+}
+
+/**
+ * Check if we're in off-chain mode (program IDs are placeholders)
+ */
+function isPlaceholderPubkey(pubkey: PublicKey): boolean {
+  return pubkey.toBase58() === PLACEHOLDER_PUBKEY;
+}
+
+/**
+ * Check if on-chain features are enabled
+ */
+export function isOnChainEnabled(): boolean {
+  if (!programIdsCache) {
+    return false; // Not initialized yet, assume off-chain
+  }
+  return !isPlaceholderPubkey(programIdsCache.campaignProgramId);
 }
 
 /**
@@ -51,15 +71,23 @@ async function fetchProgramIds(): Promise<ProgramIdsCache> {
     try {
       console.log('Fetching program IDs from backend...');
       const response = await solanaApi.getProgramIds();
-      console.log('Received program IDs:', {
-        campaign: response.campaignProgramId?.substring(0, 8) + '...',
-        dealEscrow: response.dealEscrowProgramId?.substring(0, 8) + '...',
-        treasury: response.treasuryProgramId?.substring(0, 8) + '...',
-      });
       
       const campaignProgramId = new PublicKey(response.campaignProgramId);
       const dealEscrowProgramId = new PublicKey(response.dealEscrowProgramId);
       const treasuryProgramId = new PublicKey(response.treasuryProgramId);
+      
+      // Check if we're in off-chain mode (placeholder program IDs)
+      const isOffChain = isPlaceholderPubkey(campaignProgramId);
+      
+      if (isOffChain) {
+        console.log('Off-chain mode detected: Using placeholder program IDs');
+      } else {
+        console.log('On-chain mode: Received program IDs:', {
+          campaign: response.campaignProgramId?.substring(0, 8) + '...',
+          dealEscrow: response.dealEscrowProgramId?.substring(0, 8) + '...',
+          treasury: response.treasuryProgramId?.substring(0, 8) + '...',
+        });
+      }
 
       // Replace the exported constants
       CAMPAIGN_PROGRAM_ID = campaignProgramId;

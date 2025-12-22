@@ -187,36 +187,40 @@ export default function ProfileEditModal({
                     Basic Information
                   </h3>
 
-                  <div>
-                    <label className="hand-drawn block text-sm font-bold mb-2 text-black">
-                      Username <span className="text-red-600">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      required
-                      placeholder="your-username"
-                      className="hand-drawn w-full border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md"
-                    />
-                    <p className="mt-1 text-xs text-gray-600">
-                      /u/{formData.username || 'username'}
-                    </p>
+                  {/* Username and Display Name in 2 columns */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="hand-drawn block text-sm font-bold mb-2 text-black">
+                        Username <span className="text-red-600">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.username}
+                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                        required
+                        placeholder="your-username"
+                        className="hand-drawn w-full border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md"
+                      />
+                      <p className="mt-1 text-xs text-gray-600">
+                        /u/{formData.username || 'username'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="hand-drawn block text-sm font-bold mb-2 text-black">
+                        Display Name
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.displayName}
+                        onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                        placeholder="Your Full Name"
+                        className="hand-drawn w-full border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="hand-drawn block text-sm font-bold mb-2 text-black">
-                      Display Name
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.displayName}
-                      onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                      placeholder="Your Full Name"
-                      className="hand-drawn w-full border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md"
-                    />
-                  </div>
-
+                  {/* Bio - Full width */}
                   <div>
                     <label className="hand-drawn block text-sm font-bold mb-2 text-black">
                       Bio
@@ -230,6 +234,7 @@ export default function ProfileEditModal({
                     />
                   </div>
 
+                  {/* Profile Type - Full width */}
                   <div>
                     <label className="hand-drawn block text-sm font-bold mb-2 text-black">
                       Profile Type
@@ -253,30 +258,33 @@ export default function ProfileEditModal({
                     Location & Links
                   </h3>
 
-                  <div>
-                    <label className="hand-drawn block text-sm font-bold mb-2 text-black">
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      placeholder="City, Country"
-                      className="hand-drawn w-full border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md"
-                    />
-                  </div>
+                  {/* Location and Website in 2 columns */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="hand-drawn block text-sm font-bold mb-2 text-black">
+                        Location
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        placeholder="City, Country"
+                        className="hand-drawn w-full border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="hand-drawn block text-sm font-bold mb-2 text-black">
-                      Website
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.website}
-                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                      placeholder="https://yourwebsite.com"
-                      className="hand-drawn w-full border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md"
-                    />
+                    <div>
+                      <label className="hand-drawn block text-sm font-bold mb-2 text-black">
+                        Website
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.website}
+                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                        placeholder="https://yourwebsite.com"
+                        className="hand-drawn w-full border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded-md"
+                      />
+                    </div>
                   </div>
                 </div>
 

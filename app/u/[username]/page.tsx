@@ -59,6 +59,15 @@ export async function generateMetadata({ params }: PublicProfilePageProps): Prom
       };
     }
 
+    // Fetch profile stats for richer embed
+    let stats = { followers: 0, following: 0, projects: 0 };
+    try {
+      stats = await profileApi.getStats(username);
+    } catch (error) {
+      // If stats fail, continue with default values
+      console.error('Error fetching profile stats:', error);
+    }
+
     return generateProfileMetadata({
       profile: {
         id: profile.id,
@@ -66,7 +75,9 @@ export async function generateMetadata({ params }: PublicProfilePageProps): Prom
         displayName: profile.displayName || profile.username,
         bio: profile.bio,
         avatarUrl: profile.avatarUrl,
+        coverImageUrl: profile.coverImageUrl,
       },
+      stats,
       url: `/u/${profile.username}`,
     });
   } catch (error) {

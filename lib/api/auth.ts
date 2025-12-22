@@ -91,6 +91,14 @@ export const authApi = {
     return apiClient.get<ProfileStatus>('/auth/profile/status');
   },
 
+  verifyEmail: async (token: string): Promise<{ success: boolean; message: string; user?: any }> => {
+    return apiClient.get<{ success: boolean; message: string; user?: any }>(`/auth/verify-email?token=${token}`);
+  },
+
+  resendVerificationEmail: async (): Promise<{ success: boolean; message: string }> => {
+    return apiClient.post('/auth/resend-verification');
+  },
+
   logout: () => {
     apiClient.clearToken();
   },

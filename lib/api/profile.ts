@@ -105,5 +105,9 @@ export const profileApi = {
   updateUserCauses: async (causeIds: string[]): Promise<Cause[]> => {
     return apiClient.put<Cause[]>('/profile/causes', { causeIds });
   },
+
+  getStats: async (username: string): Promise<{ followers: number; following: number; projects: number }> => {
+    return apiClient.get<{ followers: number; following: number; projects: number }>(`/profile/${username}/stats`);
+  },
 };
 

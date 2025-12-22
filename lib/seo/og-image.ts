@@ -20,6 +20,10 @@ export interface ProfileOGImageParams {
   username?: string;
   bio?: string;
   avatarUrl?: string;
+  coverImageUrl?: string;
+  followers?: number;
+  following?: number;
+  projects?: number;
 }
 
 export interface DealOGImageParams {
@@ -85,6 +89,18 @@ export function generateProfileOGImageUrl(params: ProfileOGImageParams): string 
   }
   if (params.avatarUrl) {
     searchParams.set('image', encodeURIComponent(params.avatarUrl));
+  }
+  if (params.coverImageUrl) {
+    searchParams.set('coverImage', encodeURIComponent(params.coverImageUrl));
+  }
+  if (params.followers !== undefined) {
+    searchParams.set('followers', params.followers.toString());
+  }
+  if (params.following !== undefined) {
+    searchParams.set('following', params.following.toString());
+  }
+  if (params.projects !== undefined) {
+    searchParams.set('projects', params.projects.toString());
   }
 
   return normalizeUrl(siteConfig.url, `/api/og?${searchParams.toString()}`);

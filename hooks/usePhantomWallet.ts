@@ -3,8 +3,29 @@
 import { usePhantom, useSolana, useConnect, useDisconnect, useAccounts } from "@phantom/react-sdk";
 import { AddressType } from "@phantom/browser-sdk";
 import { PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import bs58 from "bs58";
+
+// Suppress Phantom extension errors in console (they're harmless but noisy)
+// These errors occur when the extension's content script tries to communicate
+// with the background script but the connection isn't established yet
+if (typeof window !== 'undefined') {
+  const originalError = console.error;
+  console.error = (...args: any[]) => {
+    const message = args[0]?.toString() || '';
+    // Filter out Phantom extension communication errors
+    if (
+      message.includes('Could not establish connection') ||
+      message.includes('Receiving end does not exist') ||
+      message.includes('error updating cache') ||
+      (message.includes('moz-extension://') && message.includes('contentScript'))
+    ) {
+      // Silently ignore these errors - they're expected when extension is loading
+      return;
+    }
+    originalError.apply(console, args);
+  };
+}
 
 export interface UsePhantomWalletReturn {
   // Connection state
@@ -42,6 +63,10 @@ export function usePhantomWallet(): UsePhantomWalletReturn {
   const addresses = useAccounts();
   const { solana, isAvailable: solanaAvailable } = useSolana();
 
+  // Track connection timeout to prevent infinite loading
+  const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastConnectionAttemptRef = useRef<number | null>(null);
+
   // Get Solana public key from addresses
   // AddressType from useAccounts returns an enum value, compare with AddressType enum
   const solanaAddress = addresses?.find(
@@ -50,6 +75,22 @@ export function usePhantomWallet(): UsePhantomWalletReturn {
   const publicKey = solanaAddress 
     ? new PublicKey(solanaAddress.address)
     : null;
+
+  // Clear timeout when connection completes or component unmounts
+  useEffect(() => {
+    if (isConnected && publicKey) {
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+        connectionTimeoutRef.current = null;
+      }
+      lastConnectionAttemptRef.current = null;
+    }
+    return () => {
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current);
+      }
+    };
+  }, [isConnected, publicKey]);
 
   const connect = useCallback(async (
     provider: "google" | "apple" | "injected" = "injected"
