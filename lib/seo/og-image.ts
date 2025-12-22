@@ -43,6 +43,11 @@ export interface DefaultOGImageParams {
   description?: string;
 }
 
+export interface HomepageOGImageParams {
+  title?: string;
+  description?: string;
+}
+
 /**
  * Generate OG image URL for campaign pages
  */
@@ -102,6 +107,9 @@ export function generateProfileOGImageUrl(params: ProfileOGImageParams): string 
   if (params.projects !== undefined) {
     searchParams.set('projects', params.projects.toString());
   }
+  
+  // Pass baseUrl so backend can fetch assets correctly
+  searchParams.set('baseUrl', encodeURIComponent(siteConfig.url));
 
   return normalizeUrl(siteConfig.url, `/api/og?${searchParams.toString()}`);
 }
@@ -138,6 +146,22 @@ export function generateCategoryOGImageUrl(params: CategoryOGImageParams): strin
   });
 
   if (params.description) {
+    searchParams.set('description', encodeURIComponent(params.description));
+  }
+
+  return normalizeUrl(siteConfig.url, `/api/og?${searchParams.toString()}`);
+}
+
+/**
+ * Generate OG image URL for homepage
+ */
+export function generateHomepageOGImageUrl(params?: HomepageOGImageParams): string {
+  const searchParams = new URLSearchParams({
+    type: 'homepage',
+    title: encodeURIComponent(params?.title || 'Inventagious'),
+  });
+
+  if (params?.description) {
     searchParams.set('description', encodeURIComponent(params.description));
   }
 

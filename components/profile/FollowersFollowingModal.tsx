@@ -125,36 +125,40 @@ export default function FollowersFollowingModal({
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {users.map((user) => (
                 <div
                   key={user.id}
-                  className="p-4 border-2 border-black rounded-lg bg-white hover:bg-yellow-50 transition"
+                  className="p-5 border-4 border-black rounded-xl bg-white hover:bg-yellow-50 transition-all hover:shadow-lg"
                 >
-                  <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-5">
                     <Link
                       href={`/u/${user.username}`}
                       onClick={onClose}
-                      className="flex items-center gap-4 flex-1 min-w-0"
+                      className="flex items-center gap-5 flex-1 min-w-0 group"
                     >
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-3 border-black overflow-hidden bg-yellow-100 flex-shrink-0">
-                        <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl font-bold text-black">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-black overflow-hidden bg-yellow-100 flex-shrink-0 group-hover:scale-105 transition-transform">
+                        <div className="w-full h-full flex items-center justify-center text-2xl sm:text-3xl font-bold text-black">
                           {user.displayName?.[0]?.toUpperCase() || user.username?.[0]?.toUpperCase() || 'U'}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-black text-base sm:text-lg mb-1 truncate">
+                        <h3 className="font-bold text-black text-lg sm:text-xl mb-1.5 truncate">
                           {user.displayName || user.username}
                         </h3>
-                        <p className="text-gray-600 text-xs sm:text-sm truncate">{`@${user.username}`}</p>
+                        <p className="text-gray-700 text-sm sm:text-base font-medium mb-2 truncate">
+                          @{user.username}
+                        </p>
                         {user.followedAt && (
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-sm text-gray-600 font-medium">
                             {type === 'followers' ? 'Following since ' : 'Followed since '}
-                            {new Date(user.followedAt).toLocaleDateString('en-US', {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            })}
+                            <span className="font-bold">
+                              {new Date(user.followedAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              })}
+                            </span>
                           </p>
                         )}
                       </div>

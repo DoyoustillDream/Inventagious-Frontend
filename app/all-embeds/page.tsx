@@ -152,6 +152,10 @@ export default function AllEmbedsPage() {
         urlParams.set(key, encodeURIComponent(value));
       }
     });
+    // Add baseUrl so backend can fetch assets correctly
+    if (baseUrl) {
+      urlParams.set('baseUrl', encodeURIComponent(baseUrl));
+    }
     // Add timestamp for cache busting
     urlParams.set('t', Date.now().toString());
     
@@ -182,6 +186,9 @@ export default function AllEmbedsPage() {
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">All Embeds Preview</h1>
           <p className="text-gray-400">Preview how all Open Graph embeds look when shared on Discord/Twitter</p>
+          <p className="text-gray-500 text-sm mt-2">
+            Note: Profile embeds use example data. Visit <code className="bg-gray-800 px-2 py-1 rounded">/u/username</code> to see actual profile OG images with real avatars and banners.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-8">

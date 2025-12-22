@@ -11,6 +11,12 @@ import TrustSafety from '@/components/public/TrustSafety';
 import FundraisingTips from '@/components/public/FundraisingTips';
 import { WebPageSchema } from '@/lib/seo';
 import { siteConfig, getHomePageTitle } from '@/lib/seo';
+import { generateHomepageOGImageUrl } from '@/lib/seo/og-image';
+
+const homepageOGImageUrl = generateHomepageOGImageUrl({
+  title: getHomePageTitle(),
+  description: siteConfig.description,
+});
 
 export const metadata: Metadata = {
   title: getHomePageTitle(),
@@ -27,7 +33,7 @@ export const metadata: Metadata = {
     siteName: siteConfig.siteName,
     images: [
       {
-        url: siteConfig.ogImage,
+        url: homepageOGImageUrl,
         width: 1200,
         height: 630,
         alt: siteConfig.title,
@@ -39,7 +45,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: getHomePageTitle(),
     description: siteConfig.description,
-    images: [siteConfig.twitterImage],
+    images: [homepageOGImageUrl],
     creator: siteConfig.twitterHandle,
     site: siteConfig.twitterHandle,
   },
